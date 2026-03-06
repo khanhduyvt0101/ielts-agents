@@ -1,0 +1,5 @@
+if [ -z "$CI" ]; then
+  set -ex
+  nx sync
+  prettier --log-level warn --write .
+fi

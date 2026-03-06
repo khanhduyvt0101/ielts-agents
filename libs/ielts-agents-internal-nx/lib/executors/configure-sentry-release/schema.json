@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "authToken": { "type": "string" },
+    "org": { "type": "string" },
+    "project": { "type": "string" },
+    "release": { "type": "string" },
+    "dist": { "type": "string" },
+    "git": {
+      "type": "object",
+      "properties": {
+        "repo": { "type": "string" },
+        "commit": { "type": "string" }
+      },
+      "required": ["repo", "commit"]
+    }
+  },
+  "required": ["authToken", "org", "project", "release"]
+}

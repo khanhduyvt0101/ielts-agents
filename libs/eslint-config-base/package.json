@@ -1,0 +1,25 @@
+{
+  "name": "eslint-config-base",
+  "version": "0.0.92",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#./*": "./*"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "dependencies": {
+    "@eslint/js": "9.39.2",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-import-resolver-typescript": "4.4.4",
+    "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-no-relative-import-paths": "1.6.1",
+    "eslint-plugin-simple-import-sort": "12.1.1",
+    "eslint-plugin-unicorn": "63.0.0",
+    "typescript-eslint": "8.55.0"
+  }
+}

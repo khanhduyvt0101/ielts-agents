@@ -1,0 +1,29 @@
+{
+  "name": "ielts-agents-internal-nx",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#./*": "./*"
+  },
+  "main": "./lib/index.ts",
+  "dependencies": {
+    "@faker-js/faker": "^10.3.0",
+    "@microsoft/api-extractor": "^7.57.6",
+    "del": "^8.0.1",
+    "dotenv": "^17.3.1",
+    "esbuild": "^0.27.3",
+    "ignore": "^7.0.5",
+    "lodash": "^4.17.23",
+    "stripe": "^20.4.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.24",
+    "@types/node": "^25.3.1",
+    "eslint-config-base": "workspace:^",
+    "type-fest": "^5.4.4"
+  },
+  "executors": "./lib/executors/index.json",
+  "generators": "./lib/generators/index.json"
+}

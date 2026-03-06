@@ -1,0 +1,12 @@
+{
+  "configurations": [
+    {
+      "name": "ielts-agents-api",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "nx",
+      "runtimeArgs": ["run", "ielts-agents-api:dev"],
+      "internalConsoleOptions": "openOnSessionStart"
+    }
+  ]
+}

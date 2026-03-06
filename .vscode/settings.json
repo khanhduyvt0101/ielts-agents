@@ -1,0 +1,62 @@
+{
+  "json.validate.enable": false,
+  "javascript.suggestionActions.enabled": false,
+  "task.autoDetect": "off",
+  "task.allowAutomaticTasks": "off",
+  "task.quickOpen.history": 0,
+  "task.quickOpen.showAll": false,
+  "task.problemMatchers.neverPrompt": true,
+  "nxConsole.commonNxCommands": ["run-many", "run", "reset"],
+  "nxConsole.generatorAllowlist": ["ielts-agents-internal-nx:*"],
+  "nxConsole.projectViewingStyle": "tree",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "eslint.workingDirectories": [
+    { "pattern": "./apps/*/" },
+    { "pattern": "./libs/*/" }
+  ],
+  "tailwindCSS.validate": false,
+  "tailwindCSS.experimental.configFile": {
+    "apps/ielts-agents-app/lib/styles.css": "apps/ielts-agents-app/**"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": { "source.fixAll": "always" },
+  "files.trimTrailingWhitespace": true,
+  "files.trimFinalNewlines": true,
+  "files.insertFinalNewline": true,
+  "files.associations": {
+    ".nxignore": "ignore",
+    ".vars": "properties",
+    ".secrets": "properties",
+    ".env.*": "properties",
+    "*.template": "ejs",
+    "**/.husky/*": "shellscript",
+    "**/apps/ielts-agents-app/**/*.css": "tailwindcss"
+  },
+  "files.exclude": {
+    "CHANGELOG.md": true,
+    "pnpm-lock.yaml": true,
+    "vercel-ignore.sh": true,
+    ".coderabbit.yaml": true,
+    ".nvmrc": true,
+    ".nx/cache": true,
+    ".nx/workspace-data": true,
+    ".husky/_": true,
+    ".playwright-mcp": true,
+    "**/node_modules": true,
+    "**/*.tsbuildinfo": true,
+    "**/vercel.json": true,
+    "**/tsconfig.api-extractor.json": true,
+    "**/.api-extractor": true,
+    "**/dist": true,
+    "**/.react-router": true,
+    "**/build": true,
+    "**/next-env.d.ts": true,
+    "**/.next": true,
+    "**/out": true,
+    "**/.vercel": true,
+    "**/mockServiceWorker.js": true
+  }
+}

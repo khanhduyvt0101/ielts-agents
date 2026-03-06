@@ -1,0 +1,34 @@
+{
+  "executors": {
+    "build-typescript-project": {
+      "description": "Build TypeScript project.",
+      "implementation": "./build-typescript-project/index.ts",
+      "schema": "./build-typescript-project/schema.json"
+    },
+    "configure-sentry-release": {
+      "description": "Configure Sentry release.",
+      "implementation": "./configure-sentry-release/index.ts",
+      "schema": "./configure-sentry-release/schema.json"
+    },
+    "configure-local-services": {
+      "description": "Configure local services.",
+      "implementation": "./configure-local-services/index.ts",
+      "schema": "./configure-local-services/schema.json"
+    },
+    "teardown-local-services": {
+      "description": "Teardown local services.",
+      "implementation": "./teardown-local-services/index.ts",
+      "schema": "./teardown-local-services/schema.json"
+    },
+    "prepare-docker-image": {
+      "description": "Prepare Docker image.",
+      "implementation": "./prepare-docker-image/index.ts",
+      "schema": "./prepare-docker-image/schema.json"
+    },
+    "prepare-github-actions": {
+      "description": "Prepare GitHub Actions.",
+      "implementation": "./prepare-github-actions/index.ts",
+      "schema": "./prepare-github-actions/schema.json"
+    }
+  }
+}

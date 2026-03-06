@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "content": { "type": "string" },
+    "type": {
+      "type": "string",
+      "default": "patch",
+      "enum": ["patch", "minor", "major"]
+    },
+    "commit": { "type": "boolean", "default": false }
+  },
+  "required": ["content", "type"]
+}

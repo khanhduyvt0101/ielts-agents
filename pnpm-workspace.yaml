@@ -1,0 +1,29 @@
+packages:
+  - apps/*
+  - libs/*
+
+onlyBuiltDependencies:
+  - "@sentry/cli"
+  - "@swc/core"
+  - bcrypt
+  - core-js
+  - esbuild
+  - msw
+  - nx
+  - unrs-resolver
+
+ignoredBuiltDependencies:
+  - "@prisma/client"
+  - better-sqlite3
+
+peerDependencyRules:
+  allowAny:
+    - "@better-auth/*"
+    - "@better-call/*"
+    - better-auth
+    - better-call
+    - react
+
+publicHoistPattern:
+  - "*import-in-the-middle*"
+  - "*require-in-the-middle*"

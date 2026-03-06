@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "create-version-plan": {
+      "description": "Create a version plan.",
+      "factory": "./create-version-plan/index.ts",
+      "schema": "./create-version-plan/schema.json"
+    }
+  }
+}

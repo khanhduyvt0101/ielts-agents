@@ -1,0 +1,29 @@
+{
+  "style": "radix-vega",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "prefix": "",
+    "config": "",
+    "cssVariables": true,
+    "baseColor": "gray",
+    "css": "lib/styles.css"
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "~/components",
+    "utils": "~/lib/utils",
+    "ui": "~/components/ui",
+    "lib": "~/lib",
+    "hooks": "~/hooks"
+  },
+  "menuColor": "default",
+  "menuAccent": "subtle",
+  "registries": {
+    "@ai-elements": "https://registry.ai-sdk.dev/{name}.json",
+    "@diceui": "https://diceui.com/r/{name}.json",
+    "@kibo-ui": "https://www.kibo-ui.com/r/{name}.json",
+    "@svgl": "https://svgl.app/registry/{name}.json",
+    "@8starlabs-ui": "https://ui.8starlabs.com/r/{name}.json"
+  }
+}

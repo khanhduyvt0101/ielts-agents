@@ -1,0 +1,23 @@
+{
+  "include": [
+    "**/*",
+    "**/*.json",
+    "**/.client/**/*",
+    "**/.client/**/*.json",
+    "**/.server/**/*",
+    "**/.server/**/*.json",
+    ".storybook/**/*",
+    ".storybook/**/*.json",
+    ".react-router/types/**/*",
+    ".react-router/types/**/*.json"
+  ],
+  "exclude": ["node_modules", "build", "public"],
+  "references": [],
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDirs": [".", "./.react-router/types"],
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "es2024"],
+    "paths": { "~/*": ["./*"] }
+  }
+}

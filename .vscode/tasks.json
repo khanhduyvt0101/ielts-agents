@@ -1,0 +1,101 @@
+{
+  "tasks": [
+    {
+      "label": "local:down",
+      "command": "pnpm",
+      "args": ["run", "local:down"]
+    },
+    {
+      "label": "local:up",
+      "command": "pnpm",
+      "args": ["run", "local:up"]
+    },
+    {
+      "label": "format",
+      "command": "pnpm",
+      "args": ["run", "format"]
+    },
+    {
+      "label": "upgrade",
+      "command": "pnpm",
+      "args": ["run", "upgrade"]
+    },
+    {
+      "label": "install",
+      "command": "pnpm",
+      "args": ["install"]
+    },
+    {
+      "label": "build",
+      "command": "pnpm",
+      "args": ["exec", "nx", "run-many", "--targets=build,typecheck,lint"],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "test",
+      "command": "pnpm",
+      "args": ["exec", "nx", "run-many", "--targets=test"],
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "dev",
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "nx",
+        "run-many",
+        "--targets=dev",
+        "--projects=ielts-agents-api,ielts-agents-app"
+      ],
+      "isBackground": true
+    },
+    {
+      "label": "start",
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "nx",
+        "run-many",
+        "--targets=start",
+        "--projects=ielts-agents-api,ielts-agents-app"
+      ],
+      "isBackground": true
+    },
+    {
+      "label": "ielts-agents-api:dev",
+      "command": "pnpm",
+      "args": ["exec", "nx", "run", "ielts-agents-api:dev"],
+      "isBackground": true
+    },
+    {
+      "label": "ielts-agents-app:dev",
+      "command": "pnpm",
+      "args": ["exec", "nx", "run", "ielts-agents-app:dev"],
+      "isBackground": true
+    },
+    {
+      "label": "ielts-agents-api:email",
+      "command": "pnpm",
+      "args": ["exec", "nx", "run", "ielts-agents-api:email"],
+      "isBackground": true
+    },
+    {
+      "label": "ielts-agents-api:better-auth-generate",
+      "command": "pnpm",
+      "args": ["exec", "nx", "run", "ielts-agents-api:better-auth-generate"],
+      "presentation": { "focus": true }
+    },
+    {
+      "label": "ielts-agents-api:drizzle-kit-generate",
+      "command": "pnpm",
+      "args": ["exec", "nx", "run", "ielts-agents-api:drizzle-kit-generate"],
+      "presentation": { "focus": true }
+    },
+    {
+      "label": "ielts-agents-api:drizzle-kit-migrate",
+      "command": "pnpm",
+      "args": ["exec", "nx", "run", "ielts-agents-api:drizzle-kit-migrate"],
+      "presentation": { "focus": true }
+    }
+  ]
+}

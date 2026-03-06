@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "stripeSecretKey": { "type": "string" },
+    "stripeTestId": { "type": "string" }
+  },
+  "required": ["stripeSecretKey", "stripeTestId"]
+}

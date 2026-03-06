@@ -1,0 +1,17 @@
+services:
+  pg:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: pg_isready --username=postgres --dbname=postgres
+      start_period: 10s
+      start_interval: 3s
+    ports: [5432]
+  redis:
+    image: redis:8
+    healthcheck:
+      test: redis-cli ping
+      start_period: 10s
+      start_interval: 3s
+    ports: [6379]
