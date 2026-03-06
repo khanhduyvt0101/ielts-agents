@@ -58,17 +58,17 @@ function ReadingPromptInputContent({
       <PromptInputBody>
         <PromptInputTextarea
           className="disabled:cursor-text"
-          disabled={disabled || isLoading}
+          disabled={disabled ?? isLoading}
           placeholder={placeholder}
         />
       </PromptInputBody>
       <PromptInputFooter className="flex-wrap justify-end gap-2 sm:justify-between">
         <PromptInputTools className="flex-wrap justify-end gap-2">
-          <BandScoreSelector chatId={chatId} disabled={disabled || isLoading} />
+          <BandScoreSelector chatId={chatId} disabled={disabled ?? isLoading} />
         </PromptInputTools>
         <div className="flex items-center gap-1">
           <PromptInputSubmit
-            disabled={disabled || isLoading}
+            disabled={disabled ?? isLoading}
             status={isLoading ? "submitted" : "ready"}
           />
         </div>
@@ -103,7 +103,7 @@ function BandScoreSelector({
 }) {
   const { data } = useQuery(
     trpcOptions.reading.getReadingConfig.queryOptions(
-      { chatId: chatId! },
+      { chatId: chatId ?? "" },
       { enabled: !!chatId },
     ),
   );
@@ -113,7 +113,7 @@ function BandScoreSelector({
   const value = data?.bandScore ?? "6.5";
   return (
     <PromptInputSelect
-      disabled={disabled || updateConfig.isPending}
+      disabled={disabled ?? updateConfig.isPending}
       value={value}
       onValueChange={(bandScore: string) => {
         if (chatId)

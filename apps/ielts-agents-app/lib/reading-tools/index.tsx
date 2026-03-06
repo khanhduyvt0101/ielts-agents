@@ -1,27 +1,24 @@
-interface ReadingToolPartProps {
-  toolName: string;
-  state: "partial-call" | "call" | "result";
-  args: Record<string, unknown>;
-}
+import type { AgentRenderToolPart } from "#./lib/agent-render-tool-part.ts";
 
-export function renderReadingToolPart({
-  toolName,
-  state,
-}: ReadingToolPartProps) {
-  switch (toolName) {
-    case "generate-passage": {
-      if (state === "result") return <ToolStatus label="Passage generated" />;
+export const renderReadingToolPart: AgentRenderToolPart["reading"] = (
+  toolPart,
+) => {
+  switch (toolPart.type) {
+    case "tool-generate-passage": {
+      if (toolPart.state === "output-available")
+        return <ToolStatus label="Passage generated" />;
       return <ToolStatus label="Generating passage..." />;
     }
-    case "generate-questions": {
-      if (state === "result") return <ToolStatus label="Questions generated" />;
+    case "tool-generate-questions": {
+      if (toolPart.state === "output-available")
+        return <ToolStatus label="Questions generated" />;
       return <ToolStatus label="Generating questions..." />;
     }
     default: {
       return null;
     }
   }
-}
+};
 
 function ToolStatus({ label }: { label: string }) {
   return (

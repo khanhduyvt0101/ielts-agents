@@ -1,10 +1,11 @@
-import type { ChatInit, ChatStatus } from "ai";
+import type { ChatInit } from "ai";
 import type { AgentId, AgentMessage } from "ielts-agents-api/types";
 import type { ComponentType } from "react";
 
+import type { Route } from "#react-router/app/routes/+types/chat.ts";
 import type { PromptInputMessage } from "~/components/ai-elements/prompt-input";
 
-import type { Route } from "#react-router/app/routes/+types/chat.ts";
+import type { AgentRenderToolPart } from "#./lib/agent-render-tool-part.ts";
 
 import { useQuery } from "@tanstack/react-query";
 import { getDefaultStore } from "jotai";
@@ -26,7 +27,7 @@ import { useChat } from "#./lib/use-chat.ts";
 
 interface PromptInputProps {
   chatId: number;
-  status: ChatStatus;
+  isLoading: boolean;
   onSubmit: (message: PromptInputMessage) => void;
 }
 
@@ -38,25 +39,20 @@ interface DataInput<T extends AgentId> {
 interface AgentConfig<T extends AgentId> {
   onData: (data: DataInput<T>) => void;
   Project?: ComponentType<{ chatId: number }>;
-  renderToolPart: (tool: any, message: any, chatId: number) => React.ReactNode;
+  renderToolPart: AgentRenderToolPart[T];
   PromptInput: ComponentType<PromptInputProps>;
 }
 
 const agentConfigs: { [T in AgentId]: AgentConfig<T> } = {
   reading: {
-    onData: () => {
-      // Reading data comes through tool results in the stream
+    onData: ({ id }) => {
+      void queryClient.invalidateQueries(
+        trpcOptions.chat.getAgentConfig.queryOptions({ chatId: id }),
+      );
     },
     Project: ReadingProject,
-    renderToolPart: (tool) =>
-      renderReadingToolPart({
-        toolName: tool.toolName,
-        state: tool.state ?? "call",
-        args: tool.args ?? {},
-      }),
-    PromptInput: ({ chatId, status, onSubmit }) => (
-      <ReadingPromptInput chatId={chatId} status={status} onSubmit={onSubmit} />
-    ),
+    renderToolPart: renderReadingToolPart,
+    PromptInput: ReadingPromptInput,
   },
 };
 
@@ -71,7 +67,7 @@ function UnifiedAgentChat({
   agentId: AgentId;
   config: AgentConfig<AgentId>;
 }) {
-  const { messages, status, sendMessage } = useChat({
+  const { messages, status, isLoading, sendMessage } = useChat({
     resume: true,
   });
   const { Project, renderToolPart, PromptInput } = config;
@@ -80,6 +76,7 @@ function UnifiedAgentChat({
       chatHeader={<AgentChatHeader agent={agentId} chatId={id} />}
       chatPanel={
         <div className="flex h-full flex-col overflow-hidden">
+          {/* @ts-ignore AgentId is compatible with ConversationProps */}
           <Conversation
             chatId={id}
             messages={messages}
@@ -90,9 +87,9 @@ function UnifiedAgentChat({
             <div className="mx-auto w-full max-w-5xl">
               <PromptInput
                 chatId={id}
-                status={status}
-                onSubmit={(message) => {
-                  void sendMessage(message);
+                isLoading={isLoading}
+                onSubmit={(msg) => {
+                  void sendMessage(msg);
                   dispatchEvent(new ScrollToBottomConversationEvent());
                 }}
               />
@@ -128,8 +125,8 @@ export default function Component({ params }: Route.ComponentProps) {
           <ChatProvider
             id={agentData.id}
             messages={messages}
-            onData={(onDataPayload) => {
-              config.onData({ id: agentData.id, data: onDataPayload });
+            onData={(data) => {
+              config.onData({ id: agentData.id, data });
             }}
           >
             <UnifiedAgentChat

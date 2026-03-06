@@ -81,14 +81,9 @@ function UserMessage({ message }: UserMessageProps) {
     <div className="flex w-full flex-col gap-4">
       {hasAttachments && (
         <MessageAttachments>
-          {fileParts.map((part, idx) => {
-            return (
-              <MessageAttachment
-                key={`${message.id}-file-${idx}`}
-                data={part}
-              />
-            );
-          })}
+          {fileParts.map((part, idx) => (
+            <MessageAttachment key={`${message.id}-file-${idx}`} data={part} />
+          ))}
         </MessageAttachments>
       )}
       {textParts.map((part, partIndex) => (
