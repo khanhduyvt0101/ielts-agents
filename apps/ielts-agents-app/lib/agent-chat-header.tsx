@@ -30,23 +30,15 @@ import { projectOpenAtom } from "#./lib/project-open-atom.ts";
 import { SpinnerIcon } from "#./lib/spinner-icon.tsx";
 import { trpcOptions } from "#./lib/trpc-options.ts";
 
-function getAgentRoute(agent: AgentId): string {
-  switch (agent) {
-    case "reading": {
-      return "/reading";
-    }
-  }
+function getAgentRoute(): string {
+  return "/reading";
 }
 
-function getAgentLabel(agent: AgentId): string {
-  switch (agent) {
-    case "reading": {
-      return "Reading";
-    }
-  }
+function getAgentLabel(): string {
+  return "Reading";
 }
 
-function BreadcrumbInChatPage({ agent, chatId }: AgentChatHeaderProps) {
+function BreadcrumbInChatPage({ chatId }: AgentChatHeaderProps) {
   const { data, isError, error, isRefetching, refetch, isPending } = useQuery(
     trpcOptions.chat.getChatConfig.queryOptions({ id: chatId }),
   );
@@ -55,11 +47,8 @@ function BreadcrumbInChatPage({ agent, chatId }: AgentChatHeaderProps) {
       <BreadcrumbList className="flex-nowrap">
         <BreadcrumbItem className="hidden sm:block">
           <BreadcrumbLink asChild>
-            <Link
-              className="flex items-center gap-1.5"
-              to={getAgentRoute(agent)}
-            >
-              {getAgentLabel(agent)}
+            <Link className="flex items-center gap-1.5" to={getAgentRoute()}>
+              {getAgentLabel()}
             </Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -125,7 +114,7 @@ export function AgentChatHeader({ agent, chatId }: AgentChatHeaderProps) {
             <BreadcrumbList>
               <BreadcrumbItem className="min-w-0">
                 <BreadcrumbPage className="flex items-center gap-1.5 truncate">
-                  {getAgentLabel(agent)}
+                  {getAgentLabel()}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>

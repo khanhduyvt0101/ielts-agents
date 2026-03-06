@@ -1,4 +1,4 @@
-import type { Route } from "../layouts/+types/main";
+import type { Route } from "#react-router/app/layouts/+types/main.ts";
 
 import { Outlet } from "react-router";
 

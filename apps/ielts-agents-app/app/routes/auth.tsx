@@ -1,4 +1,4 @@
-import type { Route } from "../routes/+types/auth";
+import type { Route } from "#react-router/app/routes/+types/auth.ts";
 
 import { AuthView, ChangeEmailCard } from "@daveyplate/better-auth-ui";
 import { redirect } from "react-router";

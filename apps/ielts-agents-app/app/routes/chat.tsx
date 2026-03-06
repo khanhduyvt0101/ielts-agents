@@ -4,7 +4,7 @@ import type { ComponentType } from "react";
 
 import type { PromptInputMessage } from "~/components/ai-elements/prompt-input";
 
-import type { Route } from "../routes/+types/chat";
+import type { Route } from "#react-router/app/routes/+types/chat.ts";
 
 import { useQuery } from "@tanstack/react-query";
 import { getDefaultStore } from "jotai";

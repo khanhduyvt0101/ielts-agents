@@ -1,0 +1,8 @@
+/CHANGELOG.md
+/pnpm-lock.yaml
+/.mcp.json
+/.claude/settings.*.json
+/.gemini/settings.json
+drizzle
+hooks
+components

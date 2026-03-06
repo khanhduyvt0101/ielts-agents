@@ -13,13 +13,13 @@ import {
   SidebarRail,
 } from "~/components/ui/sidebar";
 
+import { AgentSelector } from "#./lib/agent-selector.tsx";
 import { sidebarOpenAtom } from "#./lib/sidebar-open-atom.ts";
 import { version } from "#./package.json" with { type: "json" };
 
 import { MainHistory } from "./main-history.tsx";
 import { MainUser } from "./main-user.tsx";
 import { RemainingCredits } from "./remaining-credits.tsx";
-import { AgentSelector } from "../agent-selector.tsx";
 
 export function MainSidebar() {
   const navigate = useNavigate();

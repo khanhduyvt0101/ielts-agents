@@ -1,7 +1,9 @@
-import type { BandScore } from "ielts-agents-api/types";
 import type { ChatStatus } from "ai";
+import type { BandScore } from "ielts-agents-api/types";
 
 import type { PromptInputMessage } from "~/components/ai-elements/prompt-input";
+
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import {
   PromptInput,
@@ -18,8 +20,7 @@ import {
   PromptInputTools,
 } from "~/components/ai-elements/prompt-input";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { trpcOptions } from "./trpc-options.ts";
+import { trpcOptions } from "#./lib/trpc-options.ts";
 
 const bandScores: BandScore[] = [
   "5.0",
@@ -84,9 +85,8 @@ export function ReadingPromptInput({
   externalProvider,
   ...props
 }: ReadingPromptInputProps) {
-  if (externalProvider) {
-    return <ReadingPromptInputContent {...props} />;
-  }
+  if (externalProvider) return <ReadingPromptInputContent {...props} />;
+
   return (
     <PromptInputProvider>
       <ReadingPromptInputContent {...props} />
@@ -116,11 +116,9 @@ function BandScoreSelector({
       disabled={disabled || updateConfig.isPending}
       value={value}
       onValueChange={(bandScore: string) => {
-        if (chatId) {
+        if (chatId)
           updateConfig.mutate({ chatId, bandScore: bandScore as BandScore });
-        } else {
-          updateConfig.mutate({ bandScore: bandScore as BandScore });
-        }
+        else updateConfig.mutate({ bandScore: bandScore as BandScore });
       }}
     >
       <PromptInputSelectTrigger className="w-auto gap-1">

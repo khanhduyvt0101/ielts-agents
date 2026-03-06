@@ -1,5 +1,5 @@
-import "~/lib/defaults";
-import "~/lib/styles.css";
+import "#./lib/styles.css";
+import "#./lib/defaults.ts";
 
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";

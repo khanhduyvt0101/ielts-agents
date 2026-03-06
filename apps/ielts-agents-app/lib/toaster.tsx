@@ -17,6 +17,7 @@ export function Toaster({ ...props }: ToasterProps) {
   return (
     <Sonner
       richColors
+      // eslint-disable-next-line better-tailwindcss/no-unknown-classes
       className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4" />,

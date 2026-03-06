@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 
-import type { Route } from "./+types/root";
+import type { Route } from "#react-router/app/+types/root.ts";
 
 import { captureError, getErrorMessage } from "ielts-agents-internal-util";
 import { getDefaultStore } from "jotai";

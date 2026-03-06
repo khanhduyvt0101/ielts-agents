@@ -17,13 +17,14 @@ export function renderReadingToolPart({
       if (state === "result") return <ToolStatus label="Questions generated" />;
       return <ToolStatus label="Generating questions..." />;
     }
-    default:
+    default: {
       return null;
+    }
   }
 }
 
 function ToolStatus({ label }: { label: string }) {
   return (
-    <div className="text-muted-foreground my-2 text-sm italic">{label}</div>
+    <div className="my-2 text-sm text-muted-foreground italic">{label}</div>
   );
 }

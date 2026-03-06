@@ -1,4 +1,4 @@
-import type { Route } from "../routes/+types/continue";
+import type { Route } from "#react-router/app/routes/+types/continue.ts";
 
 import { getErrorMessage } from "ielts-agents-internal-util";
 import { replace } from "react-router";
