@@ -15,18 +15,14 @@ test("reading: page renders with all key elements visible", async ({
   await expect(page.getByRole("link", { name: "Reading" })).toBeVisible();
 
   // Welcome text
-  await expect(
-    page.getByText("IELTS Reading Test Generator"),
-  ).toBeVisible();
+  await expect(page.getByText("IELTS Reading Test Generator")).toBeVisible();
   await expect(
     page.getByText("Generate practice IELTS reading tests on any topic"),
   ).toBeVisible();
 
   // Textarea
   await expect(
-    page.getByPlaceholder(
-      "Describe the topic for your IELTS reading test...",
-    ),
+    page.getByPlaceholder("Describe the topic for your IELTS reading test..."),
   ).toBeVisible();
 
   // Submit button
@@ -59,14 +55,11 @@ test("reading: suggestion prompt populates textarea", async ({ page }) => {
   const email = generateEmail();
   await signUp(page, email);
 
-  const suggestion =
-    "Climate change and its effects on marine ecosystems";
+  const suggestion = "Climate change and its effects on marine ecosystems";
   await page.getByRole("button", { name: suggestion }).click();
 
   await expect(
-    page.getByPlaceholder(
-      "Describe the topic for your IELTS reading test...",
-    ),
+    page.getByPlaceholder("Describe the topic for your IELTS reading test..."),
   ).toHaveValue(suggestion);
 });
 
@@ -126,9 +119,7 @@ test("reading: submit via suggestion prompt redirects to /chat/{id}", async ({
 
   // Verify textarea is populated
   await expect(
-    page.getByPlaceholder(
-      "Describe the topic for your IELTS reading test...",
-    ),
+    page.getByPlaceholder("Describe the topic for your IELTS reading test..."),
   ).toHaveValue("The history and evolution of artificial intelligence");
 
   // Submit

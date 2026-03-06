@@ -228,6 +228,9 @@ hono.get("/v1/ai/chat/:id/stream", aiMiddleware, async (c) => {
   );
 });
 
-serve({ fetch: hono.fetch, port: Number(process.env.PORT ?? 42_310) }, (addressInfo) => {
-  console.log(`Listening 'http://localhost:${addressInfo.port}'`);
-});
+serve(
+  { fetch: hono.fetch, port: Number(process.env.PORT ?? 42_310) },
+  (addressInfo) => {
+    console.log(`Listening 'http://localhost:${addressInfo.port}'`);
+  },
+);
