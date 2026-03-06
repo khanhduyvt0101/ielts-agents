@@ -1,11 +1,18 @@
+import type { AgentMessage } from "#./lib/types.ts";
+
 import { TRPCError } from "@trpc/server";
+import { generateId } from "ai";
 import { eq } from "drizzle-orm";
+import { InsufficientCreditsError } from "ielts-agents-internal-util";
 import { z } from "zod";
 
 import { bandScoreSchema } from "#./lib/band-score-schema.ts";
 import { chatIdSchema } from "#./lib/chat-id-schema.ts";
+import { createAgentStream } from "#./lib/create-agent-stream.ts";
 import { database } from "#./lib/database.ts";
-import { chat, chatReading, readingDefault } from "#./lib/schema/index.ts";
+import { defaultAgentConfigValue } from "#./lib/default-agent-config-value.ts";
+import { insertChat } from "#./lib/insert-chat.ts";
+import { chatReading, readingDefault } from "#./lib/schema/index.ts";
 import { workspaceProcedure } from "#./lib/workspace-procedure.ts";
 
 export const createReading = workspaceProcedure
@@ -15,28 +22,31 @@ export const createReading = workspaceProcedure
     }),
   )
   .mutation(async ({ ctx: { workspace }, input: { prompt } }) => {
-    const defaultConfig = await database.query.readingDefault.findFirst({
+    const availableCredits =
+      workspace.aggregatedCredits - workspace.usedCredits;
+    if (availableCredits <= 0) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        cause: new InsufficientCreditsError(),
+      });
+    }
+    const agentDefault = await database.query.readingDefault.findFirst({
       where: (table, { eq }) => eq(table.workspaceId, workspace.id),
     });
-    const bandScore = defaultConfig?.bandScore ?? "6.5";
-    const [newChat] = await database
-      .insert(chat)
-      .values({
-        workspaceId: workspace.id,
-        messages: [
-          {
-            id: crypto.randomUUID(),
-            role: "user",
-            parts: [{ type: "text", text: prompt }],
-          },
-        ],
-      })
-      .returning({ id: chat.id });
-    await database.insert(chatReading).values({
-      id: newChat.id,
-      bandScore,
+    const bandScore =
+      agentDefault?.bandScore ?? defaultAgentConfigValue.bandScore;
+    const message: AgentMessage["reading"] = {
+      id: generateId(),
+      role: "user",
+      parts: [{ type: "text", text: prompt }],
+    };
+    const chatId = await database.transaction(async (tx) => {
+      const id = await insertChat({ workspaceId: workspace.id, message, tx });
+      await tx.insert(chatReading).values({ id, bandScore });
+      return id;
     });
-    return { id: newChat.id };
+    await createAgentStream("reading", chatId, [message], workspace.id);
+    return { id: chatId };
   });
 
 export const getReadingConfig = workspaceProcedure

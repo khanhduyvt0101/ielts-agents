@@ -14,11 +14,11 @@ import {
   BreadcrumbPage,
 } from "~/components/ui/breadcrumb";
 
+import { createReadingChatMutationOptions } from "#./lib/create-reading-chat-mutation-options.ts";
 import { PageHeader } from "#./lib/page-header.tsx";
 import { ReadingPromptInput } from "#./lib/reading-prompt-input.tsx";
 import { sidebarOpenAtom } from "#./lib/sidebar-open-atom.ts";
 import { SuggestionPrompts } from "#./lib/suggestion-prompts.tsx";
-import { trpcOptions } from "#./lib/trpc-options.ts";
 
 const READING_SUGGESTIONS = [
   "Climate change and its effects on marine ecosystems",
@@ -68,10 +68,7 @@ function ReadingContent({
 }
 
 export default function Component() {
-  const createReading = useMutation(
-    trpcOptions.reading.createReading.mutationOptions(),
-  );
-
+  const createMutation = useMutation(createReadingChatMutationOptions);
   return (
     <div className="flex h-full flex-col">
       <PageHeader>
@@ -86,9 +83,9 @@ export default function Component() {
       <main className="flex flex-1 flex-col items-center justify-center px-4">
         <PromptInputProvider>
           <ReadingContent
-            isSubmitting={createReading.isPending}
+            isSubmitting={createMutation.isPending}
             onSubmit={async (message) => {
-              await createReading.mutateAsync({ prompt: message.text });
+              await createMutation.mutateAsync(message);
             }}
           />
         </PromptInputProvider>

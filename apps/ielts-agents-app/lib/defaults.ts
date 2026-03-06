@@ -9,6 +9,7 @@ import { getErrorMessage } from "ielts-agents-internal-util";
 import { getDefaultStore } from "jotai";
 import { toast } from "sonner";
 
+import { createReadingChatMutationOptions } from "#./lib/create-reading-chat-mutation-options.ts";
 import { locationAtom } from "#./lib/location-atom.ts";
 import { navigateAtom } from "#./lib/navigate-atom.ts";
 import { navigateToExternalURL } from "#./lib/navigate-to-external-url.ts";
@@ -103,44 +104,7 @@ mutationDefaults(
   }),
 );
 
-mutationDefaults(
-  trpcOptions.reading.createReading.mutationOptions({
-    onMutate() {
-      const store = getDefaultStore();
-      const navigationCount = store.get(navigationCountAtom);
-      const toastId = toast.loading("Creating reading test...");
-      return { navigationCount, toastId };
-    },
-    onSuccess: async (data, variables, { toastId, navigationCount }) => {
-      await queryClient.invalidateQueries(trpcOptions.chat.list.queryOptions());
-      const store = getDefaultStore();
-      await store.set(navigateAtom, `/chat/${data.id}`, { navigationCount });
-      toast.success("Created reading test", { id: toastId });
-    },
-    onError: (error) => {
-      toast.error("Failed to create reading test", {
-        description: getErrorMessage(error),
-      });
-    },
-  }),
-);
-
-mutationDefaults(
-  trpcOptions.reading.updateConfig.mutationOptions({
-    onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries(
-        trpcOptions.reading.getReadingConfig.queryOptions({
-          chatId: variables.chatId,
-        }),
-      );
-    },
-    onError: (error) => {
-      toast.error("Failed to update config", {
-        description: getErrorMessage(error),
-      });
-    },
-  }),
-);
+mutationDefaults(createReadingChatMutationOptions);
 
 mutationDefaults(
   trpcOptions.reading.updateConfig.mutationOptions({
