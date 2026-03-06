@@ -1,4 +1,8 @@
-import type { Location as RouterLocation, NavigateOptions, To } from "react-router";
+import type {
+  Location as RouterLocation,
+  NavigateOptions,
+  To,
+} from "react-router";
 
 import { shallowEqual } from "@mantine/hooks";
 

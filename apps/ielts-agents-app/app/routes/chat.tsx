@@ -38,11 +38,7 @@ interface DataInput<T extends AgentId> {
 interface AgentConfig<T extends AgentId> {
   onData: (data: DataInput<T>) => void;
   Project?: ComponentType<{ chatId: number }>;
-  renderToolPart: (
-    tool: any,
-    message: any,
-    chatId: number,
-  ) => React.ReactNode;
+  renderToolPart: (tool: any, message: any, chatId: number) => React.ReactNode;
   PromptInput: ComponentType<PromptInputProps>;
 }
 
@@ -59,11 +55,7 @@ const agentConfigs: { [T in AgentId]: AgentConfig<T> } = {
         args: tool.args ?? {},
       }),
     PromptInput: ({ chatId, status, onSubmit }) => (
-      <ReadingPromptInput
-        chatId={chatId}
-        status={status}
-        onSubmit={onSubmit}
-      />
+      <ReadingPromptInput chatId={chatId} status={status} onSubmit={onSubmit} />
     ),
   },
 };

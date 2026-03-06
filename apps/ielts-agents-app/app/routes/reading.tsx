@@ -43,9 +43,7 @@ function ReadingContent({
 
   return (
     <>
-      <h1 className="mb-2 text-3xl font-bold">
-        IELTS Reading Test Generator
-      </h1>
+      <h1 className="mb-2 text-3xl font-bold">IELTS Reading Test Generator</h1>
       <p className="mb-8 max-w-md text-center text-sm text-muted-foreground">
         Generate practice IELTS reading tests on any topic
       </p>
