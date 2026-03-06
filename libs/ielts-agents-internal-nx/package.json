@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.17.24",
-    "@types/node": "^25.3.1",
+    "@types/node": "^25.3.5",
     "eslint-config-base": "workspace:^",
     "type-fest": "^5.4.4"
   },
