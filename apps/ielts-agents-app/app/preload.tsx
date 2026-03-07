@@ -8,7 +8,7 @@ export const Preload = memo(
         __html: `
 (function() {
   let colorScheme = 'light';
-  const theme = localStorage.getItem('chatacademia-theme');
+  const theme = localStorage.getItem('ielts-agents-theme');
   if (theme === 'light' || theme === 'dark')
     colorScheme = theme;
   else if (matchMedia('(prefers-color-scheme: dark)').matches)

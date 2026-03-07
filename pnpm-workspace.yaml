@@ -2,6 +2,13 @@ packages:
   - apps/*
   - libs/*
 
+ignoredBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - better-sqlite3
+  - prisma
+  - sharp
+
 onlyBuiltDependencies:
   - "@sentry/cli"
   - "@swc/core"
@@ -11,10 +18,6 @@ onlyBuiltDependencies:
   - msw
   - nx
   - unrs-resolver
-
-ignoredBuiltDependencies:
-  - "@prisma/client"
-  - better-sqlite3
 
 peerDependencyRules:
   allowAny:
