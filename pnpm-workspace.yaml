@@ -3,15 +3,15 @@ packages:
   - libs/*
 
 ignoredBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
+  - "@prisma/client"
+  - "@prisma/engines"
   - better-sqlite3
   - prisma
   - sharp
 
 onlyBuiltDependencies:
-  - '@sentry/cli'
-  - '@swc/core'
+  - "@sentry/cli"
+  - "@swc/core"
   - bcrypt
   - core-js
   - esbuild
@@ -21,12 +21,12 @@ onlyBuiltDependencies:
 
 peerDependencyRules:
   allowAny:
-    - '@better-auth/*'
-    - '@better-call/*'
+    - "@better-auth/*"
+    - "@better-call/*"
     - better-auth
     - better-call
     - react
 
 publicHoistPattern:
-  - '*import-in-the-middle*'
-  - '*require-in-the-middle*'
+  - "*import-in-the-middle*"
+  - "*require-in-the-middle*"

@@ -210,6 +210,7 @@ lib/
 ```
 
 Subfolders only for grouped concerns:
+
 - `schema/` — Drizzle database schema (`app.ts`, `auth.ts`, `relations.ts`)
 - `router/routes/` — tRPC route handlers (`chat.ts`, `billing.ts`, `workspace.ts`, `reading.ts`)
 - `emails/` — React Email templates
@@ -232,6 +233,7 @@ lib/
 ```
 
 Subfolders only for multi-file UI features:
+
 - `main-layout/` — sidebar, history, credits (multiple related components)
 - `subscription-card/` — subscription management UI
 - `reading-tools/` — reading tool part renderers
