@@ -390,6 +390,27 @@ Local secrets are auto-generated in `.local/.secrets` by `pnpm local:up`.
 - Husky pre-commit runs formatting (Prettier with `prettier-plugin-packagejson`)
 - Custom `.script.ts` / `.script.tsx` files in project roots are auto-registered as Nx targets
 
+## Documentation Lookup
+
+When researching libraries, APIs, or frameworks:
+
+1. **Use Context7 MCP first** — always query the Context7 MCP tools to find documentation before anything else. Context7 provides up-to-date, version-specific docs for most libraries in the tech stack.
+2. **Fall back to WebSearch** — only if Context7 does not return useful results, use `WebSearch` or `WebFetch` to find documentation on the web.
+
+## UI Design with shadcn/ui
+
+When building or updating UI components, follow these guidelines:
+
+1. **Research the shadcn registry first** — before designing any UI, search the [shadcn/ui registry](https://ui.shadcn.com) deeply for existing components, blocks, and templates that match the desired design. Use Context7 MCP or `WebSearch`/`WebFetch` to browse available options.
+2. **Install components via `pnpm dlx shadcn@latest add`** — always use the shadcn CLI to add components:
+
+```bash
+pnpm dlx shadcn@latest add <component-name>
+```
+
+3. **Avoid writing full custom components** — prefer composing from shadcn/ui primitives. Only add custom styling or logic on top of shadcn components, never rewrite them from scratch.
+4. **Check for blocks and templates** — shadcn provides pre-built page blocks (login forms, dashboards, settings pages, etc.). Use these as starting points instead of building from zero.
+
 ## New Code Verification Workflow
 
 After implementing any new feature or code change, follow these steps in order.
