@@ -59,7 +59,7 @@ export const auth = betterAuth({
       },
     },
   },
-  appName: "ChatAcademia",
+  appName: "IELTS Agents",
   baseURL: apiURL,
   basePath: "/v1/auth",
   advanced: { cookiePrefix: "v1_auth" },
@@ -83,7 +83,7 @@ export const auth = betterAuth({
       if (!callbackURL || callbackURL === "/")
         verifyURL.searchParams.set("callbackURL", `${appURL}/auth-callback`);
       await sendReactEmail({
-        subject: "Verify your email - ChatAcademia",
+        subject: "Verify your email - IELTS Agents",
         element: <EmailVerification url={verifyURL.toString()} />,
         to: user.email,
       });
@@ -108,7 +108,7 @@ export const auth = betterAuth({
     },
     sendResetPassword: async ({ user, url }) => {
       await sendReactEmail({
-        subject: "Reset your password - ChatAcademia",
+        subject: "Reset your password - IELTS Agents",
         element: <PasswordReset url={url} />,
         to: user.email,
       });

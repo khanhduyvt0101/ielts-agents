@@ -42,7 +42,7 @@ export function MainSidebar() {
                   <BookOpenIcon className="size-5! fill-current" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">ChatAcademia</span>
+                  <span className="font-medium">IELTS Agents</span>
                   <span className="opacity-70">v{version}</span>
                 </div>
               </Link>
