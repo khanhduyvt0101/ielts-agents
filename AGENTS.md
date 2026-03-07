@@ -389,3 +389,46 @@ Local secrets are auto-generated in `.local/.secrets` by `pnpm local:up`.
 - Custom Nx plugin handles `prepare-docker-image`, `build-docker-image`, `prepare-github-actions`, and `configure-sentry-release` targets
 - Husky pre-commit runs formatting (Prettier with `prettier-plugin-packagejson`)
 - Custom `.script.ts` / `.script.tsx` files in project roots are auto-registered as Nx targets
+
+## New Code Verification Workflow
+
+After implementing any new feature or code change, follow these steps in order.
+
+### Step 1: Fix All Lint & Type Errors
+
+1. Run typecheck and lint on affected projects:
+
+```bash
+pnpm exec nx run-many -t typecheck,lint
+```
+
+2. **Fix every error properly** — do NOT disable ESLint rules or suppress TypeScript errors unless the line genuinely does not need type safety (e.g., third-party type mismatch).
+3. When suppression is truly necessary, only disable a **single line** with an inline comment (`// eslint-disable-next-line <rule>` or `// @ts-expect-error <reason>`). Never disable an entire file or block.
+4. Re-run typecheck and lint until zero errors remain.
+
+### Step 2: Run E2E Tests
+
+1. **Kill all running servers/ports** related to `ielts-agents` before running tests (ports 42310, 42312, 42313):
+
+```bash
+lsof -ti:42310,42312,42313 | xargs kill -9 2>/dev/null || true
+```
+
+2. Run the Playwright E2E suite:
+
+```bash
+pnpm exec nx run ielts-agents-e2e:test
+```
+
+3. All tests must pass. If any fail, fix the root cause and re-run until green.
+
+### Step 3: Playwright MCP UI Testing
+
+1. Start both dev servers and confirm they boot without errors:
+
+```bash
+pnpm exec nx run-many --projects=ielts-agents-api,ielts-agents-app --targets=dev
+```
+
+2. Wait until both servers are healthy (API on `localhost:42310`, App on `localhost:42312`).
+3. Use the **Playwright MCP tools** to interact with the app in a real browser and verify the new feature works correctly through the UI.
