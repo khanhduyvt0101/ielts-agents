@@ -20,7 +20,10 @@ interface AskAIDialogProps {
   questionText: string;
 }
 
-export function AskAIDialog({ questionNumber, questionText }: AskAIDialogProps) {
+export function AskAIDialog({
+  questionNumber,
+  questionText,
+}: AskAIDialogProps) {
   const sendMessage = useSendMessage();
   const [open, setOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
@@ -53,7 +56,9 @@ export function AskAIDialog({ questionNumber, questionText }: AskAIDialogProps) 
           placeholder="Ask anything about this question... (leave empty to get a general explanation)"
           rows={3}
           value={prompt}
-          onChange={(e) => { setPrompt(e.target.value); }}
+          onChange={(e) => {
+            setPrompt(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

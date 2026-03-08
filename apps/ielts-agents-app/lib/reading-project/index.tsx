@@ -3,12 +3,7 @@ import { BookOpenIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Skeleton } from "~/components/ui/skeleton";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 import { RetryErrorAlert } from "#./lib/retry-error-alert.tsx";
 import { trpcOptions } from "#./lib/trpc-options.ts";
@@ -107,9 +102,7 @@ function ReadingProjectContent({
       <div className="flex shrink-0 items-center gap-2 px-4 pt-4">
         <BookOpenIcon className="size-5 text-muted-foreground" />
         <h2 className="text-lg font-semibold">Reading Test</h2>
-        <span className="text-xs text-muted-foreground">
-          Band {bandScore}
-        </span>
+        <span className="text-xs text-muted-foreground">Band {bandScore}</span>
       </div>
 
       {hasPassageOnly ? (
