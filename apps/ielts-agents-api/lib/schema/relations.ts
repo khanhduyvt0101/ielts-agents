@@ -35,17 +35,14 @@ export const chatRelations = relations(chat, ({ one }) => ({
   reading: one(chatReading),
 }));
 
-export const chatReadingRelations = relations(
-  chatReading,
-  ({ one, many }) => ({
-    chat: one(chat, {
-      fields: [chatReading.id],
-      references: [chat.id],
-    }),
-    passage: one(readingPassage),
-    questions: many(readingQuestion),
+export const chatReadingRelations = relations(chatReading, ({ one, many }) => ({
+  chat: one(chat, {
+    fields: [chatReading.id],
+    references: [chat.id],
   }),
-);
+  passage: one(readingPassage),
+  questions: many(readingQuestion),
+}));
 
 export const readingPassageRelations = relations(readingPassage, ({ one }) => ({
   chatReading: one(chatReading, {

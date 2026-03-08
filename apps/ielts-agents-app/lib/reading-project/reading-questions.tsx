@@ -41,11 +41,8 @@ function groupQuestionsByType(questions: QuestionData[]): QuestionGroup[] {
   const groups: QuestionGroup[] = [];
   for (const question of questions) {
     const lastGroup = groups.at(-1);
-    if (lastGroup?.type === question.type) 
-      lastGroup.questions.push(question);
-     else 
-      groups.push({ type: question.type, questions: [question] });
-    
+    if (lastGroup?.type === question.type) lastGroup.questions.push(question);
+    else groups.push({ type: question.type, questions: [question] });
   }
   return groups;
 }
@@ -64,9 +61,7 @@ export function ReadingQuestions({
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const answeredCount = Object.values(answers).filter(
-    (v) => v !== "",
-  ).length;
+  const answeredCount = Object.values(answers).filter((v) => v !== "").length;
 
   const handleSubmit = () => {
     setSubmitted(true);
@@ -130,10 +125,7 @@ export function ReadingQuestions({
             group.questions[group.questions.length - 1].questionNumber;
 
           return (
-            <div
-              key={`${group.type}-${startNum}`}
-              className="space-y-4"
-            >
+            <div key={`${group.type}-${startNum}`} className="space-y-4">
               <div>
                 <h3 className="text-sm font-semibold">
                   Questions {startNum}-{endNum}
@@ -235,17 +227,10 @@ function QuestionInput({
   switch (question.type) {
     case "true-false-not-given": {
       return (
-        <RadioGroup
-          disabled={disabled}
-          value={value}
-          onValueChange={onChange}
-        >
+        <RadioGroup disabled={disabled} value={value} onValueChange={onChange}>
           {["True", "False", "Not Given"].map((option) => (
             <div key={option} className="flex items-center gap-2">
-              <RadioGroupItem
-                id={`${question.id}-${option}`}
-                value={option}
-              />
+              <RadioGroupItem id={`${question.id}-${option}`} value={option} />
               <Label
                 className="text-sm font-normal"
                 htmlFor={`${question.id}-${option}`}
@@ -260,11 +245,7 @@ function QuestionInput({
 
     case "multiple-choice": {
       return (
-        <RadioGroup
-          disabled={disabled}
-          value={value}
-          onValueChange={onChange}
-        >
+        <RadioGroup disabled={disabled} value={value} onValueChange={onChange}>
           {question.options.map((option, idx) => {
             const letter = String.fromCodePoint(65 + idx);
             return (
@@ -301,17 +282,10 @@ function QuestionInput({
 
     case "matching-headings": {
       return (
-        <RadioGroup
-          disabled={disabled}
-          value={value}
-          onValueChange={onChange}
-        >
+        <RadioGroup disabled={disabled} value={value} onValueChange={onChange}>
           {question.options.map((option) => (
             <div key={option} className="flex items-center gap-2">
-              <RadioGroupItem
-                id={`${question.id}-${option}`}
-                value={option}
-              />
+              <RadioGroupItem id={`${question.id}-${option}`} value={option} />
               <Label
                 className="text-sm font-normal"
                 htmlFor={`${question.id}-${option}`}

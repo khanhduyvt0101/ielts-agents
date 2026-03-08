@@ -5,12 +5,7 @@ import { useCallback } from "react";
 
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useIsMobile } from "~/hooks/use-mobile";
 
 import { projectOpenAtom } from "#./lib/project-open-atom.ts";
@@ -30,9 +25,7 @@ export function ReadingProject({ chatId }: ReadingProjectProps) {
     trpcOptions.reading.getReadingData.queryOptions({ chatId }),
   );
 
-  if (isPending) 
-    return <ReadingProjectSkeleton />;
-  
+  if (isPending) return <ReadingProjectSkeleton />;
 
   if (isError) {
     return (
@@ -117,9 +110,7 @@ function ReadingProjectContent({
   const isWaiting = !hasPassage && !hasQuestions;
   const hasPassageOnly = hasPassage && !hasQuestions;
 
-  if (isWaiting) 
-    return <ReadingProjectSkeleton />;
-  
+  if (isWaiting) return <ReadingProjectSkeleton />;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -172,10 +163,7 @@ function ReadingProjectContent({
             value="questions"
           >
             {hasQuestions && (
-              <ReadingQuestions
-                questions={questions}
-                onAskAI={handleAskAI}
-              />
+              <ReadingQuestions questions={questions} onAskAI={handleAskAI} />
             )}
           </TabsContent>
         </Tabs>

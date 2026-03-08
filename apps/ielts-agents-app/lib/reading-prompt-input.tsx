@@ -133,7 +133,9 @@ function BandScoreSelector({
   if (chatId && isError) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-destructive">{getErrorMessage(error)}</span>
+        <span className="text-xs text-destructive">
+          {getErrorMessage(error)}
+        </span>
         <Button
           disabled={isRefetching}
           size="sm"

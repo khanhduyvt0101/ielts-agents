@@ -119,8 +119,7 @@ export default function Component({ params }: Route.ComponentProps) {
     trpcOptions.chat.get.queryOptions({ id: Number(params.id) }),
   );
 
-  if (isPending)
-    return null;
+  if (isPending) return null;
 
   if (isError) {
     return (

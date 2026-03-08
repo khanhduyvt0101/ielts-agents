@@ -18,9 +18,7 @@ export function ReadingPassage({ passage }: ReadingPassageProps) {
     <ScrollArea className="h-full">
       <div className="space-y-6 p-4 pb-8">
         <div>
-          <h2 className="text-xl/tight font-bold">
-            {passage.title}
-          </h2>
+          <h2 className="text-xl/tight font-bold">{passage.title}</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             {wordCount} words
           </p>
@@ -28,10 +26,7 @@ export function ReadingPassage({ passage }: ReadingPassageProps) {
         <Separator />
         <div className="space-y-4">
           {paragraphs.map((paragraph, index) => (
-            <p
-              key={index}
-              className="text-sm/relaxed text-foreground/90"
-            >
+            <p key={index} className="text-sm/relaxed text-foreground/90">
               {paragraph}
             </p>
           ))}
@@ -40,4 +35,3 @@ export function ReadingPassage({ passage }: ReadingPassageProps) {
     </ScrollArea>
   );
 }
-

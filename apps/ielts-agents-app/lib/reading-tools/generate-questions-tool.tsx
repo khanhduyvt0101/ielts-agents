@@ -102,14 +102,10 @@ export function GenerateQuestionsTool({
   );
 }
 
-function getTypeCounts(
-  types: string[],
-): { type: string; count: number }[] {
+function getTypeCounts(types: string[]): { type: string; count: number }[] {
   const counts = new Map<string, number>();
-  for (const type of types)
-    counts.set(type, (counts.get(type) ?? 0) + 1);
+  for (const type of types) counts.set(type, (counts.get(type) ?? 0) + 1);
   const result: { type: string; count: number }[] = [];
-  for (const [type, count] of counts)
-    result.push({ type, count });
+  for (const [type, count] of counts) result.push({ type, count });
   return result;
 }

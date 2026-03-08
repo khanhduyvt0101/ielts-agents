@@ -52,8 +52,7 @@ export function Suggestions({ chatId }: SuggestionsProps) {
     trpcOptions.chat.getSuggestions.queryOptions({ id: chatId }),
   );
 
-  if (isPending)
-    return null;
+  if (isPending) return null;
 
   if (isError) {
     return (
