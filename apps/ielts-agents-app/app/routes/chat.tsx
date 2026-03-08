@@ -47,6 +47,9 @@ const agentConfigs: { [T in AgentId]: AgentConfig<T> } = {
   reading: {
     onData: ({ id }) => {
       void queryClient.invalidateQueries(
+        trpcOptions.reading.getReadingData.queryOptions({ chatId: id }),
+      );
+      void queryClient.invalidateQueries(
         trpcOptions.chat.getAgentConfig.queryOptions({ chatId: id }),
       );
     },
@@ -112,33 +115,13 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 }
 
 export default function Component({ params }: Route.ComponentProps) {
-  const { data, isError, isRefetching, refetch, error } = useQuery(
+  const { data, isPending, isError, isRefetching, refetch, error } = useQuery(
     trpcOptions.chat.get.queryOptions({ id: Number(params.id) }),
   );
-  if (data) {
-    for (const agentId of agentIds) {
-      const agentData = data[agentId];
-      if (agentData) {
-        const config = agentConfigs[agentId];
-        const messages = data.messages as AgentMessage[typeof agentId][];
-        return (
-          <ChatProvider
-            id={agentData.id}
-            messages={messages}
-            onData={(data) => {
-              config.onData({ id: agentData.id, data });
-            }}
-          >
-            <UnifiedAgentChat
-              agentId={agentId}
-              config={config}
-              id={agentData.id}
-            />
-          </ChatProvider>
-        );
-      }
-    }
-  }
+
+  if (isPending)
+    return null;
+
   if (isError) {
     return (
       <div className="flex size-full items-center justify-center">
@@ -150,5 +133,28 @@ export default function Component({ params }: Route.ComponentProps) {
         />
       </div>
     );
+  }
+
+  for (const agentId of agentIds) {
+    const agentData = data[agentId];
+    if (agentData) {
+      const config = agentConfigs[agentId];
+      const messages = data.messages as AgentMessage[typeof agentId][];
+      return (
+        <ChatProvider
+          id={agentData.id}
+          messages={messages}
+          onData={(data) => {
+            config.onData({ id: agentData.id, data });
+          }}
+        >
+          <UnifiedAgentChat
+            agentId={agentId}
+            config={config}
+            id={agentData.id}
+          />
+        </ChatProvider>
+      );
+    }
   }
 }

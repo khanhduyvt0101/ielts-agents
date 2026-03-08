@@ -48,27 +48,13 @@ interface SuggestionsProps {
 
 export function Suggestions({ chatId }: SuggestionsProps) {
   const sendMessage = useSendMessage();
-  const { data, error, isRefetching, isError, refetch } = useQuery(
+  const { data, isPending, error, isRefetching, isError, refetch } = useQuery(
     trpcOptions.chat.getSuggestions.queryOptions({ id: chatId }),
   );
-  if (data) {
-    if (data.length > 0) {
-      return (
-        <SuggestionsContainer>
-          {data.map((suggestion, index) => (
-            <SuggestionButton
-              key={index}
-              suggestion={suggestion}
-              onClick={(text) => {
-                void sendMessage({ text, files: [] });
-              }}
-            />
-          ))}
-        </SuggestionsContainer>
-      );
-    }
-    return;
-  }
+
+  if (isPending)
+    return null;
+
   if (isError) {
     return (
       <RetryErrorAlert
@@ -77,6 +63,22 @@ export function Suggestions({ chatId }: SuggestionsProps) {
         refetch={refetch}
         title="Failed to load suggestions"
       />
+    );
+  }
+
+  if (data.length > 0) {
+    return (
+      <SuggestionsContainer>
+        {data.map((suggestion, index) => (
+          <SuggestionButton
+            key={index}
+            suggestion={suggestion}
+            onClick={(text) => {
+              void sendMessage({ text, files: [] });
+            }}
+          />
+        ))}
+      </SuggestionsContainer>
     );
   }
 }

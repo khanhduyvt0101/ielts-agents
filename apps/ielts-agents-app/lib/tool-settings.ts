@@ -1,0 +1,15 @@
+import type { AgentId, IeltsAgentsToolPart } from "ielts-agents-api/types";
+
+interface ToolSetting {
+  hidden: boolean;
+}
+
+type AgentToolSettings = Partial<
+  Record<IeltsAgentsToolPart["type"], ToolSetting>
+>;
+
+export const toolSettings: Record<AgentId, AgentToolSettings> = {
+  reading: {
+    "tool-suggestions": { hidden: true },
+  },
+};

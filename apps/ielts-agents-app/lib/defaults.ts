@@ -157,4 +157,6 @@ queryDefaults(trpcOptions.chat.getAgentConfig.queryOptions(queryInput()));
 
 queryDefaults(trpcOptions.chat.getSuggestions.queryOptions(queryInput()));
 
+queryDefaults(trpcOptions.reading.getReadingData.queryOptions(queryInput()));
+
 queryDefaults(trpcOptions.reading.getReadingConfig.queryOptions(queryInput()));

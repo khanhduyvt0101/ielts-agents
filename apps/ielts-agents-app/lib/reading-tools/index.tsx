@@ -1,27 +1,26 @@
 import type { AgentRenderToolPart } from "#./lib/agent-render-tool-part.ts";
 
+import { DynamicTool } from "#./lib/dynamic-tool.tsx";
+import { toolSettings } from "#./lib/tool-settings.ts";
+
+import { GeneratePassageTool } from "./generate-passage-tool.tsx";
+import { GenerateQuestionsTool } from "./generate-questions-tool.tsx";
+
 export const renderReadingToolPart: AgentRenderToolPart["reading"] = (
   toolPart,
 ) => {
+  const setting = toolSettings.reading[toolPart.type];
+  if (setting?.hidden) return;
+
   switch (toolPart.type) {
     case "tool-generate-passage": {
-      if (toolPart.state === "output-available")
-        return <ToolStatus label="Passage generated" />;
-      return <ToolStatus label="Generating passage..." />;
+      return <GeneratePassageTool toolPart={toolPart} />;
     }
     case "tool-generate-questions": {
-      if (toolPart.state === "output-available")
-        return <ToolStatus label="Questions generated" />;
-      return <ToolStatus label="Generating questions..." />;
+      return <GenerateQuestionsTool toolPart={toolPart} />;
     }
     default: {
-      return null;
+      return <DynamicTool toolPart={toolPart} />;
     }
   }
 };
-
-function ToolStatus({ label }: { label: string }) {
-  return (
-    <div className="my-2 text-sm text-muted-foreground italic">{label}</div>
-  );
-}

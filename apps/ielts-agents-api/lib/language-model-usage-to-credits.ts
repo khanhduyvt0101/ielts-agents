@@ -1,6 +1,4 @@
-import type { LanguageModelUsage } from "ai";
-
-import type { AILanguageModelId } from "#./lib/ai-language-model-id.ts";
+import type { LanguageModel, LanguageModelUsage } from "ai";
 
 const dollarsPerInputTokenGPT5Mini = 0.25 / 1_000_000;
 const dollarsPerOutputTokenGPT5Mini = 2 / 1_000_000;
@@ -12,7 +10,7 @@ const dollarsPerCredit = 15 / 10_000;
 
 export function languageModelUsageToCredits(
   languageModelUsage: LanguageModelUsage,
-  model: AILanguageModelId,
+  model: LanguageModel,
 ) {
   const { inputTokens = 0, outputTokens = 0 } = languageModelUsage;
   let costInDollars = 0;
@@ -30,7 +28,7 @@ export function languageModelUsageToCredits(
       break;
     }
     default: {
-      throw new Error(`Unknown model: ${model}`);
+      throw new Error("Unknown model");
     }
   }
   return costInDollars / dollarsPerCredit;

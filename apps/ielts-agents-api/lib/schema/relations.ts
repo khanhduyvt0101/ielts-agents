@@ -1,6 +1,13 @@
 import { relations } from "drizzle-orm";
 
-import { chat, chatReading, readingDefault, workspace } from "./app.ts";
+import {
+  chat,
+  chatReading,
+  readingDefault,
+  readingPassage,
+  readingQuestion,
+  workspace,
+} from "./app.ts";
 import { account, user } from "./auth.ts";
 
 export const userRelations = relations(user, ({ many, one }) => ({
@@ -28,12 +35,34 @@ export const chatRelations = relations(chat, ({ one }) => ({
   reading: one(chatReading),
 }));
 
-export const chatReadingRelations = relations(chatReading, ({ one }) => ({
-  chat: one(chat, {
-    fields: [chatReading.id],
-    references: [chat.id],
+export const chatReadingRelations = relations(
+  chatReading,
+  ({ one, many }) => ({
+    chat: one(chat, {
+      fields: [chatReading.id],
+      references: [chat.id],
+    }),
+    passage: one(readingPassage),
+    questions: many(readingQuestion),
+  }),
+);
+
+export const readingPassageRelations = relations(readingPassage, ({ one }) => ({
+  chatReading: one(chatReading, {
+    fields: [readingPassage.chatReadingId],
+    references: [chatReading.id],
   }),
 }));
+
+export const readingQuestionRelations = relations(
+  readingQuestion,
+  ({ one }) => ({
+    chatReading: one(chatReading, {
+      fields: [readingQuestion.chatReadingId],
+      references: [chatReading.id],
+    }),
+  }),
+);
 
 export const readingDefaultRelations = relations(readingDefault, ({ one }) => ({
   workspace: one(workspace, {

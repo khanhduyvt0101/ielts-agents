@@ -83,6 +83,45 @@ export const chatReading = pgTable("chat_reading", {
   bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
 });
 
+export const readingPassage = pgTable("reading_passage", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatReadingId: integer("chat_reading_id")
+    .notNull()
+    .references(() => chatReading.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  topic: text("topic").notNull(),
+  difficulty: text("difficulty").notNull(),
+});
+
+export const readingQuestion = pgTable("reading_question", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatReadingId: integer("chat_reading_id")
+    .notNull()
+    .references(() => chatReading.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  questionNumber: integer("question_number").notNull(),
+  type: text("type")
+    .$type<
+      | "true-false-not-given"
+      | "multiple-choice"
+      | "fill-in-the-blank"
+      | "matching-headings"
+    >()
+    .notNull(),
+  questionText: text("question_text").notNull(),
+  options: jsonb("options").$type<string[]>().default([]).notNull(),
+  correctAnswer: text("correct_answer").notNull(),
+  explanation: text("explanation").notNull(),
+});
+
 export const readingDefault = pgTable("reading_default", {
   ...timestamps(),
   id: serial("id").primaryKey(),

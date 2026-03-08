@@ -49,6 +49,36 @@ export const createReading = workspaceProcedure
     return { id: chatId };
   });
 
+export const getReadingData = workspaceProcedure
+  .input(z.object({ chatId: chatIdSchema }))
+  .query(async ({ ctx: { workspace }, input: { chatId } }) => {
+    const chatData = await database.query.chat.findFirst({
+      where: (table, { and, eq }) =>
+        and(eq(table.workspaceId, workspace.id), eq(table.id, chatId)),
+      with: {
+        reading: {
+          with: {
+            passage: true,
+            questions: {
+              orderBy: (table, { asc }) => [asc(table.questionNumber)],
+            },
+          },
+        },
+      },
+    });
+    if (!chatData?.reading) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Reading chat not found",
+      });
+    }
+    return {
+      bandScore: chatData.reading.bandScore,
+      passage: chatData.reading.passage ?? null,
+      questions: chatData.reading.questions,
+    };
+  });
+
 export const getReadingConfig = workspaceProcedure
   .input(z.object({ chatId: chatIdSchema }))
   .query(async ({ ctx: { workspace }, input: { chatId } }) => {

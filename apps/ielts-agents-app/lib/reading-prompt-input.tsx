@@ -4,6 +4,7 @@ import type { BandScore } from "ielts-agents-api/types";
 import type { PromptInputMessage } from "~/components/ai-elements/prompt-input";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { getErrorMessage } from "ielts-agents-internal-util";
 
 import {
   PromptInput,
@@ -19,6 +20,7 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from "~/components/ai-elements/prompt-input";
+import { Button } from "~/components/ui/button";
 
 import { trpcOptions } from "#./lib/trpc-options.ts";
 
@@ -101,7 +103,7 @@ function BandScoreSelector({
   chatId?: number;
   disabled?: boolean;
 }) {
-  const { data } = useQuery(
+  const { data, isPending, isError, error, isRefetching, refetch } = useQuery(
     trpcOptions.reading.getReadingConfig.queryOptions(
       { chatId: chatId ?? "" },
       { enabled: !!chatId },
@@ -110,6 +112,40 @@ function BandScoreSelector({
   const updateConfig = useMutation(
     trpcOptions.reading.updateConfig.mutationOptions(),
   );
+
+  if (chatId && isPending) {
+    return (
+      <PromptInputSelect disabled value="6.5">
+        <PromptInputSelectTrigger className="w-auto gap-1">
+          <PromptInputSelectValue />
+        </PromptInputSelectTrigger>
+        <PromptInputSelectContent>
+          {bandScores.map((score) => (
+            <PromptInputSelectItem key={score} value={score}>
+              Band {score}
+            </PromptInputSelectItem>
+          ))}
+        </PromptInputSelectContent>
+      </PromptInputSelect>
+    );
+  }
+
+  if (chatId && isError) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-destructive">{getErrorMessage(error)}</span>
+        <Button
+          disabled={isRefetching}
+          size="sm"
+          variant="outline"
+          onClick={() => void refetch()}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   const value = data?.bandScore ?? "6.5";
   return (
     <PromptInputSelect

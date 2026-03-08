@@ -3,7 +3,11 @@ import type { ToolSet } from "ai";
 import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
 
 import { tool } from "ai";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+
+import { database } from "#./lib/database.ts";
+import { readingPassage, readingQuestion } from "#./lib/schema/index.ts";
 
 const generatePassage = tool({
   description:
@@ -16,11 +20,17 @@ const generatePassage = tool({
     topic: z.string().describe("The topic/theme of the passage"),
     difficulty: z.string().describe("The target band score difficulty level"),
   }),
-  execute: (
+  execute: async (
     { title, content, topic, difficulty },
     { experimental_context },
   ) => {
     const ctx = experimental_context as ReadingToolContext;
+    await database
+      .delete(readingPassage)
+      .where(eq(readingPassage.chatReadingId, ctx.id));
+    await database
+      .insert(readingPassage)
+      .values({ chatReadingId: ctx.id, title, content, topic, difficulty });
     ctx.creditsUsage.passageGeneratedCount++;
     ctx.onReadingUpdate();
     return { title, content, topic, difficulty };
@@ -58,8 +68,22 @@ const generateQuestions = tool({
       .max(14)
       .describe("Array of IELTS reading questions"),
   }),
-  execute: ({ questions }, { experimental_context }) => {
+  execute: async ({ questions }, { experimental_context }) => {
     const ctx = experimental_context as ReadingToolContext;
+    await database
+      .delete(readingQuestion)
+      .where(eq(readingQuestion.chatReadingId, ctx.id));
+    await database.insert(readingQuestion).values(
+      questions.map((q, idx) => ({
+        chatReadingId: ctx.id,
+        questionNumber: idx + 1,
+        type: q.type,
+        questionText: q.text,
+        options: q.options ?? [],
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+      })),
+    );
     ctx.creditsUsage.questionsGeneratedCount++;
     ctx.onReadingUpdate();
     return { questions, count: questions.length };

@@ -1,9 +1,7 @@
-import type { JSONValue } from "ai";
-
-import type { AILanguageModelId } from "#./lib/ai-language-model-id.ts";
+import type { JSONValue, LanguageModel } from "ai";
 
 export function getProviderOptions(
-  model: AILanguageModelId,
+  model: LanguageModel,
 ): Record<string, Record<string, JSONValue>> | undefined {
   switch (model) {
     case "openai:gpt-5-mini": {
