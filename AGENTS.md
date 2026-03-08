@@ -56,7 +56,7 @@ libs/
 ### tRPC Procedures
 
 - `chat` — list, get, delete, getAgentConfig, getSuggestions, updateChatName, getChatConfig
-- `reading` — createReading, getReadingConfig, updateConfig
+- `reading` — createReading, getReadingData, getReadingConfig, updateConfig
 - `workspace` — sync (credits, plans)
 - `billing` — manage (portal), update (plan changes)
 
@@ -139,6 +139,8 @@ mutation.mutate({ ... });
 - **`workspace`** — per-user workspace with Stripe customer ID, plan history (`changedPlans`), credit counters
 - **`chat`** — conversations with messages (JSONB `UIMessage[]`), stream ID, suggestions
 - **`chat_reading`** — reading agent config per chat (band score)
+- **`reading_passage`** — generated IELTS reading passages (title, content, topic, difficulty) linked to `chat_reading`
+- **`reading_question`** — generated comprehension questions (type, text, options, correct answer, explanation) linked to `chat_reading`
 - **`reading_default`** — per-workspace default reading settings (band score)
 
 ### Key Constraints
@@ -187,6 +189,107 @@ When a migration needs to be redone from scratch (e.g. schema change was wrong, 
 - `useChat` from `@ai-sdk/react` with resume support for AI streaming
 - Per-agent configs define `onData`, `Project`, `renderToolPart`, `PromptInput`
 - SSR disabled — SPA mode with Vercel deployment preset
+
+### useQuery Rules
+
+Every component that uses `useQuery` **must** follow these rules:
+
+1. **One `useQuery` per component** — if a component needs two queries, split it into two components. Never put multiple `useQuery` calls in the same component.
+
+2. **Render all three states in order**: `isPending` → `isError` → data. Always check states in this exact order:
+
+```typescript
+export function MyComponent({ id }: { id: number }) {
+  const { data, isPending, isError, error, isRefetching, refetch } = useQuery(
+    trpcOptions.something.queryOptions({ id }),
+  );
+
+  if (isPending)
+    return <Skeleton />;
+
+  if (isError) {
+    return (
+      <RetryErrorAlert
+        error={error}
+        isRefetching={isRefetching}
+        refetch={refetch}
+        title="Failed to load data"
+      />
+    );
+  }
+
+  return <MyContent data={data} />;
+}
+```
+
+3. **Always show error text and a retry button on `isError`** — use `RetryErrorAlert` for full-page errors or inline `getErrorMessage(error)` + `<Button onClick={() => void refetch()}>Retry</Button>` for smaller contexts.
+
+4. **Separate data rendering into its own component** — the component with `useQuery` handles loading/error states and passes `data` to a child content component:
+
+```typescript
+// ✅ Good — query component handles states, content component receives data
+function MyFeature({ id }: { id: number }) {
+  const { data, isPending, isError, ... } = useQuery(...);
+  if (isPending) return <Skeleton />;
+  if (isError) return <RetryErrorAlert ... />;
+  return <MyFeatureContent data={data} />;
+}
+
+function MyFeatureContent({ data }: { data: Data }) {
+  // No useQuery here — just render data
+}
+```
+
+### Data Flow Pattern (ChatAcademia Pattern)
+
+When an AI agent needs to update the UI project panel in real-time, follow this data flow:
+
+1. **Agent tools write to separate DB tables** (e.g., `readingPassage`, `readingQuestion`)
+2. **Tools call `ctx.onReadingUpdate()`** after DB writes
+3. **Agent sends data notification** via `writer.write({ type: "data-...", data: { updated: true }, transient: true })`
+4. **Frontend `onData` callback** receives the notification and calls `queryClient.invalidateQueries(...)` for the relevant tRPC query
+5. **Project panel re-fetches** via its `useQuery` and re-renders with new data
+
+```typescript
+// API: Tool writes to DB, then notifies
+ctx.onReadingUpdate(); // triggers writer.write(...)
+
+// App: onData handler invalidates cache
+onData: ({ id }) => {
+  void queryClient.invalidateQueries(
+    trpcOptions.reading.getReadingData.queryOptions({ chatId: id }),
+  );
+},
+
+// App: Project panel re-fetches automatically
+const { data } = useQuery(
+  trpcOptions.reading.getReadingData.queryOptions({ chatId }),
+);
+```
+
+### Tool Render Pattern
+
+Each agent's tools are rendered in the conversation UI using a type-safe render function. Follow this pattern:
+
+1. **Shared components** in `lib/`:
+   - `task.tsx` — Collapsible wrapper with auto-close on completion, spinner while loading
+   - `tool-container.tsx` — Bordered container for tool content
+   - `tool-icon.tsx` — Shows spinner while loading, icon when complete
+   - `tool-error-content.tsx` — Error/validation alert display
+   - `is-tool-complete.ts` — Helper to check tool state
+   - `tool-settings.ts` — Tool visibility config (e.g., hide `suggestions` tool)
+   - `dynamic-tool.tsx` — Fallback renderer for unknown tool types
+
+2. **Per-agent tool renderers** in `lib/<agent>-tools/`:
+   - `index.tsx` — Main switch that routes `toolPart.type` to specific components
+   - One file per tool (e.g., `generate-passage-tool.tsx`, `generate-questions-tool.tsx`)
+
+3. **Each tool component handles three states**:
+   - Loading: skeleton/spinner while `toolPart.state` is streaming/running
+   - Error: `ToolErrorContent` when `toolPart.state === "output-error"`
+   - Complete: show result summary when `toolPart.state === "output-available"`
+
+4. **Hidden tools** (like `suggestions`) are configured in `tool-settings.ts` and skipped in the renderer
 
 ## File Organization
 
