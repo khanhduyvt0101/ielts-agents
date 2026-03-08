@@ -1,17 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSetAtom } from "jotai";
-import { BookOpenIcon, MessageCircleIcon } from "lucide-react";
-import { useCallback } from "react";
+import { BookOpenIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { useIsMobile } from "~/hooks/use-mobile";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "~/components/ui/tabs";
 
-import { projectOpenAtom } from "#./lib/project-open-atom.ts";
 import { RetryErrorAlert } from "#./lib/retry-error-alert.tsx";
 import { trpcOptions } from "#./lib/trpc-options.ts";
-import { useChat } from "#./lib/use-chat.ts";
 
 import { ReadingPassage } from "./reading-passage.tsx";
 import { ReadingQuestions } from "./reading-questions.tsx";
@@ -93,17 +93,7 @@ function ReadingProjectContent({
   passage,
   questions,
 }: ReadingProjectContentProps) {
-  const { sendMessage } = useChat({ resume: true });
-  const isMobile = useIsMobile();
-  const setProjectOpen = useSetAtom(projectOpenAtom);
-
-  const handleAskAI = useCallback(
-    (question: string) => {
-      void sendMessage({ text: question, files: [] });
-      if (isMobile) setProjectOpen(false);
-    },
-    [sendMessage, isMobile, setProjectOpen],
-  );
+  const [activeTab, setActiveTab] = useState("passage");
 
   const hasPassage = !!passage;
   const hasQuestions = questions.length > 0;
@@ -114,25 +104,12 @@ function ReadingProjectContent({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex shrink-0 items-center justify-between px-4 pt-4">
-        <div className="flex items-center gap-2">
-          <BookOpenIcon className="size-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Reading Test</h2>
-          <span className="text-xs text-muted-foreground">
-            Band {bandScore}
-          </span>
-        </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            if (isMobile) setProjectOpen(false);
-            else setProjectOpen((prev) => !prev);
-          }}
-        >
-          <MessageCircleIcon className="size-4" />
-          <span className="hidden sm:inline">Ask AI</span>
-        </Button>
+      <div className="flex shrink-0 items-center gap-2 px-4 pt-4">
+        <BookOpenIcon className="size-5 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Reading Test</h2>
+        <span className="text-xs text-muted-foreground">
+          Band {bandScore}
+        </span>
       </div>
 
       {hasPassageOnly ? (
@@ -142,7 +119,8 @@ function ReadingProjectContent({
       ) : (
         <Tabs
           className="flex min-h-0 flex-1 flex-col overflow-hidden pt-2"
-          defaultValue="passage"
+          value={activeTab}
+          onValueChange={setActiveTab}
         >
           <div className="shrink-0 px-4">
             <TabsList>
@@ -153,18 +131,18 @@ function ReadingProjectContent({
             </TabsList>
           </div>
           <TabsContent
-            className="min-h-0 flex-1 overflow-hidden"
+            forceMount
+            className="min-h-0 flex-1 data-[state=inactive]:hidden"
             value="passage"
           >
             {passage && <ReadingPassage passage={passage} />}
           </TabsContent>
           <TabsContent
-            className="min-h-0 flex-1 overflow-hidden"
+            forceMount
+            className="min-h-0 flex-1 data-[state=inactive]:hidden"
             value="questions"
           >
-            {hasQuestions && (
-              <ReadingQuestions questions={questions} onAskAI={handleAskAI} />
-            )}
+            {hasQuestions && <ReadingQuestions questions={questions} />}
           </TabsContent>
         </Tabs>
       )}

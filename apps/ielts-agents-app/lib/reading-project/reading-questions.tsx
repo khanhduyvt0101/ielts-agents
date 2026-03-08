@@ -10,6 +10,10 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { cn } from "~/lib/utils";
 
+import { useSendMessage } from "#./lib/use-send-message.ts";
+
+import { AskAIDialog } from "./ask-ai-dialog.tsx";
+
 interface QuestionData {
   id: number;
   questionNumber: number;
@@ -27,7 +31,6 @@ interface QuestionGroup {
 
 interface ReadingQuestionsProps {
   questions: QuestionData[];
-  onAskAI?: (question: string) => void;
 }
 
 const questionTypeLabels: Record<string, string> = {
@@ -47,10 +50,8 @@ function groupQuestionsByType(questions: QuestionData[]): QuestionGroup[] {
   return groups;
 }
 
-export function ReadingQuestions({
-  questions,
-  onAskAI,
-}: ReadingQuestionsProps) {
+export function ReadingQuestions({ questions }: ReadingQuestionsProps) {
+  const sendMessage = useSendMessage();
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -102,19 +103,18 @@ export function ReadingQuestions({
               <Button size="sm" variant="outline" onClick={handleRetake}>
                 Retake Test
               </Button>
-              {onAskAI && (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    onAskAI(
-                      `I scored ${score}/${questions.length} on this reading test. Can you help me understand the questions I got wrong?`,
-                    );
-                  }}
-                >
-                  Ask AI for Help
-                </Button>
-              )}
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  void sendMessage({
+                    text: `I scored ${score}/${questions.length} on this reading test. Can you help me understand the questions I got wrong?`,
+                    files: [],
+                  });
+                }}
+              >
+                Ask AI for Help
+              </Button>
             </div>
           </div>
         )}
@@ -156,12 +156,18 @@ export function ReadingQuestions({
                         "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
                     )}
                   >
-                    <p className="text-sm font-medium">
-                      <span className="mr-2 text-muted-foreground">
-                        {question.questionNumber}.
-                      </span>
-                      {question.questionText}
-                    </p>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium">
+                        <span className="mr-2 text-muted-foreground">
+                          {question.questionNumber}.
+                        </span>
+                        {question.questionText}
+                      </p>
+                      <AskAIDialog
+                        questionNumber={question.questionNumber}
+                        questionText={question.questionText}
+                      />
+                    </div>
 
                     <QuestionInput
                       disabled={submitted}
