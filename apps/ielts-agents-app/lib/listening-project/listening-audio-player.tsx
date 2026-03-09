@@ -1,9 +1,5 @@
 import { apiURL } from "ielts-agents-internal-util";
-import {
-  PauseIcon,
-  PlayIcon,
-  Volume2Icon,
-} from "lucide-react";
+import { PauseIcon, PlayIcon, Volume2Icon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Badge } from "~/components/ui/badge";
@@ -64,51 +60,41 @@ export function ListeningAudioPlayer({
   }, []);
 
   useEffect(() => {
-    if (audioRef.current) 
-      audioRef.current.playbackRate = Number(playbackRate);
-    
+    if (audioRef.current) audioRef.current.playbackRate = Number(playbackRate);
   }, [playbackRate]);
 
   const togglePlay = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !audioSrc) return;
-    if (isPlaying) 
-      audio.pause();
-     else 
-      void audio.play();
-    
+    if (isPlaying) audio.pause();
+    else void audio.play();
   }, [isPlaying, audioSrc]);
 
   const handleTimeUpdate = useCallback(() => {
-    if (audioRef.current) 
-      setCurrentTime(audioRef.current.currentTime);
-    
+    if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
   }, []);
 
   const handleLoadedMetadata = useCallback(() => {
-    if (audioRef.current) 
-      setDuration(audioRef.current.duration);
-    
+    if (audioRef.current) setDuration(audioRef.current.duration);
   }, []);
 
-  const handleSeek = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const time = Number(e.target.value);
-      if (audioRef.current) {
-        audioRef.current.currentTime = time;
-        setCurrentTime(time);
-      }
-    },
-    [],
-  );
+  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = Number(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  }, []);
 
   const handleEnded = useCallback(() => {
     setIsPlaying(false);
     // Auto-advance to next section
     const nextSection = activeSection + 1;
-    if (nextSection <= 4 && scripts.some((s) => s.sectionNumber === nextSection && s.audioUrl))
+    if (
+      nextSection <= 4 &&
+      scripts.some((s) => s.sectionNumber === nextSection && s.audioUrl)
+    )
       handleSectionChange(nextSection);
-
   }, [activeSection, scripts, handleSectionChange]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -130,7 +116,9 @@ export function ListeningAudioPlayer({
               )}
               disabled={disabled}
               type="button"
-              onClick={() => { handleSectionChange(script.sectionNumber); }}
+              onClick={() => {
+                handleSectionChange(script.sectionNumber);
+              }}
             >
               <div
                 className={cn(
@@ -146,9 +134,7 @@ export function ListeningAudioPlayer({
                 <p className="truncate text-sm font-medium">{script.title}</p>
                 <p className="text-xs text-muted-foreground capitalize">
                   {script.sectionType}
-                  {script.duration
-                    ? ` · ${formatTime(script.duration)}`
-                    : ""}
+                  {script.duration ? ` · ${formatTime(script.duration)}` : ""}
                 </p>
               </div>
               {!script.audioUrl && (
@@ -169,8 +155,12 @@ export function ListeningAudioPlayer({
               src={audioSrc}
               onEnded={handleEnded}
               onLoadedMetadata={handleLoadedMetadata}
-              onPause={() => { setIsPlaying(false); }}
-              onPlay={() => { setIsPlaying(true); }}
+              onPause={() => {
+                setIsPlaying(false);
+              }}
+              onPlay={() => {
+                setIsPlaying(true);
+              }}
               onTimeUpdate={handleTimeUpdate}
             />
             <div className="flex items-center gap-3">
@@ -224,9 +214,7 @@ export function ListeningAudioPlayer({
                   </SelectContent>
                 </Select>
               </div>
-              <div
-                className="h-1.5 w-16 overflow-hidden rounded-full bg-muted"
-              >
+              <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-primary transition-all"
                   style={{ width: `${progress}%` }}

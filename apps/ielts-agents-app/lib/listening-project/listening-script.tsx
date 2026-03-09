@@ -51,19 +51,21 @@ export function ListeningScript({
             <Collapsible
               key={script.sectionNumber}
               open={isOpen}
-              onOpenChange={(open) =>
-                { setOpenSections((prev) => ({
+              onOpenChange={(open) => {
+                setOpenSections((prev) => ({
                   ...prev,
                   [script.sectionNumber]: open,
-                })); }
-              }
+                }));
+              }}
             >
               <CollapsibleTrigger asChild>
                 <button
                   className="flex w-full items-center gap-2 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
                   type="button"
                 >
-                  <Badge variant="outline">Section {script.sectionNumber}</Badge>
+                  <Badge variant="outline">
+                    Section {script.sectionNumber}
+                  </Badge>
                   <span className="flex-1 text-sm font-medium">
                     {script.title}
                   </span>
@@ -96,7 +98,10 @@ function formatScript(script: string): React.ReactNode {
   // Highlight speaker labels
   const lines = script.split("\n");
   return lines.map((line, idx) => {
-    const speakerMatch = /^(Speaker [A-Z]|Student [A-Z]|Professor|Narrator|Lecturer|Guide|Host|Tutor):/i.exec(line);
+    const speakerMatch =
+      /^(Speaker [A-Z]|Student [A-Z]|Professor|Narrator|Lecturer|Guide|Host|Tutor):/i.exec(
+        line,
+      );
     if (speakerMatch) {
       const label = speakerMatch[0];
       const rest = line.slice(label.length);

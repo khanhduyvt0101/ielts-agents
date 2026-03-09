@@ -162,7 +162,10 @@ hono.post("/v1/webhook/stripe", async (c) => {
 // Serve audio files for listening tests
 hono.get(
   "/v1/audio/*",
-  serveStatic({ root: "./data", rewriteRequestPath: (path) => path.replace("/v1/audio", "/audio") }),
+  serveStatic({
+    root: "./data",
+    rewriteRequestPath: (path) => path.replace("/v1/audio", "/audio"),
+  }),
 );
 
 hono.on(["GET", "POST"], "/v1/auth/*", (c) => auth.handler(c.req.raw));

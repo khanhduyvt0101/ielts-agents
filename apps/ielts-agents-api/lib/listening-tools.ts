@@ -37,7 +37,9 @@ const generateScript = tool({
             .describe("Type of section"),
           title: z
             .string()
-            .describe("Title of the section (e.g., 'Library Membership Inquiry')"),
+            .describe(
+              "Title of the section (e.g., 'Library Membership Inquiry')",
+            ),
           script: z
             .string()
             .describe(
@@ -79,7 +81,13 @@ const generateScript = tool({
     );
     ctx.creditsUsage.scriptGeneratedCount++;
     ctx.onListeningUpdate();
-    return { sections: sections.map((s) => ({ sectionNumber: s.sectionNumber, title: s.title, sectionType: s.sectionType })) };
+    return {
+      sections: sections.map((s) => ({
+        sectionNumber: s.sectionNumber,
+        title: s.title,
+        sectionType: s.sectionType,
+      })),
+    };
   },
 });
 
@@ -89,17 +97,42 @@ interface SpeakerVoiceConfig {
 }
 
 const VOICE_POOL: SpeakerVoiceConfig[] = [
-  { voice: "alloy", instructions: "Speak as a friendly young professional in a natural, conversational tone." },
-  { voice: "nova", instructions: "Speak as a warm, clear-voiced woman with a calm and helpful manner." },
-  { voice: "echo", instructions: "Speak as a confident middle-aged man with a steady, measured pace." },
-  { voice: "shimmer", instructions: "Speak as an enthusiastic young student with an energetic tone." },
-  { voice: "fable", instructions: "Speak as a composed British narrator with a formal, articulate delivery." },
-  { voice: "onyx", instructions: "Speak as a deep-voiced academic with an authoritative, professorial manner." },
+  {
+    voice: "alloy",
+    instructions:
+      "Speak as a friendly young professional in a natural, conversational tone.",
+  },
+  {
+    voice: "nova",
+    instructions:
+      "Speak as a warm, clear-voiced woman with a calm and helpful manner.",
+  },
+  {
+    voice: "echo",
+    instructions:
+      "Speak as a confident middle-aged man with a steady, measured pace.",
+  },
+  {
+    voice: "shimmer",
+    instructions:
+      "Speak as an enthusiastic young student with an energetic tone.",
+  },
+  {
+    voice: "fable",
+    instructions:
+      "Speak as a composed British narrator with a formal, articulate delivery.",
+  },
+  {
+    voice: "onyx",
+    instructions:
+      "Speak as a deep-voiced academic with an authoritative, professorial manner.",
+  },
 ];
 
 const NARRATOR_CONFIG: SpeakerVoiceConfig = {
   voice: "fable",
-  instructions: "Speak as a calm, neutral narrator reading stage directions clearly.",
+  instructions:
+    "Speak as a calm, neutral narrator reading stage directions clearly.",
 };
 
 interface ScriptSegment {
@@ -107,7 +140,8 @@ interface ScriptSegment {
   text: string;
 }
 
-const SPEAKER_LABEL_PATTERN = /^(Speaker [A-Z]\d?|Student [A-Z]\d?|Professor|Narrator|Receptionist|Tour Guide|Lecturer|Interviewer|Manager|Librarian|Doctor|Host|Guide|Tutor|Customer|Agent|Advisor|Officer):\s*/gm;
+const SPEAKER_LABEL_PATTERN =
+  /^(Speaker [A-Z]\d?|Student [A-Z]\d?|Professor|Narrator|Receptionist|Tour Guide|Lecturer|Interviewer|Manager|Librarian|Doctor|Host|Guide|Tutor|Customer|Agent|Advisor|Officer):\s*/gm;
 
 function parseScriptSegments(script: string): ScriptSegment[] {
   const segments: ScriptSegment[] = [];
@@ -132,27 +166,27 @@ function parseScriptSegments(script: string): ScriptSegment[] {
 
   // Text before the first label is narration
   const preamble = script.slice(0, matches[0].index).trim();
-  if (preamble)
-    segments.push({ speaker: "", text: preamble });
+  if (preamble) segments.push({ speaker: "", text: preamble });
 
   for (let i = 0; i < matches.length; i++) {
     const textStart = matches[i].index + matches[i].labelLength;
-    const textEnd = i + 1 < matches.length ? matches[i + 1].index : script.length;
+    const textEnd =
+      i + 1 < matches.length ? matches[i + 1].index : script.length;
     const text = script.slice(textStart, textEnd).trim();
     if (!text) continue;
 
     // Merge consecutive segments from the same speaker
     const last = segments.at(-1);
-    if (last?.speaker === matches[i].speaker)
-      last.text += "\n" + text;
-    else
-      segments.push({ speaker: matches[i].speaker, text });
+    if (last?.speaker === matches[i].speaker) last.text += "\n" + text;
+    else segments.push({ speaker: matches[i].speaker, text });
   }
 
   return segments;
 }
 
-function assignVoices(segments: ScriptSegment[]): Map<string, SpeakerVoiceConfig> {
+function assignVoices(
+  segments: ScriptSegment[],
+): Map<string, SpeakerVoiceConfig> {
   const voiceMap = new Map<string, SpeakerVoiceConfig>();
   let poolIndex = 0;
 
@@ -171,7 +205,10 @@ function assignVoices(segments: ScriptSegment[]): Map<string, SpeakerVoiceConfig
 
 const TTS_CHAR_LIMIT = 4096;
 
-async function generateSegmentAudio(text: string, config: SpeakerVoiceConfig): Promise<Buffer> {
+async function generateSegmentAudio(
+  text: string,
+  config: SpeakerVoiceConfig,
+): Promise<Buffer> {
   if (text.length <= TTS_CHAR_LIMIT) {
     const { audio } = await generateSpeech({
       model: openai.speech("gpt-4o-mini-tts"),
@@ -320,7 +357,9 @@ const generateQuestions = tool({
       )
       .min(40)
       .max(40)
-      .describe("Array of IELTS listening questions (10 per section, 40 total)"),
+      .describe(
+        "Array of IELTS listening questions (10 per section, 40 total)",
+      ),
   }),
   execute: async ({ questions }, { experimental_context }) => {
     const ctx = experimental_context as ListeningToolContext;

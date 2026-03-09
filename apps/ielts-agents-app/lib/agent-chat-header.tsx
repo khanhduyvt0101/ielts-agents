@@ -61,7 +61,10 @@ function BreadcrumbInChatPage({ agent, chatId }: AgentChatHeaderProps) {
       <BreadcrumbList className="flex-nowrap">
         <BreadcrumbItem className="hidden sm:block">
           <BreadcrumbLink asChild>
-            <Link className="flex items-center gap-1.5" to={getAgentRoute(agent)}>
+            <Link
+              className="flex items-center gap-1.5"
+              to={getAgentRoute(agent)}
+            >
               {getAgentLabel(agent)}
             </Link>
           </BreadcrumbLink>

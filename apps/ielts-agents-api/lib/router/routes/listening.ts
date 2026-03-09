@@ -183,10 +183,7 @@ export const saveAnswer = workspaceProcedure
       const sessionId = await database.transaction(async (tx) => {
         let session = await tx.query.listeningSession.findFirst({
           where: (table, { and, eq }) =>
-            and(
-              eq(table.chatListeningId, chatId),
-              eq(table.submitted, false),
-            ),
+            and(eq(table.chatListeningId, chatId), eq(table.submitted, false)),
           orderBy: (table, { desc }) => [desc(table.createdAt)],
         });
         if (!session) {

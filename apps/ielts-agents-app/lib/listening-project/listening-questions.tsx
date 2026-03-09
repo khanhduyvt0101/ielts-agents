@@ -157,11 +157,9 @@ function groupBySection(questions: QuestionData[]): SectionGroup[] {
   const groups: SectionGroup[] = [];
   for (const q of questions) {
     const lastGroup = groups.at(-1);
-    if (lastGroup?.sectionNumber === q.sectionNumber) 
+    if (lastGroup?.sectionNumber === q.sectionNumber)
       lastGroup.questions.push(q);
-     else 
-      groups.push({ sectionNumber: q.sectionNumber, questions: [q] });
-    
+    else groups.push({ sectionNumber: q.sectionNumber, questions: [q] });
   }
   return groups;
 }
@@ -410,7 +408,9 @@ export function ListeningQuestions({
                     disabled={isDisabled}
                     size="sm"
                     variant="ghost"
-                    onClick={() => { setTimerRunning((prev) => !prev); }}
+                    onClick={() => {
+                      setTimerRunning((prev) => !prev);
+                    }}
                   >
                     {timerRunning ? (
                       <PauseIcon className="size-3.5" />
@@ -505,9 +505,7 @@ export function ListeningQuestions({
                 const gStart = group.questions[0].questionNumber;
                 const gEnd =
                   group.questions[group.questions.length - 1].questionNumber;
-                const tips = submitted
-                  ? undefined
-                  : strategyTips[group.type];
+                const tips = submitted ? undefined : strategyTips[group.type];
 
                 return (
                   <div key={`${group.type}-${gStart}`} className="space-y-3">
@@ -562,9 +560,9 @@ export function ListeningQuestions({
                             disabled={submitted || isDisabled}
                             question={question}
                             value={userAnswer}
-                            onChange={(value) =>
-                              { setAnswer(question.id, value); }
-                            }
+                            onChange={(value) => {
+                              setAnswer(question.id, value);
+                            }}
                           />
 
                           {submitted && (
@@ -714,7 +712,9 @@ function QuestionInput({
             disabled={disabled}
             placeholder="Type your answer..."
             value={value}
-            onChange={(e) => { onChange(e.target.value); }}
+            onChange={(e) => {
+              onChange(e.target.value);
+            }}
           />
           <div className="flex flex-wrap gap-1">
             <span className="text-xs text-muted-foreground">Word bank:</span>
@@ -729,7 +729,9 @@ function QuestionInput({
                 )}
                 disabled={disabled}
                 type="button"
-                onClick={() => { onChange(word); }}
+                onClick={() => {
+                  onChange(word);
+                }}
               >
                 {word}
               </button>
@@ -741,7 +743,9 @@ function QuestionInput({
           disabled={disabled}
           placeholder="Type your answer..."
           value={value}
-          onChange={(e) => { onChange(e.target.value); }}
+          onChange={(e) => {
+            onChange(e.target.value);
+          }}
         />
       );
     }
@@ -756,7 +760,9 @@ function QuestionInput({
               : "Type your answer..."
           }
           value={value}
-          onChange={(e) => { onChange(e.target.value); }}
+          onChange={(e) => {
+            onChange(e.target.value);
+          }}
         />
       );
     }
