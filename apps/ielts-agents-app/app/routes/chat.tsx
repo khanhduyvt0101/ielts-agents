@@ -13,6 +13,9 @@ import { getDefaultStore } from "jotai";
 import { AgentChatHeader } from "#./lib/agent-chat-header.tsx";
 import { ChatProvider } from "#./lib/chat-provider.tsx";
 import { Conversation } from "#./lib/conversation.tsx";
+import { ListeningProject } from "#./lib/listening-project/index.tsx";
+import { ListeningPromptInput } from "#./lib/listening-prompt-input.tsx";
+import { renderListeningToolPart } from "#./lib/listening-tools/index.tsx";
 import { ProjectLayout } from "#./lib/project-layout.tsx";
 import { projectOpenAtom } from "#./lib/project-open-atom.ts";
 import { queryClient } from "#./lib/query-client.ts";
@@ -57,6 +60,19 @@ const agentConfigs: { [T in AgentId]: AgentConfig<T> } = {
     renderToolPart: renderReadingToolPart,
     PromptInput: ReadingPromptInput,
   },
+  listening: {
+    onData: ({ id }) => {
+      void queryClient.invalidateQueries(
+        trpcOptions.listening.getListeningData.queryOptions({ chatId: id }),
+      );
+      void queryClient.invalidateQueries(
+        trpcOptions.chat.getAgentConfig.queryOptions({ chatId: id }),
+      );
+    },
+    Project: ListeningProject,
+    renderToolPart: renderListeningToolPart,
+    PromptInput: ListeningPromptInput,
+  },
 };
 
 const agentIds = Object.keys(agentConfigs) as AgentId[];
@@ -79,10 +95,12 @@ function UnifiedAgentChat({
       chatHeader={<AgentChatHeader agent={agentId} chatId={id} />}
       chatPanel={
         <div className="flex h-full flex-col overflow-hidden">
-          {/* @ts-ignore AgentId is compatible with ConversationProps */}
+          {/* @ts-ignore Agent union types are compatible at runtime */}
           <Conversation
             chatId={id}
+            // @ts-ignore Agent message types vary per agent
             messages={messages}
+            // @ts-ignore Agent tool part types vary per agent
             renderToolPart={renderToolPart}
             status={status}
           />

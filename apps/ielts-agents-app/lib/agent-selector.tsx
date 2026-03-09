@@ -1,4 +1,4 @@
-import { BookOpenIcon, MessageCircleIcon } from "lucide-react";
+import { BookOpenIcon, HeadphonesIcon, MessageCircleIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 
 import {
@@ -15,6 +15,9 @@ function getAgentIcon(to: string) {
     case "/reading": {
       return BookOpenIcon;
     }
+    case "/listening": {
+      return HeadphonesIcon;
+    }
     default: {
       return MessageCircleIcon;
     }
@@ -29,6 +32,10 @@ const agents: {
   {
     to: "/reading",
     name: "Reading",
+  },
+  {
+    to: "/listening",
+    name: "Listening",
   },
 ];
 

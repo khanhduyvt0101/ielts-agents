@@ -6,6 +6,7 @@ export default [
   layout("layouts/main.tsx", [
     index("routes/index.ts"),
     route("reading", "routes/reading.tsx"),
+    route("listening", "routes/listening.tsx"),
     route("chat/:id", "routes/chat.tsx"),
     route("account/settings", "routes/account/settings.tsx"),
     route("account/security", "routes/account/security.tsx"),

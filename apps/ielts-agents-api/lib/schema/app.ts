@@ -186,3 +186,109 @@ export const savedVocabulary = pgTable("saved_vocabulary", {
   exampleUsage: text("example_usage").notNull(),
   ieltsRelevance: text("ielts_relevance").notNull(),
 });
+
+// ── Listening ──────────────────────────────────────────────────────────
+
+export const chatListening = pgTable("chat_listening", {
+  ...timestamps(),
+  id: integer("id")
+    .primaryKey()
+    .references(() => chat.id, { onUpdate: "cascade", onDelete: "cascade" }),
+  bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+});
+
+export const listeningScript = pgTable("listening_script", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatListeningId: integer("chat_listening_id")
+    .notNull()
+    .references(() => chatListening.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  sectionNumber: integer("section_number").notNull(),
+  sectionType: text("section_type")
+    .$type<"conversation" | "monologue" | "discussion" | "lecture">()
+    .notNull(),
+  title: text("title").notNull(),
+  script: text("script").notNull(),
+  audioUrl: text("audio_url"),
+  duration: integer("duration"),
+});
+
+export const listeningQuestion = pgTable("listening_question", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatListeningId: integer("chat_listening_id")
+    .notNull()
+    .references(() => chatListening.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  sectionNumber: integer("section_number").notNull(),
+  questionNumber: integer("question_number").notNull(),
+  type: text("type")
+    .$type<
+      | "multiple-choice"
+      | "matching"
+      | "plan-map-diagram"
+      | "form-completion"
+      | "note-completion"
+      | "table-completion"
+      | "flow-chart-completion"
+      | "summary-completion"
+      | "sentence-completion"
+      | "short-answer"
+    >()
+    .notNull(),
+  questionText: text("question_text").notNull(),
+  options: jsonb("options").$type<string[]>().default([]).notNull(),
+  correctAnswer: text("correct_answer").notNull(),
+  explanation: text("explanation").notNull(),
+});
+
+export const listeningDefault = pgTable("listening_default", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  workspaceId: integer("workspace_id")
+    .unique()
+    .notNull()
+    .references(() => workspace.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+});
+
+export const listeningSession = pgTable("listening_session", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatListeningId: integer("chat_listening_id")
+    .notNull()
+    .references(() => chatListening.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  score: integer("score"),
+  totalQuestions: integer("total_questions"),
+  timeSpent: integer("time_spent"),
+  submitted: boolean("submitted").default(false).notNull(),
+});
+
+export const listeningAnswer = pgTable("listening_answer", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id")
+    .notNull()
+    .references(() => listeningSession.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  questionId: integer("question_id")
+    .notNull()
+    .references(() => listeningQuestion.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  userAnswer: text("user_answer").default("").notNull(),
+});

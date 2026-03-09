@@ -2,7 +2,13 @@ import { relations } from "drizzle-orm";
 
 import {
   chat,
+  chatListening,
   chatReading,
+  listeningAnswer,
+  listeningDefault,
+  listeningQuestion,
+  listeningScript,
+  listeningSession,
   readingAnswer,
   readingDefault,
   readingPassage,
@@ -36,6 +42,7 @@ export const chatRelations = relations(chat, ({ one }) => ({
     references: [workspace.id],
   }),
   reading: one(chatReading),
+  listening: one(chatListening),
 }));
 
 export const chatReadingRelations = relations(chatReading, ({ one, many }) => ({
@@ -101,6 +108,76 @@ export const savedVocabularyRelations = relations(
     chatReading: one(chatReading, {
       fields: [savedVocabulary.chatReadingId],
       references: [chatReading.id],
+    }),
+  }),
+);
+
+// ── Listening Relations ────────────────────────────────────────────────
+
+export const chatListeningRelations = relations(
+  chatListening,
+  ({ one, many }) => ({
+    chat: one(chat, {
+      fields: [chatListening.id],
+      references: [chat.id],
+    }),
+    scripts: many(listeningScript),
+    questions: many(listeningQuestion),
+    sessions: many(listeningSession),
+  }),
+);
+
+export const listeningScriptRelations = relations(
+  listeningScript,
+  ({ one }) => ({
+    chatListening: one(chatListening, {
+      fields: [listeningScript.chatListeningId],
+      references: [chatListening.id],
+    }),
+  }),
+);
+
+export const listeningQuestionRelations = relations(
+  listeningQuestion,
+  ({ one }) => ({
+    chatListening: one(chatListening, {
+      fields: [listeningQuestion.chatListeningId],
+      references: [chatListening.id],
+    }),
+  }),
+);
+
+export const listeningDefaultRelations = relations(
+  listeningDefault,
+  ({ one }) => ({
+    workspace: one(workspace, {
+      fields: [listeningDefault.workspaceId],
+      references: [workspace.id],
+    }),
+  }),
+);
+
+export const listeningSessionRelations = relations(
+  listeningSession,
+  ({ one, many }) => ({
+    chatListening: one(chatListening, {
+      fields: [listeningSession.chatListeningId],
+      references: [chatListening.id],
+    }),
+    answers: many(listeningAnswer),
+  }),
+);
+
+export const listeningAnswerRelations = relations(
+  listeningAnswer,
+  ({ one }) => ({
+    session: one(listeningSession, {
+      fields: [listeningAnswer.sessionId],
+      references: [listeningSession.id],
+    }),
+    question: one(listeningQuestion, {
+      fields: [listeningAnswer.questionId],
+      references: [listeningQuestion.id],
     }),
   }),
 );

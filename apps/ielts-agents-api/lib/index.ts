@@ -4,6 +4,7 @@ import type { AgentId } from "#./lib/agent-id.ts";
 import type { SyncWorkspaceDetails } from "#./lib/sync-workspace-details.ts";
 
 import { serve } from "@hono/node-server";
+import { serveStatic } from "@hono/node-server/serve-static";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { UI_MESSAGE_STREAM_HEADERS } from "ai";
 import { Hono } from "hono";
@@ -157,6 +158,12 @@ hono.post("/v1/webhook/stripe", async (c) => {
     throw error;
   }
 });
+
+// Serve audio files for listening tests
+hono.get(
+  "/v1/audio/*",
+  serveStatic({ root: "./data", rewriteRequestPath: (path) => path.replace("/v1/audio", "/audio") }),
+);
 
 hono.on(["GET", "POST"], "/v1/auth/*", (c) => auth.handler(c.req.raw));
 
