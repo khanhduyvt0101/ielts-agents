@@ -44,10 +44,8 @@ function highlightVocabulary(
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-   
   while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex)
-      parts.push(text.slice(lastIndex, match.index));
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
 
     const word = match[0];
     const vocab = vocabMap.get(word.toLowerCase());

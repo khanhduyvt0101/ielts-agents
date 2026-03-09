@@ -168,7 +168,10 @@ export const saveAnswer = workspaceProcedure
     }),
   )
   .mutation(
-    async ({ ctx: { workspace }, input: { chatId, questionId, userAnswer } }) => {
+    async ({
+      ctx: { workspace },
+      input: { chatId, questionId, userAnswer },
+    }) => {
       const chatData = await database.query.chat.findFirst({
         where: (table, { and, eq }) =>
           and(eq(table.workspaceId, workspace.id), eq(table.id, chatId)),
@@ -183,10 +186,7 @@ export const saveAnswer = workspaceProcedure
       const sessionId = await database.transaction(async (tx) => {
         let session = await tx.query.readingSession.findFirst({
           where: (table, { and, eq }) =>
-            and(
-              eq(table.chatReadingId, chatId),
-              eq(table.submitted, false),
-            ),
+            and(eq(table.chatReadingId, chatId), eq(table.submitted, false)),
           orderBy: (table, { desc }) => [desc(table.createdAt)],
         });
         if (!session) {
@@ -313,13 +313,28 @@ export const submitSession = workspaceProcedure
         totalQuestions: questions.length,
         timeSpent: timeSpent ?? null,
       })
-      .where(and(eq(readingSession.id, session.id), eq(readingSession.submitted, false)))
+      .where(
+        and(
+          eq(readingSession.id, session.id),
+          eq(readingSession.submitted, false),
+        ),
+      )
       .returning();
     if (updated.length === 0) {
       // Already submitted by a concurrent request — return cached result
-      return { sessionId: session.id, score, totalQuestions: questions.length, results };
+      return {
+        sessionId: session.id,
+        score,
+        totalQuestions: questions.length,
+        results,
+      };
     }
-    return { sessionId: session.id, score, totalQuestions: questions.length, results };
+    return {
+      sessionId: session.id,
+      score,
+      totalQuestions: questions.length,
+      results,
+    };
   });
 
 export const retakeSession = workspaceProcedure
@@ -380,7 +395,13 @@ export const saveVocabulary = workspaceProcedure
         if (existing) return existing.id;
         const [vocab] = await tx
           .insert(savedVocabulary)
-          .values({ chatReadingId: chatId, word, definition, exampleUsage, ieltsRelevance })
+          .values({
+            chatReadingId: chatId,
+            word,
+            definition,
+            exampleUsage,
+            ieltsRelevance,
+          })
           .returning();
         return vocab.id;
       });
@@ -389,7 +410,12 @@ export const saveVocabulary = workspaceProcedure
   );
 
 export const removeVocabulary = workspaceProcedure
-  .input(z.object({ chatId: chatIdSchema, vocabularyId: z.number().int().positive() }))
+  .input(
+    z.object({
+      chatId: chatIdSchema,
+      vocabularyId: z.number().int().positive(),
+    }),
+  )
   .mutation(async ({ ctx: { workspace }, input: { chatId, vocabularyId } }) => {
     const chatData = await database.query.chat.findFirst({
       where: (table, { and, eq }) =>

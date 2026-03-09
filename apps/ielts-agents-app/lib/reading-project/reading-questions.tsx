@@ -77,7 +77,7 @@ const questionTypeLabels: Record<string, string> = {
 const strategyTips: Partial<Record<string, string[]>> = {
   "true-false-not-given": [
     "Focus on whether the passage STATES the information, not whether it's logically true.",
-    '"Not Given" means the passage doesn\'t mention it at all — don\'t assume.',
+    "\"Not Given\" means the passage doesn't mention it at all — don't assume.",
     'Watch for absolute words like "always", "never", "all" — they\'re often False.',
     "Find the exact sentence in the passage before deciding. Don't rely on general knowledge.",
   ],
@@ -173,7 +173,8 @@ export function ReadingQuestions({
     [latestSession],
   );
 
-  const [answers, setAnswers] = useState<Record<number, string>>(initialAnswers);
+  const [answers, setAnswers] =
+    useState<Record<number, string>>(initialAnswers);
   const [submitted, setSubmitted] = useState(isSubmitted);
   const submittingRef = useRef(false); // Guard against double-submit
 
@@ -292,7 +293,15 @@ export function ReadingQuestions({
         },
       },
     );
-  }, [chatId, answers, submitSession, saveAnswer, sendMessage, timerEnabled, elapsedSeconds]);
+  }, [
+    chatId,
+    answers,
+    submitSession,
+    saveAnswer,
+    sendMessage,
+    timerEnabled,
+    elapsedSeconds,
+  ]);
 
   // Auto-submit on timeout — use ref to avoid stale closure
   const handleSubmitRef = useRef(handleSubmit);

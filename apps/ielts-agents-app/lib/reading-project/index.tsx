@@ -193,10 +193,7 @@ function ReadingProjectContent({
               className="min-h-0 flex-1 data-[state=inactive]:hidden"
               value="vocabulary"
             >
-              <ReadingVocabulary
-                disabled={isLoading}
-                vocabulary={vocabulary}
-              />
+              <ReadingVocabulary disabled={isLoading} vocabulary={vocabulary} />
             </TabsContent>
           )}
         </Tabs>
