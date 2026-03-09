@@ -11,5 +11,6 @@ type AgentToolSettings = Partial<
 export const toolSettings: Record<AgentId, AgentToolSettings> = {
   reading: {
     "tool-suggestions": { hidden: true },
+    "tool-get-reading-results": { hidden: true },
   },
 };

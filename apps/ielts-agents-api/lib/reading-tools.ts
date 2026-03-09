@@ -7,11 +7,16 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { database } from "#./lib/database.ts";
-import { readingPassage, readingQuestion } from "#./lib/schema/index.ts";
+import {
+  readingPassage,
+  readingQuestion,
+  readingSession,
+  savedVocabulary,
+} from "#./lib/schema/index.ts";
 
 const generatePassage = tool({
   description:
-    "Generate an IELTS reading passage at the target band difficulty level. The passage should be 700-900 words on the given topic, written in an academic style appropriate for the IELTS exam.",
+    "Generate an IELTS reading passage at the target band difficulty level. The passage should be 700-900 words on the given topic, written in an academic style appropriate for the IELTS exam. This tool REPLACES any existing passage, sessions, and answers — always call it FIRST when generating a new test.",
   inputSchema: z.object({
     title: z.string().describe("The title of the reading passage"),
     content: z
@@ -26,6 +31,9 @@ const generatePassage = tool({
   ) => {
     const ctx = experimental_context as ReadingToolContext;
     await database
+      .delete(readingSession)
+      .where(eq(readingSession.chatReadingId, ctx.id));
+    await database
       .delete(readingPassage)
       .where(eq(readingPassage.chatReadingId, ctx.id));
     await database
@@ -39,7 +47,7 @@ const generatePassage = tool({
 
 const generateQuestions = tool({
   description:
-    "Generate IELTS-style comprehension questions for the reading passage. Include a mix of question types: True/False/Not Given, matching headings, fill-in-the-blank, and multiple choice.",
+    "Generate IELTS-style comprehension questions for the reading passage. Include a mix of question types: True/False/Not Given, Yes/No/Not Given, matching headings, fill-in-the-blank, multiple choice, sentence completion, and summary completion. This tool REPLACES any existing questions — call it AFTER generate-passage.",
   inputSchema: z.object({
     questions: z
       .array(
@@ -48,16 +56,21 @@ const generateQuestions = tool({
           type: z
             .enum([
               "true-false-not-given",
+              "yes-no-not-given",
               "multiple-choice",
               "fill-in-the-blank",
               "matching-headings",
+              "sentence-completion",
+              "summary-completion",
             ])
             .describe("The type of IELTS question"),
           text: z.string().describe("The question text"),
           options: z
             .array(z.string())
             .optional()
-            .describe("Options for multiple-choice or matching questions"),
+            .describe(
+              "Options for multiple-choice, matching, or summary completion (word bank) questions",
+            ),
           correctAnswer: z.string().describe("The correct answer"),
           explanation: z
             .string()
@@ -90,9 +103,125 @@ const generateQuestions = tool({
   },
 });
 
+const extractVocabulary = tool({
+  description:
+    "Extract key IELTS vocabulary words from the reading passage. Include definitions, example usage, and IELTS relevance for each word. This tool REPLACES any existing vocabulary — call it AFTER generate-questions.",
+  inputSchema: z.object({
+    words: z
+      .array(
+        z.object({
+          word: z.string().describe("The vocabulary word or phrase"),
+          definition: z
+            .string()
+            .describe("Clear definition of the word in context"),
+          exampleUsage: z
+            .string()
+            .describe("An example sentence using the word"),
+          ieltsRelevance: z
+            .string()
+            .describe(
+              "Why this word is important for IELTS (e.g., common in academic texts, frequently tested)",
+            ),
+        }),
+      )
+      .min(5)
+      .max(15)
+      .describe("Array of vocabulary words extracted from the passage"),
+  }),
+  execute: async ({ words }, { experimental_context }) => {
+    const ctx = experimental_context as ReadingToolContext;
+    await database
+      .delete(savedVocabulary)
+      .where(eq(savedVocabulary.chatReadingId, ctx.id));
+    await database.insert(savedVocabulary).values(
+      words.map((w) => ({
+        chatReadingId: ctx.id,
+        word: w.word,
+        definition: w.definition,
+        exampleUsage: w.exampleUsage,
+        ieltsRelevance: w.ieltsRelevance,
+      })),
+    );
+    ctx.onReadingUpdate();
+    return { words, count: words.length };
+  },
+});
+
+const getReadingResults = tool({
+  description:
+    "Fetch the latest reading test results including passage, questions, session score, and user answers. Use this tool when the user mentions submitting their test or when you need to review their performance.",
+  inputSchema: z.object({}),
+  execute: async (_input, { experimental_context }) => {
+    const ctx = experimental_context as ReadingToolContext;
+
+    const passage = await database.query.readingPassage.findFirst({
+      where: (table, { eq }) => eq(table.chatReadingId, ctx.id),
+      columns: { title: true },
+    });
+
+    const questions = await database.query.readingQuestion.findMany({
+      where: (table, { eq }) => eq(table.chatReadingId, ctx.id),
+      columns: {
+        id: true,
+        questionNumber: true,
+        type: true,
+        questionText: true,
+        correctAnswer: true,
+      },
+      orderBy: (table, { asc }) => asc(table.questionNumber),
+    });
+
+    const latestSession = await database.query.readingSession.findFirst({
+      where: (table, { eq, and }) =>
+        and(eq(table.chatReadingId, ctx.id), eq(table.submitted, true)),
+      orderBy: (table, { desc }) => desc(table.createdAt),
+      columns: {
+        id: true,
+        score: true,
+        totalQuestions: true,
+        timeSpent: true,
+      },
+    });
+
+    if (!latestSession) return { error: "No submitted session found" };
+
+    const answers = await database.query.readingAnswer.findMany({
+      where: (table, { eq }) => eq(table.sessionId, latestSession.id),
+      columns: { questionId: true, userAnswer: true },
+    });
+
+    const answerMap = new Map(answers.map((a) => [a.questionId, a.userAnswer]));
+
+    const questionResults = questions.map((q) => {
+      const userAnswer = answerMap.get(q.id) ?? "";
+      const isCorrect =
+        userAnswer.trim().toLowerCase() ===
+        q.correctAnswer.trim().toLowerCase();
+      return {
+        questionNumber: q.questionNumber,
+        type: q.type,
+        questionText: q.questionText,
+        correctAnswer: q.correctAnswer,
+        userAnswer: userAnswer || "(no answer)",
+        isCorrect,
+      };
+    });
+
+    return {
+      passageTitle: passage?.title ?? "Unknown",
+      score: latestSession.score,
+      totalQuestions: latestSession.totalQuestions,
+      timeSpent: latestSession.timeSpent,
+      questions: questionResults,
+    };
+  },
+});
+
 export const readingTools = {
   "generate-passage": generatePassage,
   "generate-questions": generateQuestions,
+  "extract-vocabulary": extractVocabulary,
+  "get-reading-results": getReadingResults,
 } satisfies ToolSet;
 
 export type ReadingTools = typeof readingTools;

@@ -3,6 +3,7 @@ import type { AgentRenderToolPart } from "#./lib/agent-render-tool-part.ts";
 import { DynamicTool } from "#./lib/dynamic-tool.tsx";
 import { toolSettings } from "#./lib/tool-settings.ts";
 
+import { ExtractVocabularyTool } from "./extract-vocabulary-tool.tsx";
 import { GeneratePassageTool } from "./generate-passage-tool.tsx";
 import { GenerateQuestionsTool } from "./generate-questions-tool.tsx";
 
@@ -18,6 +19,9 @@ export const renderReadingToolPart: AgentRenderToolPart["reading"] = (
     }
     case "tool-generate-questions": {
       return <GenerateQuestionsTool toolPart={toolPart} />;
+    }
+    case "tool-extract-vocabulary": {
+      return <ExtractVocabularyTool toolPart={toolPart} />;
     }
     default: {
       return <DynamicTool toolPart={toolPart} />;

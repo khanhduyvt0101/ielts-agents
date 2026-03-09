@@ -18,11 +18,13 @@ import { useSendMessage } from "#./lib/use-send-message.ts";
 interface AskAIDialogProps {
   questionNumber: number;
   questionText: string;
+  disabled?: boolean;
 }
 
 export function AskAIDialog({
   questionNumber,
   questionText,
+  disabled,
 }: AskAIDialogProps) {
   const sendMessage = useSendMessage();
   const [open, setOpen] = useState(false);
@@ -40,9 +42,9 @@ export function AskAIDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost">
+        <Button disabled={disabled} size="sm" variant="ghost">
           <MessageCircleIcon className="size-3.5" />
-          Ask AI
+          Ask
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

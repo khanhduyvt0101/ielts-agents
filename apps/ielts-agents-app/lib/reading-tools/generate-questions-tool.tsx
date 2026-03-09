@@ -18,9 +18,12 @@ interface GenerateQuestionsToolProps {
 
 const questionTypeLabels: Record<string, string> = {
   "true-false-not-given": "True / False / Not Given",
+  "yes-no-not-given": "Yes / No / Not Given",
   "multiple-choice": "Multiple Choice",
   "fill-in-the-blank": "Fill in the Blank",
   "matching-headings": "Matching Headings",
+  "sentence-completion": "Sentence Completion",
+  "summary-completion": "Summary Completion",
 };
 
 export function GenerateQuestionsTool({

@@ -15,6 +15,13 @@
       "when": 1772957674102,
       "tag": "0001_groovy_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773046070849,
+      "tag": "0002_bored_synch",
+      "breakpoints": true
     }
   ]
 }

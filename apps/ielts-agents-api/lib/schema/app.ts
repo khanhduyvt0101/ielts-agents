@@ -5,6 +5,7 @@ import type { BandScore } from "#./lib/band-score.ts";
 
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   integer,
   jsonb,
@@ -111,9 +112,12 @@ export const readingQuestion = pgTable("reading_question", {
   type: text("type")
     .$type<
       | "true-false-not-given"
+      | "yes-no-not-given"
       | "multiple-choice"
       | "fill-in-the-blank"
       | "matching-headings"
+      | "sentence-completion"
+      | "summary-completion"
     >()
     .notNull(),
   questionText: text("question_text").notNull(),
@@ -133,4 +137,52 @@ export const readingDefault = pgTable("reading_default", {
       onDelete: "cascade",
     }),
   bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+});
+
+export const readingSession = pgTable("reading_session", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatReadingId: integer("chat_reading_id")
+    .notNull()
+    .references(() => chatReading.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  score: integer("score"),
+  totalQuestions: integer("total_questions"),
+  timeSpent: integer("time_spent"),
+  submitted: boolean("submitted").default(false).notNull(),
+});
+
+export const readingAnswer = pgTable("reading_answer", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id")
+    .notNull()
+    .references(() => readingSession.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  questionId: integer("question_id")
+    .notNull()
+    .references(() => readingQuestion.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  userAnswer: text("user_answer").default("").notNull(),
+});
+
+export const savedVocabulary = pgTable("saved_vocabulary", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatReadingId: integer("chat_reading_id")
+    .notNull()
+    .references(() => chatReading.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  word: text("word").notNull(),
+  definition: text("definition").notNull(),
+  exampleUsage: text("example_usage").notNull(),
+  ieltsRelevance: text("ielts_relevance").notNull(),
 });

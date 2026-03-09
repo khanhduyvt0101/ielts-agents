@@ -123,6 +123,67 @@ mutationDefaults(
   }),
 );
 
+mutationDefaults(
+  trpcOptions.reading.saveAnswer.mutationOptions({
+    onError: (error) => {
+      toast.error("Failed to save answer", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
+mutationDefaults(
+  trpcOptions.reading.submitSession.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        trpcOptions.reading.getReadingData.queryOptions({
+          chatId: variables.chatId,
+        }),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to submit answers", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
+mutationDefaults(
+  trpcOptions.reading.retakeSession.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        trpcOptions.reading.getReadingData.queryOptions({
+          chatId: variables.chatId,
+        }),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to start retake", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
+mutationDefaults(
+  trpcOptions.reading.saveVocabulary.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        trpcOptions.reading.getReadingData.queryOptions({
+          chatId: variables.chatId,
+        }),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to save vocabulary", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
 function queryInput<T>(): T {
   return {} as T;
 }
