@@ -9,6 +9,7 @@ import { getErrorMessage } from "ielts-agents-internal-util";
 import { getDefaultStore } from "jotai";
 import { toast } from "sonner";
 
+import { createListeningChatMutationOptions } from "#./lib/create-listening-chat-mutation-options.ts";
 import { createReadingChatMutationOptions } from "#./lib/create-reading-chat-mutation-options.ts";
 import { locationAtom } from "#./lib/location-atom.ts";
 import { navigateAtom } from "#./lib/navigate-atom.ts";
@@ -105,6 +106,69 @@ mutationDefaults(
 );
 
 mutationDefaults(createReadingChatMutationOptions);
+
+mutationDefaults(createListeningChatMutationOptions);
+
+mutationDefaults(
+  trpcOptions.listening.updateConfig.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        trpcOptions.listening.getListeningConfig.queryOptions({
+          chatId: variables.chatId,
+        }),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to update config", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
+mutationDefaults(
+  trpcOptions.listening.saveAnswer.mutationOptions({
+    onError: (error) => {
+      toast.error("Failed to save answer", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
+mutationDefaults(
+  trpcOptions.listening.submitSession.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        trpcOptions.listening.getListeningData.queryOptions({
+          chatId: variables.chatId,
+        }),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to submit answers", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
+mutationDefaults(
+  trpcOptions.listening.retakeSession.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        trpcOptions.listening.getListeningData.queryOptions({
+          chatId: variables.chatId,
+        }),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to start retake", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
 
 mutationDefaults(
   trpcOptions.reading.updateConfig.mutationOptions({
@@ -221,3 +285,7 @@ queryDefaults(trpcOptions.chat.getSuggestions.queryOptions(queryInput()));
 queryDefaults(trpcOptions.reading.getReadingData.queryOptions(queryInput()));
 
 queryDefaults(trpcOptions.reading.getReadingConfig.queryOptions(queryInput()));
+
+queryDefaults(trpcOptions.listening.getListeningData.queryOptions(queryInput()));
+
+queryDefaults(trpcOptions.listening.getListeningConfig.queryOptions(queryInput()));

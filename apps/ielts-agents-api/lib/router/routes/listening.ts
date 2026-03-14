@@ -73,6 +73,9 @@ export const getListeningData = workspaceProcedure
               with: { answers: true },
               orderBy: (table, { desc }) => [desc(table.createdAt)],
             },
+            vocabulary: {
+              orderBy: (table, { desc }) => [desc(table.createdAt)],
+            },
           },
         },
       },
@@ -88,6 +91,7 @@ export const getListeningData = workspaceProcedure
       scripts: chatData.listening.scripts,
       questions: chatData.listening.questions,
       sessions: chatData.listening.sessions,
+      vocabulary: chatData.listening.vocabulary,
     };
   });
 

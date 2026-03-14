@@ -8,6 +8,11 @@ import {
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
 
+interface QuestionData {
+  scriptQuote: string | null;
+  questionNumber: number;
+}
+
 interface ScriptData {
   id: number;
   sectionNumber: number;
@@ -19,11 +24,13 @@ interface ScriptData {
 interface ListeningScriptProps {
   scripts: ScriptData[];
   isSubmitted: boolean;
+  questions?: QuestionData[];
 }
 
 export function ListeningScript({
   scripts,
   isSubmitted,
+  questions,
 }: ListeningScriptProps) {
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({});
 
@@ -78,7 +85,7 @@ export function ListeningScript({
             <CollapsibleContent>
               <div className="mt-2 rounded-lg border bg-card p-4">
                 <div className="text-sm/relaxed whitespace-pre-wrap">
-                  {formatScript(script.script)}
+                  {formatScriptWithHighlights(script.script, questions)}
                 </div>
               </div>
             </CollapsibleContent>
@@ -89,30 +96,93 @@ export function ListeningScript({
   );
 }
 
-function formatScript(script: string): React.ReactNode {
-  // Highlight speaker labels
+function formatScriptWithHighlights(
+  script: string,
+  questions?: QuestionData[],
+): React.ReactNode {
+  const quotes =
+    questions
+      ?.filter((q): q is QuestionData & { scriptQuote: string } =>
+        q.scriptQuote !== null,
+      )
+      .map((q) => ({
+        quote: q.scriptQuote,
+        questionNumber: q.questionNumber,
+      })) ?? [];
+
   const lines = script.split("\n");
   return lines.map((line, idx) => {
     const speakerMatch =
       /^(Speaker [A-Z]|Student [A-Z]|Professor|Narrator|Lecturer|Guide|Host|Tutor):/i.exec(
         line,
       );
-    if (speakerMatch) {
-      const label = speakerMatch[0];
-      const rest = line.slice(label.length);
-      return (
-        <span key={idx}>
-          <span className="font-semibold text-primary">{label}</span>
-          {rest}
-          {"\n"}
+
+    const content: React.ReactNode = speakerMatch ? (
+      <>
+        <span className="font-semibold text-primary">
+          {speakerMatch[0]}
         </span>
-      );
-    }
+        {highlightQuotes(line.slice(speakerMatch[0].length), quotes)}
+      </>
+    ) : (
+      highlightQuotes(line, quotes)
+    );
+
     return (
       <span key={idx}>
-        {line}
+        {content}
         {"\n"}
       </span>
     );
   });
+}
+
+function highlightQuotes(
+  text: string,
+  quotes: { quote: string; questionNumber: number }[],
+): React.ReactNode {
+  if (quotes.length === 0) return text;
+
+  const lowerText = text.toLowerCase();
+  const highlights: { start: number; end: number; questionNumber: number }[] =
+    [];
+
+  for (const { quote, questionNumber } of quotes) {
+    const lowerQuote = quote.toLowerCase();
+    let searchFrom = 0;
+    while (searchFrom < lowerText.length) {
+      const pos = lowerText.indexOf(lowerQuote, searchFrom);
+      if (pos === -1) break;
+      highlights.push({
+        start: pos,
+        end: pos + quote.length,
+        questionNumber,
+      });
+      searchFrom = pos + quote.length;
+    }
+  }
+
+  if (highlights.length === 0) return text;
+
+  highlights.sort((a, b) => a.start - b.start);
+
+  const parts: React.ReactNode[] = [];
+  let lastEnd = 0;
+  for (const hl of highlights) {
+    if (hl.start < lastEnd) continue;
+    if (hl.start > lastEnd) parts.push(text.slice(lastEnd, hl.start));
+    parts.push(
+      <mark
+        key={`${hl.start}-${hl.questionNumber}`}
+        className="rounded-sm bg-amber-200/60 px-0.5 dark:bg-amber-800/40"
+        title={`Answer for Q${hl.questionNumber}`}
+      >
+        {text.slice(hl.start, hl.end)}
+      </mark>,
+    );
+    lastEnd = hl.end;
+  }
+  if (lastEnd < text.length) parts.push(text.slice(lastEnd));
+
+  return parts;
 }

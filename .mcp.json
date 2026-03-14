@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "postgres-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:postgres@localhost:53565/postgres"
+      ],
+      "env": {}
+    }
+  }
+}

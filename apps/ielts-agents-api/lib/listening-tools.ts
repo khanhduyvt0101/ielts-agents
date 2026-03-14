@@ -15,6 +15,7 @@ import {
   listeningQuestion,
   listeningScript,
   listeningSession,
+  listeningVocabulary,
 } from "#./lib/schema/index.ts";
 
 const AUDIO_BASE_DIR = path.join(process.cwd(), "data", "audio");
@@ -47,9 +48,9 @@ const generateScript = tool({
             ),
         }),
       )
-      .min(4)
+      .min(1)
       .max(4)
-      .describe("Array of 4 section scripts"),
+      .describe("Array of section scripts (4 for full test, 1 for single-section practice)"),
   }),
   execute: async ({ sections }, { experimental_context }) => {
     const ctx = experimental_context as ListeningToolContext;
@@ -61,6 +62,9 @@ const generateScript = tool({
     await database
       .delete(listeningQuestion)
       .where(eq(listeningQuestion.chatListeningId, ctx.id));
+    await database
+      .delete(listeningVocabulary)
+      .where(eq(listeningVocabulary.chatListeningId, ctx.id));
     await database
       .delete(listeningScript)
       .where(eq(listeningScript.chatListeningId, ctx.id));
@@ -318,7 +322,7 @@ function splitIntoChunks(text: string, maxLength: number): string[] {
 
 const generateQuestions = tool({
   description:
-    "Generate IELTS listening comprehension questions for all 4 sections (10 questions per section, 40 total). This tool REPLACES any existing questions — call it AFTER generate-script and generate-audio.",
+    "Generate IELTS listening comprehension questions for all 4 sections (10 questions per section, 40 total). Include scriptQuote, distractors, and paraphrase for each question to enable post-test analysis. This tool REPLACES any existing questions — call it AFTER generate-script and generate-audio.",
   inputSchema: z.object({
     questions: z
       .array(
@@ -353,12 +357,46 @@ const generateQuestions = tool({
           explanation: z
             .string()
             .describe("Explanation of why this is the correct answer"),
+          scriptQuote: z
+            .string()
+            .optional()
+            .describe(
+              "The exact quote from the script where the answer can be found",
+            ),
+          distractors: z
+            .array(
+              z.object({
+                text: z
+                  .string()
+                  .describe("The distractor text mentioned in the script"),
+                explanation: z
+                  .string()
+                  .describe("Why this is a distractor and not the correct answer"),
+              }),
+            )
+            .optional()
+            .describe(
+              "Distractors: wrong answers mentioned in the script that could mislead listeners",
+            ),
+          paraphrase: z
+            .object({
+              questionPhrase: z
+                .string()
+                .describe("The phrase used in the question"),
+              scriptPhrase: z
+                .string()
+                .describe("The equivalent phrase used in the script"),
+            })
+            .optional()
+            .describe(
+              "Paraphrase mapping between question wording and script wording",
+            ),
         }),
       )
-      .min(40)
+      .min(10)
       .max(40)
       .describe(
-        "Array of IELTS listening questions (10 per section, 40 total)",
+        "Array of IELTS listening questions (10 per section for full test, or 10 for single-section practice)",
       ),
   }),
   execute: async ({ questions }, { experimental_context }) => {
@@ -376,6 +414,9 @@ const generateQuestions = tool({
         options: q.options ?? [],
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
+        scriptQuote: q.scriptQuote ?? null,
+        distractors: q.distractors ?? [],
+        paraphrase: q.paraphrase ?? null,
       })),
     );
     ctx.creditsUsage.questionsGeneratedCount++;
@@ -457,10 +498,55 @@ const getListeningResults = tool({
   },
 });
 
+const extractVocabulary = tool({
+  description:
+    "Extract key IELTS vocabulary words from the listening scripts. Include definitions, example usage, and IELTS relevance for each word. This tool REPLACES any existing vocabulary — call it AFTER generate-listening-questions.",
+  inputSchema: z.object({
+    words: z
+      .array(
+        z.object({
+          word: z.string().describe("The vocabulary word or phrase"),
+          definition: z
+            .string()
+            .describe("Clear definition of the word in context"),
+          exampleUsage: z
+            .string()
+            .describe("An example sentence using the word"),
+          ieltsRelevance: z
+            .string()
+            .describe(
+              "Why this word is important for IELTS (e.g., common in academic listening, frequently tested)",
+            ),
+        }),
+      )
+      .min(5)
+      .max(15)
+      .describe("Array of vocabulary words extracted from the listening scripts"),
+  }),
+  execute: async ({ words }, { experimental_context }) => {
+    const ctx = experimental_context as ListeningToolContext;
+    await database
+      .delete(listeningVocabulary)
+      .where(eq(listeningVocabulary.chatListeningId, ctx.id));
+    await database.insert(listeningVocabulary).values(
+      words.map((w) => ({
+        chatListeningId: ctx.id,
+        word: w.word,
+        definition: w.definition,
+        exampleUsage: w.exampleUsage,
+        ieltsRelevance: w.ieltsRelevance,
+      })),
+    );
+    ctx.onListeningUpdate();
+    return { words, count: words.length };
+  },
+});
+
 export const listeningTools = {
   "generate-script": generateScript,
   "generate-audio": generateAudio,
   "generate-listening-questions": generateQuestions,
+  "extract-vocabulary": extractVocabulary,
   "get-listening-results": getListeningResults,
 } satisfies ToolSet;
 

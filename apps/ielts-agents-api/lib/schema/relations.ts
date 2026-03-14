@@ -9,6 +9,7 @@ import {
   listeningQuestion,
   listeningScript,
   listeningSession,
+  listeningVocabulary,
   readingAnswer,
   readingDefault,
   readingPassage,
@@ -124,6 +125,7 @@ export const chatListeningRelations = relations(
     scripts: many(listeningScript),
     questions: many(listeningQuestion),
     sessions: many(listeningSession),
+    vocabulary: many(listeningVocabulary),
   }),
 );
 
@@ -178,6 +180,16 @@ export const listeningAnswerRelations = relations(
     question: one(listeningQuestion, {
       fields: [listeningAnswer.questionId],
       references: [listeningQuestion.id],
+    }),
+  }),
+);
+
+export const listeningVocabularyRelations = relations(
+  listeningVocabulary,
+  ({ one }) => ({
+    chatListening: one(chatListening, {
+      fields: [listeningVocabulary.chatListeningId],
+      references: [chatListening.id],
     }),
   }),
 );

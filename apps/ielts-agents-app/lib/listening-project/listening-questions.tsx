@@ -39,6 +39,9 @@ interface QuestionData {
   options: string[];
   correctAnswer: string;
   explanation: string;
+  scriptQuote: string | null;
+  distractors: { text: string; explanation: string }[];
+  paraphrase: { questionPhrase: string; scriptPhrase: string } | null;
 }
 
 interface SessionData {
@@ -56,6 +59,7 @@ interface ListeningQuestionsProps {
   sessions: SessionData[];
   disabled?: boolean;
   sectionNumber?: number;
+  firstSectionNumber?: number;
   totalQuestions?: QuestionData[];
 }
 
@@ -189,6 +193,7 @@ export function ListeningQuestions({
   sessions,
   disabled,
   sectionNumber,
+  firstSectionNumber,
   totalQuestions,
 }: ListeningQuestionsProps) {
   const sendMessage = useSendMessage();
@@ -387,7 +392,9 @@ export function ListeningQuestions({
   const remainingTime = TIMER_LIMIT - elapsedSeconds;
 
   // Show timer and results only on the first section tab to avoid duplication
-  const isFirstSection = sectionNumber === undefined || sectionNumber === 1;
+  const isFirstSection =
+    sectionNumber === undefined ||
+    sectionNumber === (firstSectionNumber ?? 1);
 
   return (
     <div className="space-y-6 p-4 pb-8">
@@ -575,7 +582,7 @@ export function ListeningQuestions({
                         />
 
                         {submitted && (
-                          <div className="space-y-1 border-t pt-2">
+                          <div className="space-y-2 border-t pt-2">
                             {isWrong && (
                               <p className="text-xs">
                                 <span className="font-medium text-red-600 dark:text-red-400">
@@ -593,6 +600,51 @@ export function ListeningQuestions({
                             <p className="text-xs text-muted-foreground">
                               {question.explanation}
                             </p>
+
+                            {question.scriptQuote && (
+                              <div className="rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-2 dark:bg-blue-950/20">
+                                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                                  Script quote:
+                                </p>
+                                <p className="text-xs text-blue-600 italic dark:text-blue-400">
+                                  &ldquo;{question.scriptQuote}&rdquo;
+                                </p>
+                              </div>
+                            )}
+
+                            {question.paraphrase && (
+                              <div className="rounded-md border-l-2 border-purple-400 bg-purple-50/50 p-2 dark:bg-purple-950/20">
+                                <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                                  Paraphrase mapping:
+                                </p>
+                                <p className="text-xs text-purple-600 dark:text-purple-400">
+                                  Question: &ldquo;
+                                  {question.paraphrase.questionPhrase}&rdquo;
+                                </p>
+                                <p className="text-xs text-purple-600 dark:text-purple-400">
+                                  Script: &ldquo;
+                                  {question.paraphrase.scriptPhrase}&rdquo;
+                                </p>
+                              </div>
+                            )}
+
+                            {isWrong &&
+                              question.distractors.length > 0 && (
+                                <div className="rounded-md border-l-2 border-amber-400 bg-amber-50/50 p-2 dark:bg-amber-950/20">
+                                  <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                                    Distractors:
+                                  </p>
+                                  {question.distractors.map((d, idx) => (
+                                    <p
+                                      key={idx}
+                                      className="text-xs text-amber-600 dark:text-amber-400"
+                                    >
+                                      &bull; &ldquo;{d.text}&rdquo; &mdash;{" "}
+                                      {d.explanation}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
                           </div>
                         )}
                       </div>

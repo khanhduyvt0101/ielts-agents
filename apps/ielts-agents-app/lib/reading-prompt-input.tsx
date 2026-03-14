@@ -5,6 +5,7 @@ import type { PromptInputMessage } from "~/components/ai-elements/prompt-input";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getErrorMessage } from "ielts-agents-internal-util";
+import { useState } from "react";
 
 import {
   PromptInput,
@@ -103,6 +104,7 @@ function BandScoreSelector({
   chatId?: number;
   disabled?: boolean;
 }) {
+  const [localBandScore, setLocalBandScore] = useState<BandScore>("6.5");
   const { data, isPending, isError, error, isRefetching, refetch } = useQuery(
     trpcOptions.reading.getReadingConfig.queryOptions(
       { chatId: chatId ?? "" },
@@ -148,15 +150,18 @@ function BandScoreSelector({
     );
   }
 
-  const value = data?.bandScore ?? "6.5";
+  const value = chatId ? (data?.bandScore ?? "6.5") : localBandScore;
   return (
     <PromptInputSelect
       disabled={disabled ?? updateConfig.isPending}
       value={value}
       onValueChange={(bandScore: string) => {
-        if (chatId)
+        if (chatId) {
           updateConfig.mutate({ chatId, bandScore: bandScore as BandScore });
-        else updateConfig.mutate({ bandScore: bandScore as BandScore });
+        } else {
+          setLocalBandScore(bandScore as BandScore);
+          updateConfig.mutate({ bandScore: bandScore as BandScore });
+        }
       }}
     >
       <PromptInputSelectTrigger className="w-auto gap-1">

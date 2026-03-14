@@ -245,6 +245,14 @@ export const listeningQuestion = pgTable("listening_question", {
   options: jsonb("options").$type<string[]>().default([]).notNull(),
   correctAnswer: text("correct_answer").notNull(),
   explanation: text("explanation").notNull(),
+  scriptQuote: text("script_quote"),
+  distractors: jsonb("distractors")
+    .$type<{ text: string; explanation: string }[]>()
+    .default([])
+    .notNull(),
+  paraphrase: jsonb("paraphrase")
+    .$type<{ questionPhrase: string; scriptPhrase: string } | null>()
+    .default(null),
 });
 
 export const listeningDefault = pgTable("listening_default", {
@@ -291,4 +299,19 @@ export const listeningAnswer = pgTable("listening_answer", {
       onDelete: "cascade",
     }),
   userAnswer: text("user_answer").default("").notNull(),
+});
+
+export const listeningVocabulary = pgTable("listening_vocabulary", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatListeningId: integer("chat_listening_id")
+    .notNull()
+    .references(() => chatListening.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  word: text("word").notNull(),
+  definition: text("definition").notNull(),
+  exampleUsage: text("example_usage").notNull(),
+  ieltsRelevance: text("ielts_relevance").notNull(),
 });

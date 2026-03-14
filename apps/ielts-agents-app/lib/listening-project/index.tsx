@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { HeadphonesIcon, LoaderIcon } from "lucide-react";
+import { BookAIcon, HeadphonesIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Skeleton } from "~/components/ui/skeleton";
@@ -12,6 +12,7 @@ import { useChatLoading } from "#./lib/use-chat-loading.ts";
 import { ListeningAudioPlayer } from "./listening-audio-player.tsx";
 import { ListeningQuestions } from "./listening-questions.tsx";
 import { ListeningScript } from "./listening-script.tsx";
+import { ListeningVocabulary } from "./listening-vocabulary.tsx";
 
 interface ListeningProjectProps {
   chatId: number;
@@ -44,6 +45,7 @@ export function ListeningProject({ chatId }: ListeningProjectProps) {
       questions={data.questions}
       scripts={data.scripts}
       sessions={data.sessions}
+      vocabulary={data.vocabulary}
     />
   );
 }
@@ -91,6 +93,9 @@ interface ListeningProjectContentProps {
     options: string[];
     correctAnswer: string;
     explanation: string;
+    scriptQuote: string | null;
+    distractors: { text: string; explanation: string }[];
+    paraphrase: { questionPhrase: string; scriptPhrase: string } | null;
   }[];
   sessions: {
     id: number;
@@ -100,6 +105,13 @@ interface ListeningProjectContentProps {
     submitted: boolean;
     answers: { id: number; questionId: number; userAnswer: string }[];
   }[];
+  vocabulary: {
+    id: number;
+    word: string;
+    definition: string;
+    exampleUsage: string;
+    ieltsRelevance: string;
+  }[];
 }
 
 function ListeningProjectContent({
@@ -108,19 +120,33 @@ function ListeningProjectContent({
   scripts,
   questions,
   sessions,
+  vocabulary,
 }: ListeningProjectContentProps) {
   const isLoading = useChatLoading();
-  const [activeTab, setActiveTab] = useState("section-1");
 
   const hasScripts = scripts.length > 0;
   const hasQuestions = questions.length > 0;
+  const hasVocabulary = vocabulary.length > 0;
   const isWaiting = !hasScripts && !hasQuestions;
-
-  const latestSession = sessions.at(0);
-  const isSubmitted = latestSession?.submitted ?? false;
 
   // Determine available sections from scripts
   const sectionNumbers = scripts.map((s) => s.sectionNumber);
+  const firstSectionTab =
+    sectionNumbers.length > 0 ? `section-${sectionNumbers[0]}` : "section-1";
+
+  const [activeTab, setActiveTab] = useState(firstSectionTab);
+
+  // Reset to first available section tab if current tab is no longer available
+  if (activeTab === "vocabulary" && !hasVocabulary) setActiveTab(firstSectionTab);
+  if (
+    activeTab.startsWith("section-") &&
+    sectionNumbers.length > 0 &&
+    !sectionNumbers.includes(Number(activeTab.replace("section-", "")))
+  )
+    setActiveTab(firstSectionTab);
+
+  const latestSession = sessions.at(0);
+  const isSubmitted = latestSession?.submitted ?? false;
 
   if (isWaiting) return <ListeningProjectSkeleton />;
 
@@ -150,6 +176,12 @@ function ListeningProjectContent({
                 Section {num}
               </TabsTrigger>
             ))}
+            {hasVocabulary && (
+              <TabsTrigger value="vocabulary">
+                <BookAIcon className="mr-1 size-3.5" />
+                Vocab ({vocabulary.length})
+              </TabsTrigger>
+            )}
           </TabsList>
         </div>
 
@@ -189,6 +221,7 @@ function ListeningProjectContent({
                   <ListeningQuestions
                     chatId={chatId}
                     disabled={isLoading}
+                    firstSectionNumber={sectionNumbers[0]}
                     questions={sectionQuestions}
                     sectionNumber={num}
                     sessions={sessions}
@@ -199,6 +232,7 @@ function ListeningProjectContent({
                 {isSubmitted && sectionScript.length > 0 && (
                   <ListeningScript
                     isSubmitted={isSubmitted}
+                    questions={sectionQuestions}
                     scripts={sectionScript}
                   />
                 )}
@@ -206,6 +240,16 @@ function ListeningProjectContent({
             </TabsContent>
           );
         })}
+
+        {hasVocabulary && (
+          <TabsContent
+            forceMount
+            className="min-h-0 flex-1 data-[state=inactive]:hidden"
+            value="vocabulary"
+          >
+            <ListeningVocabulary disabled={isLoading} vocabulary={vocabulary} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
