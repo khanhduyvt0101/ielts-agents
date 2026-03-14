@@ -102,8 +102,9 @@ function formatScriptWithHighlights(
 ): React.ReactNode {
   const quotes =
     questions
-      ?.filter((q): q is QuestionData & { scriptQuote: string } =>
-        q.scriptQuote !== null,
+      ?.filter(
+        (q): q is QuestionData & { scriptQuote: string } =>
+          q.scriptQuote !== null,
       )
       .map((q) => ({
         quote: q.scriptQuote,
@@ -119,9 +120,7 @@ function formatScriptWithHighlights(
 
     const content: React.ReactNode = speakerMatch ? (
       <>
-        <span className="font-semibold text-primary">
-          {speakerMatch[0]}
-        </span>
+        <span className="font-semibold text-primary">{speakerMatch[0]}</span>
         {highlightQuotes(line.slice(speakerMatch[0].length), quotes)}
       </>
     ) : (

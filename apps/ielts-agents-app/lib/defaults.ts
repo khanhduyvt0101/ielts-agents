@@ -286,6 +286,10 @@ queryDefaults(trpcOptions.reading.getReadingData.queryOptions(queryInput()));
 
 queryDefaults(trpcOptions.reading.getReadingConfig.queryOptions(queryInput()));
 
-queryDefaults(trpcOptions.listening.getListeningData.queryOptions(queryInput()));
+queryDefaults(
+  trpcOptions.listening.getListeningData.queryOptions(queryInput()),
+);
 
-queryDefaults(trpcOptions.listening.getListeningConfig.queryOptions(queryInput()));
+queryDefaults(
+  trpcOptions.listening.getListeningConfig.queryOptions(queryInput()),
+);

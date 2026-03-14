@@ -126,7 +126,7 @@ export async function createAgentStream(
         1,
         Math.ceil(
           calculateTotalCredits(creditsUsage) +
-            languageModelUsageToCredits(usage, "openai:gpt-5-mini"),
+            languageModelUsageToCredits(usage, "openai:gpt-5.2-chat-latest"),
         ),
       );
       await Promise.all([

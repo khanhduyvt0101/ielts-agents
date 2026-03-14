@@ -393,8 +393,7 @@ export function ListeningQuestions({
 
   // Show timer and results only on the first section tab to avoid duplication
   const isFirstSection =
-    sectionNumber === undefined ||
-    sectionNumber === (firstSectionNumber ?? 1);
+    sectionNumber === undefined || sectionNumber === (firstSectionNumber ?? 1);
 
   return (
     <div className="space-y-6 p-4 pb-8">
@@ -628,23 +627,22 @@ export function ListeningQuestions({
                               </div>
                             )}
 
-                            {isWrong &&
-                              question.distractors.length > 0 && (
-                                <div className="rounded-md border-l-2 border-amber-400 bg-amber-50/50 p-2 dark:bg-amber-950/20">
-                                  <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                                    Distractors:
+                            {isWrong && question.distractors.length > 0 && (
+                              <div className="rounded-md border-l-2 border-amber-400 bg-amber-50/50 p-2 dark:bg-amber-950/20">
+                                <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                                  Distractors:
+                                </p>
+                                {question.distractors.map((d, idx) => (
+                                  <p
+                                    key={idx}
+                                    className="text-xs text-amber-600 dark:text-amber-400"
+                                  >
+                                    &bull; &ldquo;{d.text}&rdquo; &mdash;{" "}
+                                    {d.explanation}
                                   </p>
-                                  {question.distractors.map((d, idx) => (
-                                    <p
-                                      key={idx}
-                                      className="text-xs text-amber-600 dark:text-amber-400"
-                                    >
-                                      &bull; &ldquo;{d.text}&rdquo; &mdash;{" "}
-                                      {d.explanation}
-                                    </p>
-                                  ))}
-                                </div>
-                              )}
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

@@ -50,7 +50,9 @@ const generateScript = tool({
       )
       .min(1)
       .max(4)
-      .describe("Array of section scripts (4 for full test, 1 for single-section practice)"),
+      .describe(
+        "Array of section scripts (4 for full test, 1 for single-section practice)",
+      ),
   }),
   execute: async ({ sections }, { experimental_context }) => {
     const ctx = experimental_context as ListeningToolContext;
@@ -371,7 +373,9 @@ const generateQuestions = tool({
                   .describe("The distractor text mentioned in the script"),
                 explanation: z
                   .string()
-                  .describe("Why this is a distractor and not the correct answer"),
+                  .describe(
+                    "Why this is a distractor and not the correct answer",
+                  ),
               }),
             )
             .optional()
@@ -521,7 +525,9 @@ const extractVocabulary = tool({
       )
       .min(5)
       .max(15)
-      .describe("Array of vocabulary words extracted from the listening scripts"),
+      .describe(
+        "Array of vocabulary words extracted from the listening scripts",
+      ),
   }),
   execute: async ({ words }, { experimental_context }) => {
     const ctx = experimental_context as ListeningToolContext;

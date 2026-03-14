@@ -137,7 +137,8 @@ function ListeningProjectContent({
   const [activeTab, setActiveTab] = useState(firstSectionTab);
 
   // Reset to first available section tab if current tab is no longer available
-  if (activeTab === "vocabulary" && !hasVocabulary) setActiveTab(firstSectionTab);
+  if (activeTab === "vocabulary" && !hasVocabulary)
+    setActiveTab(firstSectionTab);
   if (
     activeTab.startsWith("section-") &&
     sectionNumbers.length > 0 &&
