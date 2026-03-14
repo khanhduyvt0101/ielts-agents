@@ -801,34 +801,19 @@ function QuestionFeedback({
       </p>
 
       {question.linearthinking ? (
-        <Tabs className="mt-2 w-full" defaultValue="linearthinking">
-          <TabsList className="h-8 w-full justify-start rounded-none border-b bg-transparent p-0">
-            <TabsTrigger
-              className="relative h-8 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 text-xs font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-              value="linearthinking"
-            >
-              Linearthinking
-            </TabsTrigger>
-            <TabsTrigger
-              className="relative h-8 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 text-xs font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-              value="summary"
-            >
-              Summary
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent
-            className="mt-2 text-xs whitespace-pre-wrap text-muted-foreground"
-            value="linearthinking"
-          >
+        <div className="mt-2 space-y-2">
+          <p className="text-xs whitespace-pre-wrap text-muted-foreground">
             {question.linearthinking}
-          </TabsContent>
-          <TabsContent
-            className="mt-2 text-xs text-muted-foreground"
-            value="summary"
-          >
-            {question.explanation}
-          </TabsContent>
-        </Tabs>
+          </p>
+          <div className="rounded-md bg-muted/50 p-2">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+              Summary
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {question.explanation}
+            </p>
+          </div>
+        </div>
       ) : (
         <p className="text-xs text-muted-foreground">{question.explanation}</p>
       )}
@@ -1083,34 +1068,19 @@ function TableCompletionGroup({
                 Q{question.questionNumber}:
               </p>
               {question.linearthinking ? (
-                <Tabs className="mt-1 w-full" defaultValue="linearthinking">
-                  <TabsList className="h-7 w-full justify-start rounded-none border-b bg-transparent p-0">
-                    <TabsTrigger
-                      className="relative h-7 rounded-none border-b-2 border-b-transparent bg-transparent px-3 pt-1 pb-2 text-[10px] font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                      value="linearthinking"
-                    >
-                      Linearthinking
-                    </TabsTrigger>
-                    <TabsTrigger
-                      className="relative h-7 rounded-none border-b-2 border-b-transparent bg-transparent px-3 pt-1 pb-2 text-[10px] font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                      value="summary"
-                    >
-                      Summary
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent
-                    className="mt-1 text-xs whitespace-pre-wrap text-muted-foreground"
-                    value="linearthinking"
-                  >
+                <div className="mt-1 space-y-2">
+                  <p className="text-xs whitespace-pre-wrap text-muted-foreground">
                     {question.linearthinking}
-                  </TabsContent>
-                  <TabsContent
-                    className="mt-1 text-xs text-muted-foreground"
-                    value="summary"
-                  >
-                    {question.explanation}
-                  </TabsContent>
-                </Tabs>
+                  </p>
+                  <div className="rounded-md bg-muted/50 p-2">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                      Summary
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {question.explanation}
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <p className="mt-1 text-xs text-muted-foreground">
                   {question.explanation}
