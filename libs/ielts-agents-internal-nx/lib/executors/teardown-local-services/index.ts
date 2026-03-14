@@ -11,10 +11,7 @@ const BATCH_SIZE = 5;
 
 function isRateLimitError(error: unknown): boolean {
   if (error instanceof Stripe.errors.StripeRateLimitError) return true;
-  if (
-    error instanceof Stripe.errors.StripeError &&
-    error.statusCode === 429
-  )
+  if (error instanceof Stripe.errors.StripeError && error.statusCode === 429)
     return true;
   if (error instanceof Error && error.message.includes("rate limit"))
     return true;
