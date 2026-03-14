@@ -830,10 +830,7 @@ function QuestionFeedback({
             Distractors:
           </p>
           {question.distractors.map((d, idx) => (
-            <p
-              key={idx}
-              className="text-xs text-amber-600 dark:text-amber-400"
-            >
+            <p key={idx} className="text-xs text-amber-600 dark:text-amber-400">
               &bull; &ldquo;{d.text}&rdquo; &mdash; {d.explanation}
             </p>
           ))}
@@ -867,9 +864,7 @@ function TableCompletionGroup({
   const tableData = tableSource?.tableData;
 
   // Build a map from question number to question for marker resolution
-  const questionByNumber = new Map(
-    questions.map((q) => [q.questionNumber, q]),
-  );
+  const questionByNumber = new Map(questions.map((q) => [q.questionNumber, q]));
 
   // Check if table markers properly resolve to individual questions
   // If not (e.g., agent used {{Q8a}} style with a single question), skip the table
