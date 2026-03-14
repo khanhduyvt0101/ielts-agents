@@ -22,7 +22,6 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Progress } from "~/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { Switch } from "~/components/ui/switch";
 import { cn } from "~/lib/utils";
@@ -56,6 +55,8 @@ interface ListeningQuestionsProps {
   questions: QuestionData[];
   sessions: SessionData[];
   disabled?: boolean;
+  sectionNumber?: number;
+  totalQuestions?: QuestionData[];
 }
 
 const questionTypeLabels: Record<string, string> = {
@@ -187,6 +188,8 @@ export function ListeningQuestions({
   questions,
   sessions,
   disabled,
+  sectionNumber,
+  totalQuestions,
 }: ListeningQuestionsProps) {
   const sendMessage = useSendMessage();
   const isChatLoading = useChatLoading();
@@ -287,7 +290,9 @@ export function ListeningQuestions({
     [submitted, chatId, saveAnswer],
   );
 
-  const answeredCount = Object.values(answers).filter((v) => v !== "").length;
+  const allQuestions = totalQuestions ?? questions;
+  const allAnsweredCount = Object.values(answers).filter((v) => v !== "").length;
+  const answeredCount = allAnsweredCount;
 
   const handleSubmit = useCallback(() => {
     if (submittingRef.current) return;
@@ -365,7 +370,7 @@ export function ListeningQuestions({
     if (latestSession?.submitted && latestSession.score !== null)
       return latestSession.score;
     let correct = 0;
-    for (const q of questions) {
+    for (const q of allQuestions) {
       const userAnswer = (answers[q.id] ?? "").trim().toLowerCase();
       if (userAnswer === q.correctAnswer.trim().toLowerCase()) correct++;
     }
@@ -373,241 +378,243 @@ export function ListeningQuestions({
   })();
 
   const percentage =
-    submitted && questions.length > 0
-      ? Math.round((score / questions.length) * 100)
+    submitted && allQuestions.length > 0
+      ? Math.round((score / allQuestions.length) * 100)
       : 0;
 
   const remainingTime = TIMER_LIMIT - elapsedSeconds;
 
+  // Show timer and results only on the first section tab to avoid duplication
+  const isFirstSection = sectionNumber === undefined || sectionNumber === 1;
+
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-6 p-4 pb-8">
-        {/* Timer toggle */}
-        {!submitted && (
-          <div className="flex items-center justify-between rounded-lg border bg-card p-3">
-            <div className="flex items-center gap-2">
-              <ClockIcon className="size-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Timed Practice</span>
-              <span className="text-xs text-muted-foreground">(30 min)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {timerEnabled && (
-                <>
-                  <span
-                    className={cn(
-                      "font-mono text-sm font-semibold",
-                      remainingTime <= 60 && "text-red-500",
-                      remainingTime <= 300 &&
-                        remainingTime > 60 &&
-                        "text-amber-500",
-                    )}
-                  >
-                    {formatTime(remainingTime)}
-                  </span>
-                  <Button
-                    disabled={isDisabled}
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setTimerRunning((prev) => !prev);
-                    }}
-                  >
-                    {timerRunning ? (
-                      <PauseIcon className="size-3.5" />
-                    ) : (
-                      <PlayIcon className="size-3.5" />
-                    )}
-                  </Button>
-                </>
-              )}
-              <Switch
-                checked={timerEnabled}
-                disabled={isDisabled}
-                onCheckedChange={(checked) => {
-                  setTimerEnabled(checked);
-                  if (checked) {
-                    setTimerRunning(true);
-                    setElapsedSeconds(0);
-                  } else {
-                    setTimerRunning(false);
-                  }
-                }}
-              />
-            </div>
+    <div className="space-y-6 p-4 pb-8">
+      {/* Timer toggle - only on first section */}
+      {isFirstSection && !submitted && (
+        <div className="flex items-center justify-between rounded-lg border bg-card p-3">
+          <div className="flex items-center gap-2">
+            <ClockIcon className="size-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Timed Practice</span>
+            <span className="text-xs text-muted-foreground">(30 min)</span>
           </div>
-        )}
-
-        {/* Results */}
-        {submitted && (
-          <div className="space-y-3 rounded-lg border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Results</h3>
-              <div className="flex items-center gap-2">
-                {latestSession?.timeSpent != null && (
-                  <Badge variant="outline">
-                    <ClockIcon className="mr-1 size-3" />
-                    {formatTime(latestSession.timeSpent)}
-                  </Badge>
-                )}
-                <Badge variant={percentage >= 70 ? "default" : "destructive"}>
-                  {score}/{questions.length} ({percentage}%)
-                </Badge>
-              </div>
-            </div>
-            <Progress value={percentage} />
-            {timedOut && (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                Time&apos;s up! Your answers were auto-submitted.
-              </p>
+          <div className="flex items-center gap-2">
+            {timerEnabled && (
+              <>
+                <span
+                  className={cn(
+                    "font-mono text-sm font-semibold",
+                    remainingTime <= 60 && "text-red-500",
+                    remainingTime <= 300 &&
+                      remainingTime > 60 &&
+                      "text-amber-500",
+                  )}
+                >
+                  {formatTime(remainingTime)}
+                </span>
+                <Button
+                  disabled={isDisabled}
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setTimerRunning((prev) => !prev);
+                  }}
+                >
+                  {timerRunning ? (
+                    <PauseIcon className="size-3.5" />
+                  ) : (
+                    <PlayIcon className="size-3.5" />
+                  )}
+                </Button>
+              </>
             )}
-            <div className="flex gap-2">
-              <Button
-                disabled={isDisabled}
-                size="sm"
-                variant="outline"
-                onClick={handleRetake}
-              >
-                <RotateCcwIcon className="size-3.5" />
-                Retake Test
-              </Button>
-              <Button
-                disabled={isDisabled}
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  void sendMessage({
-                    text: "Please generate a new listening test on a different topic, targeting my weak areas.",
-                    files: [],
-                  });
-                }}
-              >
-                <RefreshCwIcon className="size-3.5" />
-                New Test
-              </Button>
+            <Switch
+              checked={timerEnabled}
+              disabled={isDisabled}
+              onCheckedChange={(checked) => {
+                setTimerEnabled(checked);
+                if (checked) {
+                  setTimerRunning(true);
+                  setElapsedSeconds(0);
+                } else {
+                  setTimerRunning(false);
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Results - only on first section */}
+      {isFirstSection && submitted && (
+        <div className="space-y-3 rounded-lg border bg-card p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Results</h3>
+            <div className="flex items-center gap-2">
+              {latestSession?.timeSpent != null && (
+                <Badge variant="outline">
+                  <ClockIcon className="mr-1 size-3" />
+                  {formatTime(latestSession.timeSpent)}
+                </Badge>
+              )}
+              <Badge variant={percentage >= 70 ? "default" : "destructive"}>
+                {score}/{allQuestions.length} ({percentage}%)
+              </Badge>
             </div>
           </div>
-        )}
-
-        {/* Questions grouped by section */}
-        {sectionGroups.map((section) => {
-          const startNum = section.questions[0].questionNumber;
-          const endNum =
-            section.questions[section.questions.length - 1].questionNumber;
-          const typeGroups = groupByType(section.questions);
-
-          return (
-            <div key={section.sectionNumber} className="space-y-4">
-              <h3 className="text-sm font-bold">
-                Section {section.sectionNumber}: Questions {startNum}-{endNum}
-              </h3>
-
-              {typeGroups.map((group) => {
-                const gStart = group.questions[0].questionNumber;
-                const gEnd =
-                  group.questions[group.questions.length - 1].questionNumber;
-                const tips = submitted ? undefined : strategyTips[group.type];
-
-                return (
-                  <div key={`${group.type}-${gStart}`} className="space-y-3">
-                    <div>
-                      <Badge variant="secondary">
-                        {questionTypeLabels[group.type] ?? group.type}
-                      </Badge>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        Q{gStart}
-                        {gStart === gEnd ? "" : `-${gEnd}`}
-                      </span>
-                    </div>
-
-                    {tips && (
-                      <StrategyTip
-                        tips={tips}
-                        type={questionTypeLabels[group.type] ?? group.type}
-                      />
-                    )}
-
-                    <Separator />
-
-                    {group.questions.map((question) => {
-                      const userAnswer = answers[question.id] ?? "";
-                      const isCorrect =
-                        submitted &&
-                        userAnswer.trim().toLowerCase() ===
-                          question.correctAnswer.trim().toLowerCase();
-                      const isWrong = submitted && !isCorrect;
-
-                      return (
-                        <div
-                          key={question.id}
-                          className={cn(
-                            "space-y-3 rounded-lg border p-3",
-                            submitted &&
-                              isCorrect &&
-                              "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
-                            submitted &&
-                              isWrong &&
-                              "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
-                          )}
-                        >
-                          <p className="text-sm font-medium">
-                            <span className="mr-2 text-muted-foreground">
-                              {question.questionNumber}.
-                            </span>
-                            {question.questionText}
-                          </p>
-
-                          <QuestionInput
-                            disabled={submitted || isDisabled}
-                            question={question}
-                            value={userAnswer}
-                            onChange={(value) => {
-                              setAnswer(question.id, value);
-                            }}
-                          />
-
-                          {submitted && (
-                            <div className="space-y-1 border-t pt-2">
-                              {isWrong && (
-                                <p className="text-xs">
-                                  <span className="font-medium text-red-600 dark:text-red-400">
-                                    Your answer:
-                                  </span>{" "}
-                                  {userAnswer || "(no answer)"}
-                                </p>
-                              )}
-                              <p className="text-xs">
-                                <span className="font-medium text-green-600 dark:text-green-400">
-                                  Correct answer:
-                                </span>{" "}
-                                {question.correctAnswer}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {question.explanation}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-
-        {!submitted && (
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              {answeredCount}/{questions.length} answered
+          <Progress value={percentage} />
+          {timedOut && (
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              Time&apos;s up! Your answers were auto-submitted.
             </p>
-            <Button disabled={isDisabled} onClick={handleSubmit}>
-              Submit Answers
+          )}
+          <div className="flex gap-2">
+            <Button
+              disabled={isDisabled}
+              size="sm"
+              variant="outline"
+              onClick={handleRetake}
+            >
+              <RotateCcwIcon className="size-3.5" />
+              Retake Test
+            </Button>
+            <Button
+              disabled={isDisabled}
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                void sendMessage({
+                  text: "Please generate a new listening test on a different topic, targeting my weak areas.",
+                  files: [],
+                });
+              }}
+            >
+              <RefreshCwIcon className="size-3.5" />
+              New Test
             </Button>
           </div>
-        )}
-      </div>
-    </ScrollArea>
+        </div>
+      )}
+
+      {/* Questions grouped by type within this section */}
+      {sectionGroups.map((section) => {
+        const startNum = section.questions[0].questionNumber;
+        const endNum =
+          section.questions[section.questions.length - 1].questionNumber;
+        const typeGroups = groupByType(section.questions);
+
+        return (
+          <div key={section.sectionNumber} className="space-y-4">
+            <h3 className="text-sm font-bold">
+              Section {section.sectionNumber}: Questions {startNum}-{endNum}
+            </h3>
+
+            {typeGroups.map((group) => {
+              const gStart = group.questions[0].questionNumber;
+              const gEnd =
+                group.questions[group.questions.length - 1].questionNumber;
+              const tips = submitted ? undefined : strategyTips[group.type];
+
+              return (
+                <div key={`${group.type}-${gStart}`} className="space-y-3">
+                  <div>
+                    <Badge variant="secondary">
+                      {questionTypeLabels[group.type] ?? group.type}
+                    </Badge>
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      Q{gStart}
+                      {gStart === gEnd ? "" : `-${gEnd}`}
+                    </span>
+                  </div>
+
+                  {tips && (
+                    <StrategyTip
+                      tips={tips}
+                      type={questionTypeLabels[group.type] ?? group.type}
+                    />
+                  )}
+
+                  <Separator />
+
+                  {group.questions.map((question) => {
+                    const userAnswer = answers[question.id] ?? "";
+                    const isCorrect =
+                      submitted &&
+                      userAnswer.trim().toLowerCase() ===
+                        question.correctAnswer.trim().toLowerCase();
+                    const isWrong = submitted && !isCorrect;
+
+                    return (
+                      <div
+                        key={question.id}
+                        className={cn(
+                          "space-y-3 rounded-lg border p-3",
+                          submitted &&
+                            isCorrect &&
+                            "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
+                          submitted &&
+                            isWrong &&
+                            "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
+                        )}
+                      >
+                        <p className="text-sm font-medium">
+                          <span className="mr-2 text-muted-foreground">
+                            {question.questionNumber}.
+                          </span>
+                          {question.questionText}
+                        </p>
+
+                        <QuestionInput
+                          disabled={submitted || isDisabled}
+                          question={question}
+                          value={userAnswer}
+                          onChange={(value) => {
+                            setAnswer(question.id, value);
+                          }}
+                        />
+
+                        {submitted && (
+                          <div className="space-y-1 border-t pt-2">
+                            {isWrong && (
+                              <p className="text-xs">
+                                <span className="font-medium text-red-600 dark:text-red-400">
+                                  Your answer:
+                                </span>{" "}
+                                {userAnswer || "(no answer)"}
+                              </p>
+                            )}
+                            <p className="text-xs">
+                              <span className="font-medium text-green-600 dark:text-green-400">
+                                Correct answer:
+                              </span>{" "}
+                              {question.correctAnswer}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {question.explanation}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+
+      {/* Submit button - only on last section or when no section specified */}
+      {!submitted && (
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {answeredCount}/{allQuestions.length} answered
+          </p>
+          <Button disabled={isDisabled} onClick={handleSubmit}>
+            Submit Answers
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
 

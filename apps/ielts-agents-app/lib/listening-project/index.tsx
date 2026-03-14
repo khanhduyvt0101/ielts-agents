@@ -1,11 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  FileTextIcon,
-  HeadphonesIcon,
-  ListChecksIcon,
-  LoaderIcon,
-  Volume2Icon,
-} from "lucide-react";
+import { HeadphonesIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Skeleton } from "~/components/ui/skeleton";
@@ -116,7 +110,7 @@ function ListeningProjectContent({
   sessions,
 }: ListeningProjectContentProps) {
   const isLoading = useChatLoading();
-  const [activeTab, setActiveTab] = useState("audio");
+  const [activeTab, setActiveTab] = useState("section-1");
 
   const hasScripts = scripts.length > 0;
   const hasQuestions = questions.length > 0;
@@ -125,7 +119,8 @@ function ListeningProjectContent({
   const latestSession = sessions.at(0);
   const isSubmitted = latestSession?.submitted ?? false;
 
-  if (activeTab === "script" && !isSubmitted) setActiveTab("audio");
+  // Determine available sections from scripts
+  const sectionNumbers = scripts.map((s) => s.sectionNumber);
 
   if (isWaiting) return <ListeningProjectSkeleton />;
 
@@ -150,54 +145,66 @@ function ListeningProjectContent({
       >
         <div className="shrink-0 px-4">
           <TabsList>
-            <TabsTrigger value="audio">
-              <Volume2Icon className="mr-1 size-3.5" />
-              Audio
-            </TabsTrigger>
-            {hasQuestions && (
-              <TabsTrigger value="questions">
-                <ListChecksIcon className="mr-1 size-3.5" />
-                Questions ({questions.length})
-              </TabsTrigger>
-            )}
-            {isSubmitted && (
-              <TabsTrigger value="script">
-                <FileTextIcon className="mr-1 size-3.5" />
-                Transcript
-              </TabsTrigger>
-            )}
+            {sectionNumbers.map((num) => {
+              const script = scripts.find((s) => s.sectionNumber === num);
+              return (
+                <TabsTrigger key={num} value={`section-${num}`}>
+                  <span className="truncate">
+                    S{num}{script ? `: ${script.title}` : ""}
+                  </span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         </div>
-        <TabsContent
-          forceMount
-          className="min-h-0 flex-1 data-[state=inactive]:hidden"
-          value="audio"
-        >
-          <ListeningAudioPlayer disabled={isLoading} scripts={scripts} />
-        </TabsContent>
-        {hasQuestions && (
-          <TabsContent
-            forceMount
-            className="min-h-0 flex-1 data-[state=inactive]:hidden"
-            value="questions"
-          >
-            <ListeningQuestions
-              chatId={chatId}
-              disabled={isLoading}
-              questions={questions}
-              sessions={sessions}
-            />
-          </TabsContent>
-        )}
-        {isSubmitted && (
-          <TabsContent
-            forceMount
-            className="min-h-0 flex-1 data-[state=inactive]:hidden"
-            value="script"
-          >
-            <ListeningScript isSubmitted={isSubmitted} scripts={scripts} />
-          </TabsContent>
-        )}
+
+        {sectionNumbers.map((num) => {
+          const script = scripts.find((s) => s.sectionNumber === num);
+          const sectionQuestions = questions.filter(
+            (q) => q.sectionNumber === num,
+          );
+          const sectionScript = scripts.filter(
+            (s) => s.sectionNumber === num,
+          );
+
+          return (
+            <TabsContent
+              key={num}
+              forceMount
+              className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
+              value={`section-${num}`}
+            >
+              {/* Sticky audio player at top */}
+              <div className="shrink-0">
+                <ListeningAudioPlayer
+                  disabled={isLoading}
+                  script={script ?? null}
+                />
+              </div>
+
+              {/* Scrollable questions below */}
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                {sectionQuestions.length > 0 && (
+                  <ListeningQuestions
+                    chatId={chatId}
+                    disabled={isLoading}
+                    questions={sectionQuestions}
+                    sectionNumber={num}
+                    sessions={sessions}
+                    totalQuestions={questions}
+                  />
+                )}
+
+                {isSubmitted && sectionScript.length > 0 && (
+                  <ListeningScript
+                    isSubmitted={isSubmitted}
+                    scripts={sectionScript}
+                  />
+                )}
+              </div>
+            </TabsContent>
+          );
+        })}
       </Tabs>
     </div>
   );

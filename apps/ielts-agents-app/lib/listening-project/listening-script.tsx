@@ -7,7 +7,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
-import { ScrollArea } from "~/components/ui/scroll-area";
 
 interface ScriptData {
   id: number;
@@ -43,9 +42,8 @@ export function ListeningScript({
   }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-3 p-4">
-        {scripts.map((script) => {
+    <div className="space-y-3 p-4">
+      {scripts.map((script) => {
           const isOpen = openSections[script.sectionNumber] ?? true;
           return (
             <Collapsible
@@ -89,8 +87,7 @@ export function ListeningScript({
             </Collapsible>
           );
         })}
-      </div>
-    </ScrollArea>
+    </div>
   );
 }
 
