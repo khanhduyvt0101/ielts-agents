@@ -118,12 +118,28 @@ export const readingQuestion = pgTable("reading_question", {
       | "matching-headings"
       | "sentence-completion"
       | "summary-completion"
+      | "table-completion"
     >()
     .notNull(),
   questionText: text("question_text").notNull(),
   options: jsonb("options").$type<string[]>().default([]).notNull(),
   correctAnswer: text("correct_answer").notNull(),
   explanation: text("explanation").notNull(),
+  passageQuote: text("passage_quote"),
+  distractors: jsonb("distractors")
+    .$type<{ text: string; explanation: string }[]>()
+    .default([])
+    .notNull(),
+  paraphrase: jsonb("paraphrase")
+    .$type<{ questionPhrase: string; passagePhrase: string } | null>()
+    .default(null),
+  tableData: jsonb("table_data")
+    .$type<{
+      title: string;
+      columnHeaders: string[];
+      rows: { header: string; cells: string[] }[];
+    } | null>()
+    .default(null),
 });
 
 export const readingDefault = pgTable("reading_default", {

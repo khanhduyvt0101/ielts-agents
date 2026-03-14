@@ -438,7 +438,7 @@ const getListeningResults = tool({
 
     const scripts = await database.query.listeningScript.findMany({
       where: (table, { eq: eqOp }) => eqOp(table.chatListeningId, ctx.id),
-      columns: { sectionNumber: true, title: true },
+      columns: { sectionNumber: true, title: true, script: true },
       orderBy: (table, { asc }) => asc(table.sectionNumber),
     });
 
@@ -451,6 +451,10 @@ const getListeningResults = tool({
         type: true,
         questionText: true,
         correctAnswer: true,
+        explanation: true,
+        scriptQuote: true,
+        distractors: true,
+        paraphrase: true,
       },
       orderBy: (table, { asc }) => asc(table.questionNumber),
     });
@@ -489,6 +493,10 @@ const getListeningResults = tool({
         correctAnswer: q.correctAnswer,
         userAnswer: userAnswer || "(no answer)",
         isCorrect,
+        explanation: q.explanation,
+        scriptQuote: q.scriptQuote,
+        distractors: q.distractors,
+        paraphrase: q.paraphrase,
       };
     });
 

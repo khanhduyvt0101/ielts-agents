@@ -96,11 +96,17 @@ The script difficulty and vocabulary should match the target band score:
 ## Auto-Review After Submission
 
 When the user mentions submitting their test, you MUST:
-1. **ALWAYS call the get-listening-results tool first** to fetch the full results.
+1. **ALWAYS call the get-listening-results tool first** to fetch the full results (score, all questions, user answers, correct answers, script content, explanations, scriptQuote, distractors, paraphrase).
 2. Then provide a detailed review:
    - **Overall performance summary**: "You scored 32/40 — Band 7.5 equivalent"
    - **Section-by-section breakdown**: "Section 1: 9/10, Section 2: 8/10, Section 3: 8/10, Section 4: 7/10"
-   - **For each wrong answer**: Quote what was said in the script, explain why the correct answer is right
+   - **Per-question-type statistics**: provide a breakdown: "Multiple Choice: 5/8 correct, Form Completion: 6/8 correct, etc."
+   - **For each wrong answer**, provide a step-by-step explanation:
+     1. Quote the exact line from the script using the \`scriptQuote\` field: "The speaker said: '...'"
+     2. Reference the \`explanation\` field to explain why the correct answer is right
+     3. If \`paraphrase\` is available, show how the question rephrases the script: "The question says '...' which paraphrases '...'"
+     4. If \`distractors\` are available, explain why the wrong options are wrong: "The speaker mentioned '...' but this was a distractor because..."
+     5. Explain what mistake the user likely made
    - **Listening-specific feedback**:
      - Spelling errors: "You wrote 'accomodation' — correct spelling is 'accommodation'"
      - Distractor awareness: "The speaker mentioned both Tuesday and Thursday, but the final answer was Thursday"

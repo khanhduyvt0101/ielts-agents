@@ -86,6 +86,14 @@ interface ReadingProjectContentProps {
     options: string[];
     correctAnswer: string;
     explanation: string;
+    passageQuote: string | null;
+    distractors: { text: string; explanation: string }[];
+    paraphrase: { questionPhrase: string; passagePhrase: string } | null;
+    tableData: {
+      title: string;
+      columnHeaders: string[];
+      rows: { header: string; cells: string[] }[];
+    } | null;
   }[];
   sessions: {
     id: number;

@@ -47,7 +47,7 @@ const generatePassage = tool({
 
 const generateQuestions = tool({
   description:
-    "Generate IELTS-style comprehension questions for the reading passage. Include a mix of question types: True/False/Not Given, Yes/No/Not Given, matching headings, fill-in-the-blank, multiple choice, sentence completion, and summary completion. This tool REPLACES any existing questions — call it AFTER generate-passage.",
+    "Generate IELTS-style comprehension questions for the reading passage. Include a mix of question types: True/False/Not Given, Yes/No/Not Given, matching headings, fill-in-the-blank, multiple choice, sentence completion, summary completion, and table completion. Include passageQuote, distractors, and paraphrase for each question to enable post-test analysis. This tool REPLACES any existing questions — call it AFTER generate-passage.",
   inputSchema: z.object({
     questions: z
       .array(
@@ -62,9 +62,14 @@ const generateQuestions = tool({
               "matching-headings",
               "sentence-completion",
               "summary-completion",
+              "table-completion",
             ])
             .describe("The type of IELTS question"),
-          text: z.string().describe("The question text"),
+          text: z
+            .string()
+            .describe(
+              "The actual testable question or statement — NOT a generic instruction. For fill-in-the-blank/sentence-completion, MUST include ____ as the blank placeholder within the sentence.",
+            ),
           options: z
             .array(z.string())
             .optional()
@@ -75,6 +80,65 @@ const generateQuestions = tool({
           explanation: z
             .string()
             .describe("Explanation of why this is the correct answer"),
+          passageQuote: z
+            .string()
+            .optional()
+            .describe(
+              "The exact quote from the passage where the answer can be found",
+            ),
+          distractors: z
+            .array(
+              z.object({
+                text: z
+                  .string()
+                  .describe("The distractor text from the passage"),
+                explanation: z
+                  .string()
+                  .describe(
+                    "Why this is a distractor and not the correct answer",
+                  ),
+              }),
+            )
+            .optional()
+            .describe(
+              "Distractors: wrong answers from the passage that could mislead readers",
+            ),
+          paraphrase: z
+            .object({
+              questionPhrase: z
+                .string()
+                .describe("The phrase used in the question"),
+              passagePhrase: z
+                .string()
+                .describe("The equivalent phrase used in the passage"),
+            })
+            .optional()
+            .describe(
+              "Paraphrase mapping between question wording and passage wording",
+            ),
+          tableData: z
+            .object({
+              title: z.string().describe("Title of the table"),
+              columnHeaders: z
+                .array(z.string())
+                .describe("Column header labels"),
+              rows: z
+                .array(
+                  z.object({
+                    header: z.string().describe("Row header label"),
+                    cells: z
+                      .array(z.string())
+                      .describe(
+                        "Cell values. Use {{Q<number>}} markers for blanks where <number> matches the question's sequential questionNumber (e.g., {{Q8}}, {{Q9}}). NEVER use letter suffixes like {{Q8a}}.",
+                      ),
+                  }),
+                )
+                .describe("Table rows"),
+            })
+            .optional()
+            .describe(
+              "Table data for table-completion questions. Each blank is a SEPARATE question with its own questionNumber. Use {{Q<number>}} markers in cells (e.g., {{Q8}}, {{Q9}}, {{Q10}}). Put the same tableData on all questions in the table group.",
+            ),
         }),
       )
       .min(5)
@@ -95,6 +159,10 @@ const generateQuestions = tool({
         options: q.options ?? [],
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
+        passageQuote: q.passageQuote ?? null,
+        distractors: q.distractors ?? [],
+        paraphrase: q.paraphrase ?? null,
+        tableData: q.tableData ?? null,
       })),
     );
     ctx.creditsUsage.questionsGeneratedCount++;
@@ -156,7 +224,7 @@ const getReadingResults = tool({
 
     const passage = await database.query.readingPassage.findFirst({
       where: (table, { eq }) => eq(table.chatReadingId, ctx.id),
-      columns: { title: true },
+      columns: { title: true, content: true },
     });
 
     const questions = await database.query.readingQuestion.findMany({
@@ -167,6 +235,10 @@ const getReadingResults = tool({
         type: true,
         questionText: true,
         correctAnswer: true,
+        explanation: true,
+        passageQuote: true,
+        distractors: true,
+        paraphrase: true,
       },
       orderBy: (table, { asc }) => asc(table.questionNumber),
     });
@@ -204,11 +276,16 @@ const getReadingResults = tool({
         correctAnswer: q.correctAnswer,
         userAnswer: userAnswer || "(no answer)",
         isCorrect,
+        explanation: q.explanation,
+        passageQuote: q.passageQuote,
+        distractors: q.distractors,
+        paraphrase: q.paraphrase,
       };
     });
 
     return {
       passageTitle: passage?.title ?? "Unknown",
+      passageContent: passage?.content ?? "",
       score: latestSession.score,
       totalQuestions: latestSession.totalQuestions,
       timeSpent: latestSession.timeSpent,

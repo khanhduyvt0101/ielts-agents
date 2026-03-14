@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import {
+  CheckCircleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   ClockIcon,
@@ -8,6 +9,7 @@ import {
   PlayIcon,
   RefreshCwIcon,
   RotateCcwIcon,
+  XCircleIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -41,6 +43,14 @@ interface QuestionData {
   options: string[];
   correctAnswer: string;
   explanation: string;
+  passageQuote: string | null;
+  distractors: { text: string; explanation: string }[];
+  paraphrase: { questionPhrase: string; passagePhrase: string } | null;
+  tableData: {
+    title: string;
+    columnHeaders: string[];
+    rows: { header: string; cells: string[] }[];
+  } | null;
 }
 
 interface SessionData {
@@ -72,13 +82,32 @@ const questionTypeLabels: Record<string, string> = {
   "matching-headings": "Matching Headings",
   "sentence-completion": "Sentence Completion",
   "summary-completion": "Summary Completion",
+  "table-completion": "Table Completion",
+};
+
+const questionTypeInstructions: Record<string, string> = {
+  "true-false-not-given":
+    "Do the following statements agree with the information given in the passage? Write **TRUE**, **FALSE**, or **NOT GIVEN**.",
+  "yes-no-not-given":
+    "Do the following statements agree with the claims of the writer? Write **YES**, **NO**, or **NOT GIVEN**.",
+  "multiple-choice": "Choose the correct letter, **A**, **B**, **C** or **D**.",
+  "fill-in-the-blank":
+    "Complete the sentences below. Choose **NO MORE THAN TWO WORDS AND/OR A NUMBER** from the passage for each answer.",
+  "sentence-completion":
+    "Complete the sentences below. Choose **NO MORE THAN THREE WORDS** from the passage for each answer.",
+  "summary-completion":
+    "Complete the summary below. Choose **ONE WORD ONLY** from the passage for each answer.",
+  "matching-headings":
+    "Choose the correct heading for each section from the list of headings below.",
+  "table-completion":
+    "Complete the table below. Choose **NO MORE THAN TWO WORDS** from the passage for each answer.",
 };
 
 const strategyTips: Partial<Record<string, string[]>> = {
   "true-false-not-given": [
     "Focus on whether the passage STATES the information, not whether it's logically true.",
-    "\"Not Given\" means the passage doesn't mention it at all — don't assume.",
-    'Watch for absolute words like "always", "never", "all" — they\'re often False.',
+    "\"Not Given\" means the passage doesn't mention it at all \u2014 don't assume.",
+    'Watch for absolute words like "always", "never", "all" \u2014 they\'re often False.',
     "Find the exact sentence in the passage before deciding. Don't rely on general knowledge.",
   ],
   "yes-no-not-given": [
@@ -88,27 +117,27 @@ const strategyTips: Partial<Record<string, string[]>> = {
     "Look for opinion markers: 'I believe', 'it is argued that', 'the evidence suggests'.",
   ],
   "multiple-choice": [
-    "Read all options before choosing — eliminate obviously wrong answers first.",
+    "Read all options before choosing \u2014 eliminate obviously wrong answers first.",
     "The correct answer is often a paraphrase of the passage, not the exact words.",
     "Watch for distractors that use words from the passage but change the meaning.",
     "If two options seem correct, look for the one that is more specifically supported.",
   ],
   "fill-in-the-blank": [
-    "Answers usually come directly from the passage — look for exact words.",
+    "Answers usually come directly from the passage \u2014 look for exact words.",
     "Check the word limit carefully (e.g., 'NO MORE THAN TWO WORDS').",
     "Read the sentence with your answer to make sure it's grammatically correct.",
     "Scan for synonyms of key words in the question to locate the right paragraph.",
   ],
   "matching-headings": [
     "Read each paragraph and identify the MAIN IDEA before looking at the headings.",
-    "Don't match based on a single word — the heading must capture the whole paragraph.",
+    "Don't match based on a single word \u2014 the heading must capture the whole paragraph.",
     "Some headings are distractors and won't match any paragraph.",
     "Start with the paragraphs you're most confident about to narrow down options.",
   ],
   "sentence-completion": [
     "Find the relevant section in the passage that discusses the sentence topic.",
     "The answer must complete the sentence grammatically and meaningfully.",
-    "Words usually come directly from the passage — don't paraphrase.",
+    "Words usually come directly from the passage \u2014 don't paraphrase.",
     "Pay attention to the word limit specified in the instructions.",
   ],
   "summary-completion": [
@@ -116,6 +145,12 @@ const strategyTips: Partial<Record<string, string[]>> = {
     "If given a word bank, eliminate options as you use them.",
     "The summary follows the same order as the relevant section of the passage.",
     "Check that each completed sentence makes grammatical sense.",
+  ],
+  "table-completion": [
+    "Read column and row headings to understand the table structure.",
+    "Predict the type of information needed for each blank.",
+    "Answers follow the order of the passage \u2014 work through row by row.",
+    "Keep within the word limit specified.",
   ],
 };
 
@@ -141,6 +176,14 @@ function buildAnswerMap(
   const map: Record<number, string> = {};
   for (const a of answers) map[a.questionId] = a.userAnswer;
   return map;
+}
+
+interface TypeStat {
+  type: string;
+  total: number;
+  correct: number;
+  wrong: number;
+  skipped: number;
 }
 
 const TIMER_LIMIT = 20 * 60; // 20 minutes in seconds
@@ -354,6 +397,36 @@ export function ReadingQuestions({
 
   const remainingTime = TIMER_LIMIT - elapsedSeconds;
 
+  // Per-type statistics for results breakdown
+  const typeStats = useMemo<TypeStat[]>(() => {
+    if (!submitted) return [];
+    const statsMap = new Map<
+      string,
+      { total: number; correct: number; wrong: number; skipped: number }
+    >();
+    for (const q of questions) {
+      const stat = statsMap.get(q.type) ?? {
+        total: 0,
+        correct: 0,
+        wrong: 0,
+        skipped: 0,
+      };
+      stat.total++;
+      const userAnswer = (answers[q.id] ?? "").trim();
+      if (!userAnswer) stat.skipped++;
+      else if (
+        userAnswer.toLowerCase() === q.correctAnswer.trim().toLowerCase()
+      )
+        stat.correct++;
+      else stat.wrong++;
+      statsMap.set(q.type, stat);
+    }
+    return [...statsMap.entries()].map(([type, stat]) => ({ type, ...stat }));
+  }, [submitted, questions, answers]);
+
+  // Answer key toggle
+  const [answerKeyOpen, setAnswerKeyOpen] = useState(false);
+
   return (
     <ScrollArea className="h-full">
       <div className="space-y-6 p-4 pb-8">
@@ -435,6 +508,101 @@ export function ReadingQuestions({
                 Time&apos;s up! Your answers were auto-submitted.
               </p>
             )}
+
+            {/* Per-type stats breakdown */}
+            {typeStats.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pr-2 pb-1 font-medium">Question Type</th>
+                      <th className="px-2 pb-1 text-center font-medium">
+                        Total
+                      </th>
+                      <th className="px-2 pb-1 text-center font-medium text-green-600 dark:text-green-400">
+                        Correct
+                      </th>
+                      <th className="px-2 pb-1 text-center font-medium text-red-600 dark:text-red-400">
+                        Wrong
+                      </th>
+                      <th className="pb-1 pl-2 text-center font-medium">
+                        Skipped
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {typeStats.map((stat) => (
+                      <tr key={stat.type} className="border-b last:border-0">
+                        <td className="py-1 pr-2">
+                          {questionTypeLabels[stat.type] ?? stat.type}
+                        </td>
+                        <td className="px-2 py-1 text-center">{stat.total}</td>
+                        <td className="px-2 py-1 text-center text-green-600 dark:text-green-400">
+                          {stat.correct}
+                        </td>
+                        <td className="px-2 py-1 text-center text-red-600 dark:text-red-400">
+                          {stat.wrong}
+                        </td>
+                        <td className="py-1 pl-2 text-center text-muted-foreground">
+                          {stat.skipped}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Answer key grid */}
+            <Collapsible open={answerKeyOpen} onOpenChange={setAnswerKeyOpen}>
+              <CollapsibleTrigger asChild>
+                <button
+                  className="flex w-full items-center gap-2 text-left text-xs font-medium text-muted-foreground hover:text-foreground"
+                  type="button"
+                >
+                  {answerKeyOpen ? (
+                    <ChevronUpIcon className="size-3.5" />
+                  ) : (
+                    <ChevronDownIcon className="size-3.5" />
+                  )}
+                  Answer Key
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
+                  {questions.map((q) => {
+                    const userAnswer = (answers[q.id] ?? "").trim();
+                    const isCorrect =
+                      userAnswer.toLowerCase() ===
+                      q.correctAnswer.trim().toLowerCase();
+                    return (
+                      <div
+                        key={q.id}
+                        className="flex items-center gap-1.5 text-xs"
+                      >
+                        <span
+                          className={cn(
+                            "flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white",
+                            isCorrect ? "bg-green-500" : "bg-red-500",
+                          )}
+                        >
+                          {q.questionNumber}
+                        </span>
+                        {isCorrect ? (
+                          <CheckCircleIcon className="size-3 shrink-0 text-green-500" />
+                        ) : (
+                          <XCircleIcon className="size-3 shrink-0 text-red-500" />
+                        )}
+                        <span className="truncate text-muted-foreground">
+                          {q.correctAnswer}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
             <div className="flex gap-2">
               <Button
                 disabled={isDisabled}
@@ -463,22 +631,50 @@ export function ReadingQuestions({
           </div>
         )}
 
-        {/* Question groups with strategy tips */}
+        {/* Question groups with instruction headers */}
         {groups.map((group) => {
           const startNum = group.questions[0].questionNumber;
           const endNum =
             group.questions[group.questions.length - 1].questionNumber;
+          const instruction = questionTypeInstructions[group.type];
+
+          // Table completion renders as a special group
+          if (group.type === "table-completion") {
+            return (
+              <TableCompletionGroup
+                key={`${group.type}-${startNum}`}
+                answers={answers}
+                disabled={submitted || isDisabled}
+                endNum={endNum}
+                instruction={instruction}
+                questions={group.questions}
+                setAnswer={setAnswer}
+                startNum={startNum}
+                submitted={submitted}
+              />
+            );
+          }
 
           return (
             <div key={`${group.type}-${startNum}`} className="space-y-4">
-              <div>
-                <h3 className="text-sm font-semibold">
+              {/* Instruction banner */}
+              <div className="rounded-lg bg-primary p-3 text-primary-foreground">
+                <p className="text-xs font-medium">
                   Questions {startNum}
-                  {startNum === endNum ? "" : `-${endNum}`}
-                </h3>
-                <Badge className="mt-1" variant="secondary">
+                  {startNum === endNum ? "" : `\u2013${endNum}`}:{" "}
                   {questionTypeLabels[group.type] ?? group.type}
-                </Badge>
+                </p>
+                {instruction && (
+                  <p
+                    dangerouslySetInnerHTML={{
+                      __html: instruction.replaceAll(
+                        /\*\*(.*?)\*\*/g,
+                        "<strong>$1</strong>",
+                      ),
+                    }}
+                    className="mt-1 text-xs opacity-90"
+                  />
+                )}
               </div>
 
               {/* Strategy Tips */}
@@ -514,49 +710,45 @@ export function ReadingQuestions({
                         "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
                     )}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium">
-                        <span className="mr-2 text-muted-foreground">
-                          {question.questionNumber}.
-                        </span>
-                        {question.questionText}
-                      </p>
-                      <AskAIDialog
-                        disabled={isDisabled}
-                        questionNumber={question.questionNumber}
-                        questionText={question.questionText}
-                      />
-                    </div>
+                    {(() => {
+                      const hasInlineBlank =
+                        (question.type === "fill-in-the-blank" ||
+                          question.type === "sentence-completion") &&
+                        question.questionText.includes("____");
+                      return (
+                        <>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-sm font-medium">
+                              <span className="mr-2 text-muted-foreground">
+                                {question.questionNumber}.
+                              </span>
+                              {!hasInlineBlank && question.questionText}
+                            </p>
+                            <AskAIDialog
+                              disabled={isDisabled}
+                              questionNumber={question.questionNumber}
+                              questionText={question.questionText}
+                            />
+                          </div>
 
-                    <QuestionInput
-                      disabled={submitted || isDisabled}
-                      question={question}
-                      value={userAnswer}
-                      onChange={(value) => {
-                        setAnswer(question.id, value);
-                      }}
-                    />
+                          <QuestionInput
+                            disabled={submitted || isDisabled}
+                            question={question}
+                            value={userAnswer}
+                            onChange={(value) => {
+                              setAnswer(question.id, value);
+                            }}
+                          />
+                        </>
+                      );
+                    })()}
 
                     {submitted && (
-                      <div className="space-y-1 border-t pt-2">
-                        {isWrong && (
-                          <p className="text-xs">
-                            <span className="font-medium text-red-600 dark:text-red-400">
-                              Your answer:
-                            </span>{" "}
-                            {userAnswer || "(no answer)"}
-                          </p>
-                        )}
-                        <p className="text-xs">
-                          <span className="font-medium text-green-600 dark:text-green-400">
-                            Correct answer:
-                          </span>{" "}
-                          {question.correctAnswer}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {question.explanation}
-                        </p>
-                      </div>
+                      <QuestionFeedback
+                        isWrong={isWrong}
+                        question={question}
+                        userAnswer={userAnswer}
+                      />
                     )}
                   </div>
                 );
@@ -577,6 +769,301 @@ export function ReadingQuestions({
         )}
       </div>
     </ScrollArea>
+  );
+}
+
+function QuestionFeedback({
+  question,
+  userAnswer,
+  isWrong,
+}: {
+  question: QuestionData;
+  userAnswer: string;
+  isWrong: boolean;
+}) {
+  return (
+    <div className="space-y-2 border-t pt-2">
+      {isWrong && (
+        <p className="text-xs">
+          <span className="font-medium text-red-600 dark:text-red-400">
+            Your answer:
+          </span>{" "}
+          {userAnswer || "(no answer)"}
+        </p>
+      )}
+      <p className="text-xs">
+        <span className="font-medium text-green-600 dark:text-green-400">
+          Correct answer:
+        </span>{" "}
+        {question.correctAnswer}
+      </p>
+      <p className="text-xs text-muted-foreground">{question.explanation}</p>
+
+      {question.passageQuote && (
+        <div className="rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-2 dark:bg-blue-950/20">
+          <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+            Passage quote:
+          </p>
+          <p className="text-xs text-blue-600 italic dark:text-blue-400">
+            &ldquo;{question.passageQuote}&rdquo;
+          </p>
+        </div>
+      )}
+
+      {question.paraphrase && (
+        <div className="rounded-md border-l-2 border-purple-400 bg-purple-50/50 p-2 dark:bg-purple-950/20">
+          <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
+            Paraphrase mapping:
+          </p>
+          <p className="text-xs text-purple-600 dark:text-purple-400">
+            Question: &ldquo;{question.paraphrase.questionPhrase}&rdquo;
+          </p>
+          <p className="text-xs text-purple-600 dark:text-purple-400">
+            Passage: &ldquo;{question.paraphrase.passagePhrase}&rdquo;
+          </p>
+        </div>
+      )}
+
+      {isWrong && question.distractors.length > 0 && (
+        <div className="rounded-md border-l-2 border-amber-400 bg-amber-50/50 p-2 dark:bg-amber-950/20">
+          <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+            Distractors:
+          </p>
+          {question.distractors.map((d, idx) => (
+            <p
+              key={idx}
+              className="text-xs text-amber-600 dark:text-amber-400"
+            >
+              &bull; &ldquo;{d.text}&rdquo; &mdash; {d.explanation}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TableCompletionGroup({
+  questions,
+  answers,
+  setAnswer,
+  disabled,
+  submitted,
+  startNum,
+  endNum,
+  instruction,
+}: {
+  questions: QuestionData[];
+  answers: Record<number, string>;
+  setAnswer: (questionId: number, value: string) => void;
+  disabled: boolean;
+  submitted: boolean;
+  startNum: number;
+  endNum: number;
+  instruction: string | undefined;
+}) {
+  // Find the first question with tableData to get the table structure
+  const tableSource = questions.find((q) => q.tableData);
+  const tableData = tableSource?.tableData;
+
+  // Build a map from question number to question for marker resolution
+  const questionByNumber = new Map(
+    questions.map((q) => [q.questionNumber, q]),
+  );
+
+  // Check if table markers properly resolve to individual questions
+  // If not (e.g., agent used {{Q8a}} style with a single question), skip the table
+  const markersValid = (() => {
+    if (!tableData) return false;
+    const markerPattern = /\{\{Q(\d+)\}\}/;
+    let foundCount = 0;
+    for (const row of tableData.rows) {
+      for (const cell of row.cells) {
+        const match = markerPattern.exec(cell);
+        if (match && questionByNumber.has(Number(match[1]))) foundCount++;
+      }
+    }
+    return foundCount > 0;
+  })();
+
+  return (
+    <div className="space-y-4">
+      {/* Instruction banner */}
+      <div className="rounded-lg bg-primary p-3 text-primary-foreground">
+        <p className="text-xs font-medium">
+          Questions {startNum}
+          {startNum === endNum ? "" : `\u2013${endNum}`}: Table Completion
+        </p>
+        {instruction && (
+          <p
+            dangerouslySetInnerHTML={{
+              __html: instruction.replaceAll(
+                /\*\*(.*?)\*\*/g,
+                "<strong>$1</strong>",
+              ),
+            }}
+            className="mt-1 text-xs opacity-90"
+          />
+        )}
+      </div>
+
+      {tableData && markersValid ? (
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium">{tableData.title}</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="p-2 text-left font-medium" />
+                  {tableData.columnHeaders.map((header, headerIdx) => (
+                    <th key={headerIdx} className="p-2 text-left font-medium">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tableData.rows.map((row, rowIdx) => (
+                  <tr key={rowIdx} className="border-b last:border-0">
+                    <td className="p-2 font-medium">{row.header}</td>
+                    {row.cells.map((cell, cellIdx) => {
+                      const markerMatch = /\{\{Q(\d+)\}\}/.exec(cell);
+                      if (markerMatch) {
+                        const qNum = Number(markerMatch[1]);
+                        const q = questionByNumber.get(qNum);
+                        if (q) {
+                          const userAnswer = answers[q.id] ?? "";
+                          const isCorrect =
+                            submitted &&
+                            userAnswer.trim().toLowerCase() ===
+                              q.correctAnswer.trim().toLowerCase();
+                          const isWrong = submitted && !isCorrect;
+                          return (
+                            <td
+                              key={cellIdx}
+                              className={cn(
+                                "p-2",
+                                submitted &&
+                                  isCorrect &&
+                                  "bg-green-50/50 dark:bg-green-950/20",
+                                submitted &&
+                                  isWrong &&
+                                  "bg-red-50/50 dark:bg-red-950/20",
+                              )}
+                            >
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {qNum}.
+                                </span>
+                                <Input
+                                  className="h-7 w-28 text-sm"
+                                  disabled={disabled}
+                                  placeholder="..."
+                                  value={userAnswer}
+                                  onChange={(e) => {
+                                    setAnswer(q.id, e.target.value);
+                                  }}
+                                />
+                              </div>
+                              {submitted && isWrong && (
+                                <p className="mt-1 text-xs text-green-600 dark:text-green-400">
+                                  {q.correctAnswer}
+                                </p>
+                              )}
+                            </td>
+                          );
+                        }
+                      }
+                      return (
+                        <td key={cellIdx} className="p-2">
+                          {cell}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        // Fallback: render as regular questions if no tableData
+        questions.map((question) => {
+          const userAnswer = answers[question.id] ?? "";
+          const isCorrect =
+            submitted &&
+            userAnswer.trim().toLowerCase() ===
+              question.correctAnswer.trim().toLowerCase();
+          const isWrong = submitted && !isCorrect;
+          return (
+            <div
+              key={question.id}
+              className={cn(
+                "space-y-3 rounded-lg border p-3",
+                submitted &&
+                  isCorrect &&
+                  "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
+                submitted &&
+                  isWrong &&
+                  "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
+              )}
+            >
+              <p className="text-sm font-medium">
+                <span className="mr-2 text-muted-foreground">
+                  {question.questionNumber}.
+                </span>
+                {question.questionText}
+              </p>
+              <Input
+                disabled={disabled}
+                placeholder="Type your answer..."
+                value={userAnswer}
+                onChange={(e) => {
+                  setAnswer(question.id, e.target.value);
+                }}
+              />
+              {submitted && (
+                <QuestionFeedback
+                  isWrong={isWrong}
+                  question={question}
+                  userAnswer={userAnswer}
+                />
+              )}
+            </div>
+          );
+        })
+      )}
+
+      {/* Post-submission enrichment for table questions */}
+      {submitted &&
+        questions.map((question) => {
+          const userAnswer = answers[question.id] ?? "";
+          const isWrong =
+            userAnswer.trim().toLowerCase() !==
+            question.correctAnswer.trim().toLowerCase();
+          if (
+            !isWrong &&
+            !question.passageQuote &&
+            !question.paraphrase &&
+            question.distractors.length === 0
+          )
+            return null;
+          return (
+            <div key={`feedback-${question.id}`} className="pl-2">
+              <p className="text-xs font-medium text-muted-foreground">
+                Q{question.questionNumber}: {question.explanation}
+              </p>
+              {question.passageQuote && (
+                <div className="mt-1 rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-2 dark:bg-blue-950/20">
+                  <p className="text-xs text-blue-600 italic dark:text-blue-400">
+                    &ldquo;{question.passageQuote}&rdquo;
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+    </div>
   );
 }
 
@@ -694,6 +1181,27 @@ function QuestionInput({
 
     case "fill-in-the-blank":
     case "sentence-completion": {
+      // Check for inline blank placeholder
+      const blankIndex = question.questionText.indexOf("____");
+      if (blankIndex !== -1) {
+        const before = question.questionText.slice(0, blankIndex);
+        const after = question.questionText.slice(blankIndex + 4);
+        return (
+          <p className="text-sm/relaxed">
+            {before}
+            <Input
+              className="mx-1 inline-block h-7 w-28 border-b border-dashed text-sm"
+              disabled={disabled}
+              placeholder="..."
+              value={value}
+              onChange={(e) => {
+                onChange(e.target.value);
+              }}
+            />
+            {after}
+          </p>
+        );
+      }
       return (
         <Input
           disabled={disabled}
@@ -770,7 +1278,16 @@ function QuestionInput({
     }
 
     default: {
-      return null;
+      return (
+        <Input
+          disabled={disabled}
+          placeholder="Type your answer..."
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+          }}
+        />
+      );
     }
   }
 }
