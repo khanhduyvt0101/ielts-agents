@@ -90,7 +90,7 @@ test("reading: band score selector opens and switches band", async ({
 test("reading: submit a chat message redirects to /chat/{id} and generates test", async ({
   page,
 }) => {
-  test.setTimeout(180000); // AI generation can take a long time
+  test.setTimeout(180_000); // AI generation can take a long time
   const email = generateEmail();
   await signUp(page, email);
 
