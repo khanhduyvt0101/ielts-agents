@@ -22,3 +22,5 @@ out
 .vercel
 mockServiceWorker.js
 apps/ielts-agents-api/data
+
+.nx/polygraph

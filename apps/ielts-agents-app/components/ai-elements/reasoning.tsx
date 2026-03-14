@@ -175,6 +175,7 @@ export const ReasoningContent = memo(
       )}
       {...props}
     >
+      {/* @ts-ignore */}
       <Streamdown {...props}>{children}</Streamdown>
     </CollapsibleContent>
   ),
