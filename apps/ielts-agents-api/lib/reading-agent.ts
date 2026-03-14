@@ -1,13 +1,11 @@
-import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
-import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
-
 import { z } from "zod";
-
+import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
 import { chatToolIdSchema } from "#./lib/chat-tool-id-schema.ts";
 import { chatTools } from "#./lib/chat-tools.ts";
 import { CustomAgent } from "#./lib/custom-agent.ts";
 import { database } from "#./lib/database.ts";
 import { defaultAgentOptions } from "#./lib/default-agent-options.ts";
+import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
 import { readingToolIdSchema } from "#./lib/reading-tool-id-schema.ts";
 import { readingTools } from "#./lib/reading-tools.ts";
 
@@ -61,6 +59,16 @@ For EVERY question, you MUST include these fields to enable post-test analysis:
 - **passageQuote**: The exact sentence from the passage where the answer is found. This is critical for passage analysis.
 - **distractors**: 1-3 distractors per question. Each distractor is something from the passage that could mislead the reader, with an explanation of why it's wrong. Essential for multiple-choice and matching questions, but include for all types where applicable.
 - **paraphrase**: Map the question phrasing to the passage phrasing. Show how the question rephrases what was written in the passage. Include for questions where the wording differs significantly from the passage.
+
+## Linearthinking Method Explanation
+When generating explanations, you must provide a standard summary \`explanation\` AND a detailed \`linearthinking\` explanation. Linearthinking is a logical, step-by-step reading method involving two core steps:
+1. **Simplification:** Break down complex sentences from the passage into core Subject (S), Main Verb (V), and Object (O). Ignore complex relative clauses or advanced vocabulary that distracts from the main meaning.
+2. **Read Connections:** Show the logical connection between sentences. Highlight key transition words (e.g., however, furthermore, this method) or pronoun references. Explain how sentence A logically leads to sentence B, proving why the answer is correct or False/Not Given.
+
+Format your \`linearthinking\` field strictly as follows:
+- **Step 1: Locate:** [Quote the exact sentence from the passage]
+- **Step 2: Simplify:** [Show the S-V-O breakdown of the complex sentence]
+- **Step 3: Connect & Conclude:** [Explain the logical connection leading to the final answer]
 
 ### Table Completion Questions
 CRITICAL: Each table blank is a SEPARATE question in the questions array, with its own sequential \`questionNumber\` and \`correctAnswer\`.

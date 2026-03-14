@@ -1,12 +1,9 @@
 import type { ToolSet } from "ai";
-
-import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
-
 import { tool } from "ai";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-
 import { database } from "#./lib/database.ts";
+import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
 import {
   readingPassage,
   readingQuestion,
@@ -80,6 +77,11 @@ const generateQuestions = tool({
           explanation: z
             .string()
             .describe("Explanation of why this is the correct answer"),
+          linearthinking: z
+            .string()
+            .describe(
+              "A step-by-step explanation using the Linearthinking method: 1. Simplify (S-V-O) 2. Read Connections.",
+            ),
           passageQuote: z
             .string()
             .optional()
@@ -159,6 +161,7 @@ const generateQuestions = tool({
         options: q.options ?? [],
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
+        linearthinking: q.linearthinking,
         passageQuote: q.passageQuote ?? null,
         distractors: q.distractors ?? [],
         paraphrase: q.paraphrase ?? null,
@@ -236,6 +239,7 @@ const getReadingResults = tool({
         questionText: true,
         correctAnswer: true,
         explanation: true,
+        linearthinking: true,
         passageQuote: true,
         distractors: true,
         paraphrase: true,
@@ -277,6 +281,7 @@ const getReadingResults = tool({
         userAnswer: userAnswer || "(no answer)",
         isCorrect,
         explanation: q.explanation,
+        linearthinking: q.linearthinking,
         passageQuote: q.passageQuote,
         distractors: q.distractors,
         paraphrase: q.paraphrase,

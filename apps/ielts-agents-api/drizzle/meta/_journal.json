@@ -43,6 +43,13 @@
       "when": 1773467201917,
       "tag": "0005_illegal_rhino",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773475030948,
+      "tag": "0006_many_gauntlet",
+      "breakpoints": true
     }
   ]
 }

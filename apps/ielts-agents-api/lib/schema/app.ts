@@ -1,8 +1,4 @@
 import type { UIMessage } from "ai";
-import type { ChangedPlan } from "ielts-agents-internal-util";
-
-import type { BandScore } from "#./lib/band-score.ts";
-
 import { sql } from "drizzle-orm";
 import {
   boolean,
@@ -14,6 +10,8 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import type { ChangedPlan } from "ielts-agents-internal-util";
+import type { BandScore } from "#./lib/band-score.ts";
 
 import { user } from "./auth.ts";
 
@@ -125,6 +123,7 @@ export const readingQuestion = pgTable("reading_question", {
   options: jsonb("options").$type<string[]>().default([]).notNull(),
   correctAnswer: text("correct_answer").notNull(),
   explanation: text("explanation").notNull(),
+  linearthinking: text("linearthinking").default("").notNull(),
   passageQuote: text("passage_quote"),
   distractors: jsonb("distractors")
     .$type<{ text: string; explanation: string }[]>()
