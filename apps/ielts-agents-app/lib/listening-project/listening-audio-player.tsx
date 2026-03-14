@@ -42,9 +42,7 @@ export function ListeningAudioPlayer({
   const [playbackRate, setPlaybackRate] = useState("1");
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const audioSrc = script?.audioUrl
-    ? `${apiURL}/v1${script.audioUrl}`
-    : null;
+  const audioSrc = script?.audioUrl ? `${apiURL}/v1${script.audioUrl}` : null;
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = Number(playbackRate);

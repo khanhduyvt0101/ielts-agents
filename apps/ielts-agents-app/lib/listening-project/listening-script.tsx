@@ -44,49 +44,47 @@ export function ListeningScript({
   return (
     <div className="space-y-3 p-4">
       {scripts.map((script) => {
-          const isOpen = openSections[script.sectionNumber] ?? true;
-          return (
-            <Collapsible
-              key={script.sectionNumber}
-              open={isOpen}
-              onOpenChange={(open) => {
-                setOpenSections((prev) => ({
-                  ...prev,
-                  [script.sectionNumber]: open,
-                }));
-              }}
-            >
-              <CollapsibleTrigger asChild>
-                <button
-                  className="flex w-full items-center gap-2 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
-                  type="button"
-                >
-                  <Badge variant="outline">
-                    Section {script.sectionNumber}
-                  </Badge>
-                  <span className="flex-1 text-sm font-medium">
-                    {script.title}
-                  </span>
-                  <Badge className="capitalize" variant="secondary">
-                    {script.sectionType}
-                  </Badge>
-                  {isOpen ? (
-                    <ChevronUpIcon className="size-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDownIcon className="size-4 text-muted-foreground" />
-                  )}
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="mt-2 rounded-lg border bg-card p-4">
-                  <div className="text-sm/relaxed whitespace-pre-wrap">
-                    {formatScript(script.script)}
-                  </div>
+        const isOpen = openSections[script.sectionNumber] ?? true;
+        return (
+          <Collapsible
+            key={script.sectionNumber}
+            open={isOpen}
+            onOpenChange={(open) => {
+              setOpenSections((prev) => ({
+                ...prev,
+                [script.sectionNumber]: open,
+              }));
+            }}
+          >
+            <CollapsibleTrigger asChild>
+              <button
+                className="flex w-full items-center gap-2 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
+                type="button"
+              >
+                <Badge variant="outline">Section {script.sectionNumber}</Badge>
+                <span className="flex-1 text-sm font-medium">
+                  {script.title}
+                </span>
+                <Badge className="capitalize" variant="secondary">
+                  {script.sectionType}
+                </Badge>
+                {isOpen ? (
+                  <ChevronUpIcon className="size-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDownIcon className="size-4 text-muted-foreground" />
+                )}
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 rounded-lg border bg-card p-4">
+                <div className="text-sm/relaxed whitespace-pre-wrap">
+                  {formatScript(script.script)}
                 </div>
-              </CollapsibleContent>
-            </Collapsible>
-          );
-        })}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })}
     </div>
   );
 }

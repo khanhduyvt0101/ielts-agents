@@ -291,7 +291,9 @@ export function ListeningQuestions({
   );
 
   const allQuestions = totalQuestions ?? questions;
-  const allAnsweredCount = Object.values(answers).filter((v) => v !== "").length;
+  const allAnsweredCount = Object.values(answers).filter(
+    (v) => v !== "",
+  ).length;
   const answeredCount = allAnsweredCount;
 
   const handleSubmit = useCallback(() => {

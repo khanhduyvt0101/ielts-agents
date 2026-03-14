@@ -145,16 +145,11 @@ function ListeningProjectContent({
       >
         <div className="shrink-0 px-4">
           <TabsList>
-            {sectionNumbers.map((num) => {
-              const script = scripts.find((s) => s.sectionNumber === num);
-              return (
-                <TabsTrigger key={num} value={`section-${num}`}>
-                  <span className="truncate">
-                    S{num}{script ? `: ${script.title}` : ""}
-                  </span>
-                </TabsTrigger>
-              );
-            })}
+            {sectionNumbers.map((num) => (
+              <TabsTrigger key={num} value={`section-${num}`}>
+                Section {num}
+              </TabsTrigger>
+            ))}
           </TabsList>
         </div>
 
@@ -163,9 +158,7 @@ function ListeningProjectContent({
           const sectionQuestions = questions.filter(
             (q) => q.sectionNumber === num,
           );
-          const sectionScript = scripts.filter(
-            (s) => s.sectionNumber === num,
-          );
+          const sectionScript = scripts.filter((s) => s.sectionNumber === num);
 
           return (
             <TabsContent
@@ -174,8 +167,16 @@ function ListeningProjectContent({
               className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
               value={`section-${num}`}
             >
-              {/* Sticky audio player at top */}
+              {/* Section title + audio player sticky at top */}
               <div className="shrink-0">
+                {script && (
+                  <div className="border-b px-4 py-2">
+                    <p className="text-sm font-semibold">{script.title}</p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {script.sectionType}
+                    </p>
+                  </div>
+                )}
                 <ListeningAudioPlayer
                   disabled={isLoading}
                   script={script ?? null}
