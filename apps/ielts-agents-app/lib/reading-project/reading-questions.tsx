@@ -27,7 +27,6 @@ import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { Switch } from "~/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
 
 import { trpcOptions } from "#./lib/trpc-options.ts";
@@ -806,7 +805,7 @@ function QuestionFeedback({
             {question.linearthinking}
           </p>
           <div className="rounded-md bg-muted/50 p-2">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+            <p className="mb-1 text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
               Summary
             </p>
             <p className="text-xs text-muted-foreground">
@@ -1073,7 +1072,7 @@ function TableCompletionGroup({
                     {question.linearthinking}
                   </p>
                   <div className="rounded-md bg-muted/50 p-2">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                    <p className="mb-1 text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
                       Summary
                     </p>
                     <p className="text-xs text-muted-foreground">

@@ -1,9 +1,12 @@
 import type { ToolSet } from "ai";
+
+import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
+
 import { tool } from "ai";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+
 import { database } from "#./lib/database.ts";
-import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
 import {
   readingPassage,
   readingQuestion,

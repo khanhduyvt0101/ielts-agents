@@ -1,11 +1,13 @@
-import { z } from "zod";
 import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
+import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
+
+import { z } from "zod";
+
 import { chatToolIdSchema } from "#./lib/chat-tool-id-schema.ts";
 import { chatTools } from "#./lib/chat-tools.ts";
 import { CustomAgent } from "#./lib/custom-agent.ts";
 import { database } from "#./lib/database.ts";
 import { defaultAgentOptions } from "#./lib/default-agent-options.ts";
-import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
 import { readingToolIdSchema } from "#./lib/reading-tool-id-schema.ts";
 import { readingTools } from "#./lib/reading-tools.ts";
 

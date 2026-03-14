@@ -1,4 +1,8 @@
 import type { UIMessage } from "ai";
+import type { ChangedPlan } from "ielts-agents-internal-util";
+
+import type { BandScore } from "#./lib/band-score.ts";
+
 import { sql } from "drizzle-orm";
 import {
   boolean,
@@ -10,8 +14,6 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import type { ChangedPlan } from "ielts-agents-internal-util";
-import type { BandScore } from "#./lib/band-score.ts";
 
 import { user } from "./auth.ts";
 
