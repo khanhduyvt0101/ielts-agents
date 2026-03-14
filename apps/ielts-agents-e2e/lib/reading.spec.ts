@@ -15,7 +15,9 @@ test("reading: page renders with all key elements visible", async ({
   await expect(page.getByRole("link", { name: "Reading" })).toBeVisible();
 
   // Welcome text
-  await expect(page.getByRole("heading", { name: "IELTS Reading Test Generator" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "IELTS Reading Test Generator" }),
+  ).toBeVisible();
   await expect(
     page.getByText("Generate practice IELTS reading tests on any topic"),
   ).toBeVisible();
@@ -105,25 +107,29 @@ test("reading: submit a chat message redirects to /chat/{id} and generates test"
   await expect(page).toHaveURL(/\/chat\/\d+$/);
 
   // Wait for the Reading Test UI to appear
-  await expect(page.getByRole("heading", { name: "Reading Test" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { name: "Reading Test" })).toBeVisible(
+    { timeout: 15_000 },
+  );
   await expect(page.getByText("Band 6.5").first()).toBeVisible();
-  
+
   // Initially we should be waiting for generation
   await expect(page.getByText("Generating your reading test...")).toBeVisible();
-  
+
   // The passage should be visible in the initial active tab
   // (We use a very long timeout here since AI generation takes time)
-  const passageTitle = page.locator('h1.text-3xl.font-bold');
+  const passageTitle = page.locator("h1.text-3xl.font-bold");
   await expect(passageTitle).toBeVisible({ timeout: 120_000 });
-  
+
   // Verify tabs
   await expect(page.getByRole("tab", { name: /Questions/ })).toBeVisible();
   await expect(page.getByRole("tab", { name: /Vocab/ })).toBeVisible();
-  
+
   // And the conversation log should show our initial prompt
   const conversation = page.getByRole("log");
   await expect(conversation).toBeVisible();
-  await expect(conversation.locator(".is-user").first()).toContainText("The effects of urbanization on biodiversity");
+  await expect(conversation.locator(".is-user").first()).toContainText(
+    "The effects of urbanization on biodiversity",
+  );
 });
 
 test("reading: submit via suggestion prompt redirects to /chat/{id}", async ({
