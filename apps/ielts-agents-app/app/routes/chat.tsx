@@ -27,6 +27,9 @@ import { ScrollToBottomConversationEvent } from "#./lib/scroll-to-bottom-convers
 import { sidebarOpenAtom } from "#./lib/sidebar-open-atom.ts";
 import { trpcOptions } from "#./lib/trpc-options.ts";
 import { useChat } from "#./lib/use-chat.ts";
+import { WritingProject } from "#./lib/writing-project/index.tsx";
+import { WritingPromptInput } from "#./lib/writing-prompt-input.tsx";
+import { renderWritingToolPart } from "#./lib/writing-tools/index.tsx";
 
 interface PromptInputProps {
   chatId: number;
@@ -72,6 +75,19 @@ const agentConfigs: { [T in AgentId]: AgentConfig<T> } = {
     Project: ListeningProject,
     renderToolPart: renderListeningToolPart,
     PromptInput: ListeningPromptInput,
+  },
+  writing: {
+    onData: ({ id }) => {
+      void queryClient.invalidateQueries(
+        trpcOptions.writing.getWritingData.queryOptions({ chatId: id }),
+      );
+      void queryClient.invalidateQueries(
+        trpcOptions.chat.getAgentConfig.queryOptions({ chatId: id }),
+      );
+    },
+    Project: WritingProject,
+    renderToolPart: renderWritingToolPart,
+    PromptInput: WritingPromptInput,
   },
 };
 

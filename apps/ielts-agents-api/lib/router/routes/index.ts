@@ -3,3 +3,4 @@ export * as chat from "./chat.ts";
 export * as listening from "./listening.ts";
 export * as reading from "./reading.ts";
 export * as workspace from "./workspace.ts";
+export * as writing from "./writing.ts";

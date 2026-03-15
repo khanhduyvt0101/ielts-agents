@@ -1,0 +1,1 @@
+ALTER TABLE "writing_task" ADD COLUMN "chart_data" jsonb DEFAULT 'null'::jsonb;

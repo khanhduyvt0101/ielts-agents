@@ -4,6 +4,7 @@ import {
   chat,
   chatListening,
   chatReading,
+  chatWriting,
   listeningAnswer,
   listeningDefault,
   listeningQuestion,
@@ -17,6 +18,10 @@ import {
   readingSession,
   savedVocabulary,
   workspace,
+  writingDefault,
+  writingEssay,
+  writingEvaluation,
+  writingTask,
 } from "./app.ts";
 import { account, user } from "./auth.ts";
 
@@ -44,6 +49,7 @@ export const chatRelations = relations(chat, ({ one }) => ({
   }),
   reading: one(chatReading),
   listening: one(chatListening),
+  writing: one(chatWriting),
 }));
 
 export const chatReadingRelations = relations(chatReading, ({ one, many }) => ({
@@ -190,6 +196,55 @@ export const listeningVocabularyRelations = relations(
     chatListening: one(chatListening, {
       fields: [listeningVocabulary.chatListeningId],
       references: [chatListening.id],
+    }),
+  }),
+);
+
+// ── Writing Relations ────────────────────────────────────────────────
+
+export const chatWritingRelations = relations(
+  chatWriting,
+  ({ one, many }) => ({
+    chat: one(chat, {
+      fields: [chatWriting.id],
+      references: [chat.id],
+    }),
+    task: one(writingTask),
+    essays: many(writingEssay),
+  }),
+);
+
+export const writingTaskRelations = relations(writingTask, ({ one }) => ({
+  chatWriting: one(chatWriting, {
+    fields: [writingTask.chatWritingId],
+    references: [chatWriting.id],
+  }),
+}));
+
+export const writingEssayRelations = relations(writingEssay, ({ one }) => ({
+  chatWriting: one(chatWriting, {
+    fields: [writingEssay.chatWritingId],
+    references: [chatWriting.id],
+  }),
+  evaluation: one(writingEvaluation),
+}));
+
+export const writingEvaluationRelations = relations(
+  writingEvaluation,
+  ({ one }) => ({
+    essay: one(writingEssay, {
+      fields: [writingEvaluation.essayId],
+      references: [writingEssay.id],
+    }),
+  }),
+);
+
+export const writingDefaultRelations = relations(
+  writingDefault,
+  ({ one }) => ({
+    workspace: one(workspace, {
+      fields: [writingDefault.workspaceId],
+      references: [workspace.id],
     }),
   }),
 );

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 import { createListeningChatMutationOptions } from "#./lib/create-listening-chat-mutation-options.ts";
 import { createReadingChatMutationOptions } from "#./lib/create-reading-chat-mutation-options.ts";
+import { createWritingChatMutationOptions } from "#./lib/create-writing-chat-mutation-options.ts";
 import { locationAtom } from "#./lib/location-atom.ts";
 import { navigateAtom } from "#./lib/navigate-atom.ts";
 import { navigateToExternalURL } from "#./lib/navigate-to-external-url.ts";
@@ -108,6 +109,8 @@ mutationDefaults(
 mutationDefaults(createReadingChatMutationOptions);
 
 mutationDefaults(createListeningChatMutationOptions);
+
+mutationDefaults(createWritingChatMutationOptions);
 
 mutationDefaults(
   trpcOptions.listening.updateConfig.mutationOptions({
@@ -252,6 +255,42 @@ mutationDefaults(
   }),
 );
 
+mutationDefaults(
+  trpcOptions.writing.updateConfig.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        variables.chatId
+          ? trpcOptions.writing.getWritingConfig.queryOptions({
+              chatId: variables.chatId,
+            })
+          : trpcOptions.writing.getDefaultConfig.queryOptions(),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to update config", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
+mutationDefaults(
+  trpcOptions.writing.submitEssay.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        trpcOptions.writing.getWritingData.queryOptions({
+          chatId: variables.chatId,
+        }),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to submit essay", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
 function queryInput<T>(): T {
   return {} as T;
 }
@@ -301,3 +340,9 @@ queryDefaults(
 queryDefaults(trpcOptions.reading.getDefaultConfig.queryOptions());
 
 queryDefaults(trpcOptions.listening.getDefaultConfig.queryOptions());
+
+queryDefaults(trpcOptions.writing.getWritingData.queryOptions(queryInput()));
+
+queryDefaults(trpcOptions.writing.getWritingConfig.queryOptions(queryInput()));
+
+queryDefaults(trpcOptions.writing.getDefaultConfig.queryOptions());

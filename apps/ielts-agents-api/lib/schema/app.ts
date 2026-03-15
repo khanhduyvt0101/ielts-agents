@@ -347,3 +347,122 @@ export const listeningVocabulary = pgTable("listening_vocabulary", {
   exampleUsage: text("example_usage").notNull(),
   ieltsRelevance: text("ielts_relevance").notNull(),
 });
+
+// ── Writing ──────────────────────────────────────────────────────────
+
+export const chatWriting = pgTable("chat_writing", {
+  ...timestamps(),
+  id: integer("id")
+    .primaryKey()
+    .references(() => chat.id, { onUpdate: "cascade", onDelete: "cascade" }),
+  bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+  taskType: text("task_type")
+    .$type<"task-1" | "task-2">()
+    .default("task-2")
+    .notNull(),
+});
+
+export const writingTask = pgTable("writing_task", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatWritingId: integer("chat_writing_id")
+    .notNull()
+    .references(() => chatWriting.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  taskType: text("task_type").$type<"task-1" | "task-2">().notNull(),
+  prompt: text("prompt").notNull(),
+  visualDescription: text("visual_description"),
+  chartData: jsonb("chart_data")
+    .$type<{
+      type: "bar" | "line" | "pie" | "table";
+      title: string;
+      data: Record<string, string | number>[];
+      xKey: string;
+      dataKeys: { key: string; label: string }[];
+    } | null>()
+    .default(null),
+  requirements: jsonb("requirements")
+    .$type<{ wordCount: number; timeLimit: number }>()
+    .notNull(),
+  difficulty: text("difficulty").notNull(),
+});
+
+export const writingEssay = pgTable("writing_essay", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatWritingId: integer("chat_writing_id")
+    .notNull()
+    .references(() => chatWriting.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  content: text("content").notNull(),
+  wordCount: integer("word_count").notNull(),
+  timeSpent: integer("time_spent"),
+  submitted: boolean("submitted").default(false).notNull(),
+});
+
+export const writingEvaluation = pgTable("writing_evaluation", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  essayId: integer("essay_id")
+    .notNull()
+    .references(() => writingEssay.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  taskAchievement: text("task_achievement").notNull(),
+  coherenceCohesion: text("coherence_cohesion").notNull(),
+  lexicalResource: text("lexical_resource").notNull(),
+  grammaticalRange: text("grammatical_range").notNull(),
+  overallBand: text("overall_band").notNull(),
+  feedback: jsonb("feedback")
+    .$type<
+      {
+        criterion: string;
+        score: string;
+        comments: string;
+        strengths: string[];
+        improvements: string[];
+      }[]
+    >()
+    .notNull(),
+  corrections: jsonb("corrections")
+    .$type<
+      {
+        original: string;
+        corrected: string;
+        explanation: string;
+        type: string;
+      }[]
+    >()
+    .default([])
+    .notNull(),
+  modelPhrases: jsonb("model_phrases")
+    .$type<string[]>()
+    .default([])
+    .notNull(),
+  improvedParagraphs: jsonb("improved_paragraphs")
+    .$type<{ original: string; improved: string; explanation: string }[]>()
+    .default([])
+    .notNull(),
+});
+
+export const writingDefault = pgTable("writing_default", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  workspaceId: integer("workspace_id")
+    .unique()
+    .notNull()
+    .references(() => workspace.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+  taskType: text("task_type")
+    .$type<"task-1" | "task-2">()
+    .default("task-2")
+    .notNull(),
+});
