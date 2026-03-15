@@ -113,9 +113,11 @@ mutationDefaults(
   trpcOptions.listening.updateConfig.mutationOptions({
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries(
-        trpcOptions.listening.getListeningConfig.queryOptions({
-          chatId: variables.chatId,
-        }),
+        variables.chatId
+          ? trpcOptions.listening.getListeningConfig.queryOptions({
+              chatId: variables.chatId,
+            })
+          : trpcOptions.listening.getDefaultConfig.queryOptions(),
       );
     },
     onError: (error) => {
@@ -174,9 +176,11 @@ mutationDefaults(
   trpcOptions.reading.updateConfig.mutationOptions({
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries(
-        trpcOptions.reading.getReadingConfig.queryOptions({
-          chatId: variables.chatId,
-        }),
+        variables.chatId
+          ? trpcOptions.reading.getReadingConfig.queryOptions({
+              chatId: variables.chatId,
+            })
+          : trpcOptions.reading.getDefaultConfig.queryOptions(),
       );
     },
     onError: (error) => {
@@ -293,3 +297,7 @@ queryDefaults(
 queryDefaults(
   trpcOptions.listening.getListeningConfig.queryOptions(queryInput()),
 );
+
+queryDefaults(trpcOptions.reading.getDefaultConfig.queryOptions());
+
+queryDefaults(trpcOptions.listening.getDefaultConfig.queryOptions());

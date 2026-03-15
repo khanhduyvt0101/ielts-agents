@@ -20,10 +20,17 @@ import {
 } from "~/components/ui/collapsible";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Progress } from "~/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { Separator } from "~/components/ui/separator";
 import { Switch } from "~/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { cn } from "~/lib/utils";
 
 import { trpcOptions } from "#./lib/trpc-options.ts";
@@ -76,17 +83,39 @@ const questionTypeLabels: Record<string, string> = {
   "short-answer": "Short Answer",
 };
 
+const questionTypeInstructions: Record<string, string> = {
+  "multiple-choice": "Choose the correct letter, **A**, **B**, **C** or **D**.",
+  matching:
+    "Match each item with the correct option from the list. You may use any letter more than once.",
+  "plan-map-diagram":
+    "Label the plan/map/diagram below. Write the correct letter, **A\u2013H**, next to each description.",
+  "form-completion":
+    "Complete the form below. Write **NO MORE THAN TWO WORDS AND/OR A NUMBER** for each answer.",
+  "note-completion":
+    "Complete the notes below. Write **NO MORE THAN TWO WORDS AND/OR A NUMBER** for each answer.",
+  "table-completion":
+    "Complete the table below. Write **NO MORE THAN TWO WORDS AND/OR A NUMBER** for each answer.",
+  "flow-chart-completion":
+    "Complete the flow chart below. Write **NO MORE THAN TWO WORDS** for each answer.",
+  "summary-completion":
+    "Complete the summary below. Write **ONE WORD ONLY** for each answer.",
+  "sentence-completion":
+    "Complete the sentences below. Write **NO MORE THAN THREE WORDS** for each answer.",
+  "short-answer":
+    "Answer the questions below. Write **NO MORE THAN THREE WORDS AND/OR A NUMBER** for each answer.",
+};
+
 const strategyTips: Partial<Record<string, string[]>> = {
   "multiple-choice": [
-    "Read all options before the audio plays — underline keywords.",
+    "Read all options before the audio plays \u2014 underline keywords.",
     "The correct answer is often a paraphrase, not the exact words.",
-    "Watch for distractors — speakers may mention multiple options but confirm only one.",
+    "Watch for distractors \u2014 speakers may mention multiple options but confirm only one.",
     "Listen for signpost words like 'actually', 'in fact', 'what I meant was'.",
   ],
   matching: [
     "Read all items in both lists before listening.",
     "Listen for synonyms and paraphrases of the listed items.",
-    "Not all options may be used — some are distractors.",
+    "Not all options may be used \u2014 some are distractors.",
     "The answers usually come in order of the audio.",
   ],
   "plan-map-diagram": [
@@ -97,20 +126,20 @@ const strategyTips: Partial<Record<string, string[]>> = {
   ],
   "form-completion": [
     "Read the form before listening to predict answer types (name, date, number).",
-    "Listen for spelling — speakers often spell out names and addresses.",
+    "Listen for spelling \u2014 speakers often spell out names and addresses.",
     "Pay attention to number corrections ('No, that's 4-5, not 5-4').",
     "Keep within the word limit specified.",
   ],
   "note-completion": [
     "Scan the notes before listening to understand the topic structure.",
     "Answers are usually key facts: names, dates, numbers, places.",
-    "Notes follow the order of the audio — don't jump ahead.",
-    "Write exactly what you hear — don't paraphrase.",
+    "Notes follow the order of the audio \u2014 don't jump ahead.",
+    "Write exactly what you hear \u2014 don't paraphrase.",
   ],
   "table-completion": [
     "Read column and row headings to understand the table structure.",
     "Predict the type of information needed for each blank (number, name, category).",
-    "Answers follow the order of the audio — work through row by row.",
+    "Answers follow the order of the audio \u2014 work through row by row.",
     "Keep within the word limit specified.",
   ],
   "flow-chart-completion": [
@@ -122,7 +151,7 @@ const strategyTips: Partial<Record<string, string[]>> = {
   "sentence-completion": [
     "Read the incomplete sentence to predict the answer type.",
     "The answer must fit grammatically into the sentence.",
-    "Use words directly from the audio — don't change the form.",
+    "Use words directly from the audio \u2014 don't change the form.",
     "Respect the word limit (usually 1-3 words).",
   ],
   "summary-completion": [
@@ -132,12 +161,20 @@ const strategyTips: Partial<Record<string, string[]>> = {
     "Check grammar after completing each blank.",
   ],
   "short-answer": [
-    "Read the question carefully — it specifies what to listen for.",
+    "Read the question carefully \u2014 it specifies what to listen for.",
     "Answers are brief: names, numbers, dates, or short phrases.",
     "Stick to the word limit (usually no more than 3 words).",
-    "Write exactly what is said — spelling counts!",
+    "Write exactly what is said \u2014 spelling counts!",
   ],
 };
+
+interface TypeStat {
+  type: string;
+  total: number;
+  correct: number;
+  wrong: number;
+  skipped: number;
+}
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -395,6 +432,33 @@ export function ListeningQuestions({
   const isFirstSection =
     sectionNumber === undefined || sectionNumber === (firstSectionNumber ?? 1);
 
+  // Per-type statistics for results breakdown
+  const typeStats = useMemo<TypeStat[]>(() => {
+    if (!submitted) return [];
+    const statsMap = new Map<
+      string,
+      { total: number; correct: number; wrong: number; skipped: number }
+    >();
+    for (const q of allQuestions) {
+      const stat = statsMap.get(q.type) ?? {
+        total: 0,
+        correct: 0,
+        wrong: 0,
+        skipped: 0,
+      };
+      stat.total++;
+      const userAnswer = (answers[q.id] ?? "").trim();
+      if (!userAnswer) stat.skipped++;
+      else if (
+        userAnswer.toLowerCase() === q.correctAnswer.trim().toLowerCase()
+      )
+        stat.correct++;
+      else stat.wrong++;
+      statsMap.set(q.type, stat);
+    }
+    return [...statsMap.entries()].map(([type, stat]) => ({ type, ...stat }));
+  }, [submitted, allQuestions, answers]);
+
   return (
     <div className="space-y-6 p-4 pb-8">
       {/* Timer toggle - only on first section */}
@@ -454,53 +518,23 @@ export function ListeningQuestions({
 
       {/* Results - only on first section */}
       {isFirstSection && submitted && (
-        <div className="space-y-3 rounded-lg border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Results</h3>
-            <div className="flex items-center gap-2">
-              {latestSession?.timeSpent != null && (
-                <Badge variant="outline">
-                  <ClockIcon className="mr-1 size-3" />
-                  {formatTime(latestSession.timeSpent)}
-                </Badge>
-              )}
-              <Badge variant={percentage >= 70 ? "default" : "destructive"}>
-                {score}/{allQuestions.length} ({percentage}%)
-              </Badge>
-            </div>
-          </div>
-          <Progress value={percentage} />
-          {timedOut && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">
-              Time&apos;s up! Your answers were auto-submitted.
-            </p>
-          )}
-          <div className="flex gap-2">
-            <Button
-              disabled={isDisabled}
-              size="sm"
-              variant="outline"
-              onClick={handleRetake}
-            >
-              <RotateCcwIcon className="size-3.5" />
-              Retake Test
-            </Button>
-            <Button
-              disabled={isDisabled}
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                void sendMessage({
-                  text: "Please generate a new listening test on a different topic, targeting my weak areas.",
-                  files: [],
-                });
-              }}
-            >
-              <RefreshCwIcon className="size-3.5" />
-              New Test
-            </Button>
-          </div>
-        </div>
+        <ListeningResultsSummary
+          allQuestions={allQuestions}
+          answers={answers}
+          isDisabled={isDisabled}
+          latestSession={latestSession}
+          percentage={percentage}
+          score={score}
+          timedOut={timedOut}
+          typeStats={typeStats}
+          onNewTest={() => {
+            void sendMessage({
+              text: "Please generate a new listening test on a different topic, targeting my weak areas.",
+              files: [],
+            });
+          }}
+          onRetake={handleRetake}
+        />
       )}
 
       {/* Questions grouped by type within this section */}
@@ -520,18 +554,29 @@ export function ListeningQuestions({
               const gStart = group.questions[0].questionNumber;
               const gEnd =
                 group.questions[group.questions.length - 1].questionNumber;
+              const instruction = questionTypeInstructions[group.type];
               const tips = submitted ? undefined : strategyTips[group.type];
 
               return (
                 <div key={`${group.type}-${gStart}`} className="space-y-3">
-                  <div>
-                    <Badge variant="secondary">
+                  {/* Instruction banner */}
+                  <div className="rounded-lg bg-primary p-3 text-primary-foreground">
+                    <p className="text-sm font-semibold">
+                      Questions {gStart}
+                      {gStart === gEnd ? "" : `\u2013${gEnd}`}:{" "}
                       {questionTypeLabels[group.type] ?? group.type}
-                    </Badge>
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      Q{gStart}
-                      {gStart === gEnd ? "" : `-${gEnd}`}
-                    </span>
+                    </p>
+                    {instruction && (
+                      <p
+                        dangerouslySetInnerHTML={{
+                          __html: instruction.replaceAll(
+                            /\*\*(.*?)\*\*/g,
+                            "<strong>$1</strong>",
+                          ),
+                        }}
+                        className="mt-1 text-sm opacity-90"
+                      />
+                    )}
                   </div>
 
                   {tips && (
@@ -545,23 +590,26 @@ export function ListeningQuestions({
 
                   {group.questions.map((question) => {
                     const userAnswer = answers[question.id] ?? "";
+                    const trimmedAnswer = userAnswer.trim();
+                    const isSkipped = submitted && trimmedAnswer === "";
                     const isCorrect =
                       submitted &&
-                      userAnswer.trim().toLowerCase() ===
+                      trimmedAnswer !== "" &&
+                      trimmedAnswer.toLowerCase() ===
                         question.correctAnswer.trim().toLowerCase();
-                    const isWrong = submitted && !isCorrect;
+                    const isWrong = submitted && !isCorrect && !isSkipped;
 
                     return (
                       <div
                         key={question.id}
                         className={cn(
                           "space-y-3 rounded-lg border p-3",
-                          submitted &&
-                            isCorrect &&
+                          isCorrect &&
                             "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
-                          submitted &&
-                            isWrong &&
+                          isWrong &&
                             "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
+                          isSkipped &&
+                            "border-muted bg-muted/30",
                         )}
                       >
                         <p className="text-sm font-medium">
@@ -581,69 +629,11 @@ export function ListeningQuestions({
                         />
 
                         {submitted && (
-                          <div className="space-y-2 border-t pt-2">
-                            {isWrong && (
-                              <p className="text-xs">
-                                <span className="font-medium text-red-600 dark:text-red-400">
-                                  Your answer:
-                                </span>{" "}
-                                {userAnswer || "(no answer)"}
-                              </p>
-                            )}
-                            <p className="text-xs">
-                              <span className="font-medium text-green-600 dark:text-green-400">
-                                Correct answer:
-                              </span>{" "}
-                              {question.correctAnswer}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {question.explanation}
-                            </p>
-
-                            {question.scriptQuote && (
-                              <div className="rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-2 dark:bg-blue-950/20">
-                                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                                  Script quote:
-                                </p>
-                                <p className="text-xs text-blue-600 italic dark:text-blue-400">
-                                  &ldquo;{question.scriptQuote}&rdquo;
-                                </p>
-                              </div>
-                            )}
-
-                            {question.paraphrase && (
-                              <div className="rounded-md border-l-2 border-purple-400 bg-purple-50/50 p-2 dark:bg-purple-950/20">
-                                <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
-                                  Paraphrase mapping:
-                                </p>
-                                <p className="text-xs text-purple-600 dark:text-purple-400">
-                                  Question: &ldquo;
-                                  {question.paraphrase.questionPhrase}&rdquo;
-                                </p>
-                                <p className="text-xs text-purple-600 dark:text-purple-400">
-                                  Script: &ldquo;
-                                  {question.paraphrase.scriptPhrase}&rdquo;
-                                </p>
-                              </div>
-                            )}
-
-                            {isWrong && question.distractors.length > 0 && (
-                              <div className="rounded-md border-l-2 border-amber-400 bg-amber-50/50 p-2 dark:bg-amber-950/20">
-                                <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                                  Distractors:
-                                </p>
-                                {question.distractors.map((d, idx) => (
-                                  <p
-                                    key={idx}
-                                    className="text-xs text-amber-600 dark:text-amber-400"
-                                  >
-                                    &bull; &ldquo;{d.text}&rdquo; &mdash;{" "}
-                                    {d.explanation}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <QuestionFeedback
+                            isWrong={isWrong}
+                            question={question}
+                            userAnswer={userAnswer}
+                          />
                         )}
                       </div>
                     );
@@ -658,12 +648,380 @@ export function ListeningQuestions({
       {/* Submit button - only on last section or when no section specified */}
       {!submitted && (
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {answeredCount}/{allQuestions.length} answered
           </p>
           <Button disabled={isDisabled} onClick={handleSubmit}>
             Submit Answers
           </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ListeningResultsSummary({
+  score,
+  allQuestions,
+  answers,
+  percentage,
+  timedOut,
+  typeStats,
+  latestSession,
+  isDisabled,
+  onRetake,
+  onNewTest,
+}: {
+  score: number;
+  allQuestions: QuestionData[];
+  answers: Record<number, string>;
+  percentage: number;
+  timedOut: boolean;
+  typeStats: TypeStat[];
+  latestSession: SessionData | undefined;
+  isDisabled: boolean;
+  onRetake: () => void;
+  onNewTest: () => void;
+}) {
+  const wrongCount = allQuestions.filter((q) => {
+    const ua = (answers[q.id] ?? "").trim();
+    return (
+      ua !== "" && ua.toLowerCase() !== q.correctAnswer.trim().toLowerCase()
+    );
+  }).length;
+  const skippedCount = allQuestions.filter(
+    (q) => (answers[q.id] ?? "").trim() === "",
+  ).length;
+
+  // Section-by-section breakdown
+  const sectionScores = useMemo(() => {
+    const sections = groupBySection(allQuestions);
+    return sections.map((section) => {
+      let correct = 0;
+      for (const q of section.questions) {
+        const ua = (answers[q.id] ?? "").trim().toLowerCase();
+        if (ua === q.correctAnswer.trim().toLowerCase()) correct++;
+      }
+      return {
+        sectionNumber: section.sectionNumber,
+        correct,
+        total: section.questions.length,
+      };
+    });
+  }, [allQuestions, answers]);
+
+  return (
+    <div className="space-y-4">
+      {/* Hero score section */}
+      <div className="rounded-lg border bg-card p-5">
+        <h3 className="text-base font-bold">
+          Test completed
+          {latestSession?.timeSpent != null &&
+            ` in ${formatTime(latestSession.timeSpent)}`}
+          !
+        </h3>
+        {timedOut && (
+          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            Time&apos;s up! Your answers were auto-submitted.
+          </p>
+        )}
+
+        <div className="mt-4 flex items-center gap-6">
+          {/* Score ring */}
+          <div className="relative flex size-20 shrink-0 items-center justify-center">
+            <svg className="size-20 -rotate-90" viewBox="0 0 80 80">
+              <circle
+                className="stroke-muted"
+                cx="40"
+                cy="40"
+                fill="none"
+                r="34"
+                strokeWidth="6"
+              />
+              <circle
+                className={cn(
+                  "transition-all duration-700",
+                  percentage >= 70
+                    ? "stroke-green-500"
+                    : percentage >= 40
+                      ? "stroke-amber-500"
+                      : "stroke-red-500",
+                )}
+                cx="40"
+                cy="40"
+                fill="none"
+                r="34"
+                strokeDasharray={`${(percentage / 100) * 213.6} 213.6`}
+                strokeLinecap="round"
+                strokeWidth="6"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span
+                className={cn(
+                  "text-lg font-bold",
+                  percentage >= 70
+                    ? "text-green-600 dark:text-green-400"
+                    : percentage >= 40
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-red-600 dark:text-red-400",
+                )}
+              >
+                {score}/{allQuestions.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Correct:</span>
+              <Badge
+                className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                variant="secondary"
+              >
+                {score}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Wrong:</span>
+              <Badge
+                className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                variant="secondary"
+              >
+                {wrongCount}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Skipped:</span>
+              <Badge variant="secondary">{skippedCount}</Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Section-by-section breakdown */}
+        {sectionScores.length > 1 && (
+          <div className="mt-4 space-y-1.5 border-t pt-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase">
+              By section
+            </p>
+            {sectionScores.map((s) => {
+              const pct =
+                s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+              return (
+                <div
+                  key={s.sectionNumber}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="text-muted-foreground">
+                    Section {s.sectionNumber}
+                  </span>
+                  <span
+                    className={cn(
+                      "font-semibold",
+                      pct >= 70
+                        ? "text-green-600 dark:text-green-400"
+                        : pct >= 40
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-red-600 dark:text-red-400",
+                    )}
+                  >
+                    {s.correct}/{s.total} ({pct}%)
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mt-4 flex gap-2">
+          <Button disabled={isDisabled} size="sm" onClick={onRetake}>
+            <RotateCcwIcon className="size-3.5" />
+            Retake Test
+          </Button>
+          <Button
+            disabled={isDisabled}
+            size="sm"
+            variant="outline"
+            onClick={onNewTest}
+          >
+            <RefreshCwIcon className="size-3.5" />
+            New Test
+          </Button>
+        </div>
+      </div>
+
+      {/* Statistics table */}
+      {typeStats.length > 0 && (
+        <div className="rounded-lg border bg-card p-4">
+          <h3 className="mb-3 text-sm font-bold">Statistics</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs text-muted-foreground uppercase">
+                  Type
+                </TableHead>
+                <TableHead className="text-center text-xs text-muted-foreground uppercase">
+                  Total
+                </TableHead>
+                <TableHead className="text-center text-xs text-muted-foreground uppercase">
+                  Correct
+                </TableHead>
+                <TableHead className="text-center text-xs text-muted-foreground uppercase">
+                  Wrong
+                </TableHead>
+                <TableHead className="text-center text-xs text-muted-foreground uppercase">
+                  Skipped
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {typeStats.map((stat) => (
+                <TableRow key={stat.type}>
+                  <TableCell className="text-sm font-medium">
+                    {questionTypeLabels[stat.type] ?? stat.type}
+                  </TableCell>
+                  <TableCell className="text-center text-sm font-semibold">
+                    {stat.total}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="inline-flex size-7 items-center justify-center rounded-full bg-green-100 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      {stat.correct}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="inline-flex size-7 items-center justify-center rounded-full bg-red-100 text-xs font-semibold text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                      {stat.wrong}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                      {stat.skipped}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Answer key */}
+      <div className="rounded-lg border bg-card p-4">
+        <h3 className="mb-3 text-sm font-bold">Answer key</h3>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          {allQuestions.map((q) => {
+            const userAnswer = (answers[q.id] ?? "").trim();
+            const isSkipped = userAnswer === "";
+            const isCorrect =
+              !isSkipped &&
+              userAnswer.toLowerCase() ===
+                q.correctAnswer.trim().toLowerCase();
+
+            return (
+              <div key={q.id} className="flex items-center gap-2 text-sm">
+                <span
+                  className={cn(
+                    "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
+                    isCorrect
+                      ? "bg-green-500"
+                      : isSkipped
+                        ? "bg-muted-foreground/50"
+                        : "bg-red-500",
+                  )}
+                >
+                  {q.questionNumber}
+                </span>
+                <span
+                  className={cn(
+                    "shrink-0 text-xs",
+                    isCorrect
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {isCorrect ? "Correct" : isSkipped ? "Skipped" : "Missed"}
+                </span>
+                <span className="text-xs font-semibold text-foreground">
+                  {q.correctAnswer}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuestionFeedback({
+  question,
+  userAnswer,
+  isWrong,
+}: {
+  question: QuestionData;
+  userAnswer: string;
+  isWrong: boolean;
+}) {
+  return (
+    <div className="space-y-3 border-t pt-3">
+      {isWrong && (
+        <p className="text-sm">
+          <span className="font-medium text-red-600 dark:text-red-400">
+            Your answer:
+          </span>{" "}
+          {userAnswer || "(no answer)"}
+        </p>
+      )}
+      <p className="text-sm">
+        <span className="font-medium text-green-600 dark:text-green-400">
+          Correct answer:
+        </span>{" "}
+        {question.correctAnswer}
+      </p>
+
+      <p className="text-sm/relaxed whitespace-pre-wrap text-muted-foreground">
+        {question.explanation}
+      </p>
+
+      {question.scriptQuote && (
+        <div className="rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-3 dark:bg-blue-950/20">
+          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            Script quote:
+          </p>
+          <p className="text-sm text-blue-600 italic dark:text-blue-400">
+            &ldquo;{question.scriptQuote}&rdquo;
+          </p>
+        </div>
+      )}
+
+      {question.paraphrase && (
+        <div className="rounded-md border-l-2 border-purple-400 bg-purple-50/50 p-3 dark:bg-purple-950/20">
+          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">
+            Paraphrase mapping:
+          </p>
+          <p className="text-sm text-purple-600 dark:text-purple-400">
+            Question: &ldquo;{question.paraphrase.questionPhrase}&rdquo;
+          </p>
+          <p className="text-sm text-purple-600 dark:text-purple-400">
+            Script: &ldquo;{question.paraphrase.scriptPhrase}&rdquo;
+          </p>
+        </div>
+      )}
+
+      {isWrong && question.distractors.length > 0 && (
+        <div className="rounded-md border-l-2 border-amber-400 bg-amber-50/50 p-3 dark:bg-amber-950/20">
+          <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+            Distractors:
+          </p>
+          {question.distractors.map((d, idx) => (
+            <p
+              key={idx}
+              className="text-sm text-amber-600 dark:text-amber-400"
+            >
+              &bull; &ldquo;{d.text}&rdquo; &mdash; {d.explanation}
+            </p>
+          ))}
         </div>
       )}
     </div>

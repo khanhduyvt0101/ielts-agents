@@ -1,6 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 import {
-  CheckCircleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   ClockIcon,
@@ -9,7 +8,6 @@ import {
   PlayIcon,
   RefreshCwIcon,
   RotateCcwIcon,
-  XCircleIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -22,11 +20,18 @@ import {
 } from "~/components/ui/collapsible";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Progress } from "~/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { Switch } from "~/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { cn } from "~/lib/utils";
 
 import { trpcOptions } from "#./lib/trpc-options.ts";
@@ -43,7 +48,6 @@ interface QuestionData {
   options: string[];
   correctAnswer: string;
   explanation: string;
-  linearthinking: string;
   passageQuote: string | null;
   distractors: { text: string; explanation: string }[];
   paraphrase: { questionPhrase: string; passagePhrase: string } | null;
@@ -392,9 +396,10 @@ export function ReadingQuestions({
     return correct;
   })();
 
-  const percentage = submitted
-    ? Math.round((score / questions.length) * 100)
-    : 0;
+  const percentage =
+    submitted && questions.length > 0
+      ? Math.round((score / questions.length) * 100)
+      : 0;
 
   const remainingTime = TIMER_LIMIT - elapsedSeconds;
 
@@ -424,9 +429,6 @@ export function ReadingQuestions({
     }
     return [...statsMap.entries()].map(([type, stat]) => ({ type, ...stat }));
   }, [submitted, questions, answers]);
-
-  // Answer key toggle
-  const [answerKeyOpen, setAnswerKeyOpen] = useState(false);
 
   return (
     <ScrollArea className="h-full">
@@ -488,148 +490,23 @@ export function ReadingQuestions({
 
         {/* Results */}
         {submitted && (
-          <div className="space-y-3 rounded-lg border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Results</h3>
-              <div className="flex items-center gap-2">
-                {latestSession?.timeSpent != null && (
-                  <Badge variant="outline">
-                    <ClockIcon className="mr-1 size-3" />
-                    {formatTime(latestSession.timeSpent)}
-                  </Badge>
-                )}
-                <Badge variant={percentage >= 70 ? "default" : "destructive"}>
-                  {score}/{questions.length} ({percentage}%)
-                </Badge>
-              </div>
-            </div>
-            <Progress value={percentage} />
-            {timedOut && (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                Time&apos;s up! Your answers were auto-submitted.
-              </p>
-            )}
-
-            {/* Per-type stats breakdown */}
-            {typeStats.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pr-2 pb-1 font-medium">Question Type</th>
-                      <th className="px-2 pb-1 text-center font-medium">
-                        Total
-                      </th>
-                      <th className="px-2 pb-1 text-center font-medium text-green-600 dark:text-green-400">
-                        Correct
-                      </th>
-                      <th className="px-2 pb-1 text-center font-medium text-red-600 dark:text-red-400">
-                        Wrong
-                      </th>
-                      <th className="pb-1 pl-2 text-center font-medium">
-                        Skipped
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {typeStats.map((stat) => (
-                      <tr key={stat.type} className="border-b last:border-0">
-                        <td className="py-1 pr-2">
-                          {questionTypeLabels[stat.type] ?? stat.type}
-                        </td>
-                        <td className="px-2 py-1 text-center">{stat.total}</td>
-                        <td className="px-2 py-1 text-center text-green-600 dark:text-green-400">
-                          {stat.correct}
-                        </td>
-                        <td className="px-2 py-1 text-center text-red-600 dark:text-red-400">
-                          {stat.wrong}
-                        </td>
-                        <td className="py-1 pl-2 text-center text-muted-foreground">
-                          {stat.skipped}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Answer key grid */}
-            <Collapsible open={answerKeyOpen} onOpenChange={setAnswerKeyOpen}>
-              <CollapsibleTrigger asChild>
-                <button
-                  className="flex w-full items-center gap-2 text-left text-xs font-medium text-muted-foreground hover:text-foreground"
-                  type="button"
-                >
-                  {answerKeyOpen ? (
-                    <ChevronUpIcon className="size-3.5" />
-                  ) : (
-                    <ChevronDownIcon className="size-3.5" />
-                  )}
-                  Answer Key
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="mt-2 grid grid-cols-2 gap-1.5">
-                  {questions.map((q) => {
-                    const userAnswer = (answers[q.id] ?? "").trim();
-                    const isCorrect =
-                      userAnswer.toLowerCase() ===
-                      q.correctAnswer.trim().toLowerCase();
-                    return (
-                      <div
-                        key={q.id}
-                        className="flex items-center gap-1.5 text-xs"
-                      >
-                        <span
-                          className={cn(
-                            "flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white",
-                            isCorrect ? "bg-green-500" : "bg-red-500",
-                          )}
-                        >
-                          {q.questionNumber}
-                        </span>
-                        {isCorrect ? (
-                          <CheckCircleIcon className="size-3 shrink-0 text-green-500" />
-                        ) : (
-                          <XCircleIcon className="size-3 shrink-0 text-red-500" />
-                        )}
-                        <span className="truncate text-muted-foreground">
-                          {q.correctAnswer}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-
-            <div className="flex gap-2">
-              <Button
-                disabled={isDisabled}
-                size="sm"
-                variant="outline"
-                onClick={handleRetake}
-              >
-                <RotateCcwIcon className="size-3.5" />
-                Retake Test
-              </Button>
-              <Button
-                disabled={isDisabled}
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  void sendMessage({
-                    text: "Please generate a new reading test on a different topic, targeting my weak areas.",
-                    files: [],
-                  });
-                }}
-              >
-                <RefreshCwIcon className="size-3.5" />
-                New Test
-              </Button>
-            </div>
-          </div>
+          <ResultsSummary
+            answers={answers}
+            isDisabled={isDisabled}
+            latestSession={latestSession}
+            percentage={percentage}
+            questions={questions}
+            score={score}
+            timedOut={timedOut}
+            typeStats={typeStats}
+            onNewTest={() => {
+              void sendMessage({
+                text: "Please generate a new reading test on a different topic, targeting my weak areas.",
+                files: [],
+              });
+            }}
+            onRetake={handleRetake}
+          />
         )}
 
         {/* Question groups with instruction headers */}
@@ -660,7 +537,7 @@ export function ReadingQuestions({
             <div key={`${group.type}-${startNum}`} className="space-y-4">
               {/* Instruction banner */}
               <div className="rounded-lg bg-primary p-3 text-primary-foreground">
-                <p className="text-xs font-medium">
+                <p className="text-sm font-semibold">
                   Questions {startNum}
                   {startNum === endNum ? "" : `\u2013${endNum}`}:{" "}
                   {questionTypeLabels[group.type] ?? group.type}
@@ -673,7 +550,7 @@ export function ReadingQuestions({
                         "<strong>$1</strong>",
                       ),
                     }}
-                    className="mt-1 text-xs opacity-90"
+                    className="mt-1 text-sm opacity-90"
                   />
                 )}
               </div>
@@ -692,23 +569,26 @@ export function ReadingQuestions({
               <Separator />
               {group.questions.map((question) => {
                 const userAnswer = answers[question.id] ?? "";
+                const trimmedAnswer = userAnswer.trim();
+                const isSkipped = submitted && trimmedAnswer === "";
                 const isCorrect =
                   submitted &&
-                  userAnswer.trim().toLowerCase() ===
+                  trimmedAnswer !== "" &&
+                  trimmedAnswer.toLowerCase() ===
                     question.correctAnswer.trim().toLowerCase();
-                const isWrong = submitted && !isCorrect;
+                const isWrong = submitted && !isCorrect && !isSkipped;
 
                 return (
                   <div
                     key={question.id}
                     className={cn(
                       "space-y-3 rounded-lg border p-3",
-                      submitted &&
-                        isCorrect &&
+                      isCorrect &&
                         "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
-                      submitted &&
-                        isWrong &&
+                      isWrong &&
                         "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
+                      isSkipped &&
+                        "border-muted bg-muted/30",
                     )}
                   >
                     {(() => {
@@ -760,7 +640,7 @@ export function ReadingQuestions({
 
         {!submitted && (
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {answeredCount}/{questions.length} answered
             </p>
             <Button disabled={isDisabled} onClick={handleSubmit}>
@@ -770,6 +650,246 @@ export function ReadingQuestions({
         )}
       </div>
     </ScrollArea>
+  );
+}
+
+function ResultsSummary({
+  score,
+  questions,
+  answers,
+  percentage,
+  timedOut,
+  typeStats,
+  latestSession,
+  isDisabled,
+  onRetake,
+  onNewTest,
+}: {
+  score: number;
+  questions: QuestionData[];
+  answers: Record<number, string>;
+  percentage: number;
+  timedOut: boolean;
+  typeStats: TypeStat[];
+  latestSession: SessionData | undefined;
+  isDisabled: boolean;
+  onRetake: () => void;
+  onNewTest: () => void;
+}) {
+  const wrongCount = questions.filter((q) => {
+    const ua = (answers[q.id] ?? "").trim();
+    return ua !== "" && ua.toLowerCase() !== q.correctAnswer.trim().toLowerCase();
+  }).length;
+  const skippedCount = questions.filter(
+    (q) => (answers[q.id] ?? "").trim() === "",
+  ).length;
+
+  return (
+    <div className="space-y-4">
+      {/* Hero score section */}
+      <div className="rounded-lg border bg-card p-5">
+        <h3 className="text-base font-bold">
+          Test completed
+          {latestSession?.timeSpent != null &&
+            ` in ${formatTime(latestSession.timeSpent)}`}
+          !
+        </h3>
+        {timedOut && (
+          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            Time&apos;s up! Your answers were auto-submitted.
+          </p>
+        )}
+
+        <div className="mt-4 flex items-center gap-6">
+          {/* Score ring */}
+          <div className="relative flex size-20 shrink-0 items-center justify-center">
+            <svg className="size-20 -rotate-90" viewBox="0 0 80 80">
+              <circle
+                className="stroke-muted"
+                cx="40"
+                cy="40"
+                fill="none"
+                r="34"
+                strokeWidth="6"
+              />
+              <circle
+                className={cn(
+                  "transition-all duration-700",
+                  percentage >= 70
+                    ? "stroke-green-500"
+                    : percentage >= 40
+                      ? "stroke-amber-500"
+                      : "stroke-red-500",
+                )}
+                cx="40"
+                cy="40"
+                fill="none"
+                r="34"
+                strokeDasharray={`${(percentage / 100) * 213.6} 213.6`}
+                strokeLinecap="round"
+                strokeWidth="6"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span
+                className={cn(
+                  "text-lg font-bold",
+                  percentage >= 70
+                    ? "text-green-600 dark:text-green-400"
+                    : percentage >= 40
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-red-600 dark:text-red-400",
+                )}
+              >
+                {score}/{questions.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Correct:</span>
+              <Badge
+                className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                variant="secondary"
+              >
+                {score}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Wrong:</span>
+              <Badge
+                className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                variant="secondary"
+              >
+                {wrongCount}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Skipped:</span>
+              <Badge variant="secondary">{skippedCount}</Badge>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <Button disabled={isDisabled} size="sm" onClick={onRetake}>
+            <RotateCcwIcon className="size-3.5" />
+            Retake Test
+          </Button>
+          <Button
+            disabled={isDisabled}
+            size="sm"
+            variant="outline"
+            onClick={onNewTest}
+          >
+            <RefreshCwIcon className="size-3.5" />
+            New Test
+          </Button>
+        </div>
+      </div>
+
+      {/* Statistics table */}
+      {typeStats.length > 0 && (
+        <div className="rounded-lg border bg-card p-4">
+          <h3 className="mb-3 text-sm font-bold">Statistics</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs text-muted-foreground uppercase">
+                  Type
+                </TableHead>
+                <TableHead className="text-center text-xs text-muted-foreground uppercase">
+                  Total
+                </TableHead>
+                <TableHead className="text-center text-xs text-muted-foreground uppercase">
+                  Correct
+                </TableHead>
+                <TableHead className="text-center text-xs text-muted-foreground uppercase">
+                  Wrong
+                </TableHead>
+                <TableHead className="text-center text-xs text-muted-foreground uppercase">
+                  Skipped
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {typeStats.map((stat) => (
+                <TableRow key={stat.type}>
+                  <TableCell className="text-sm font-medium">
+                    {questionTypeLabels[stat.type] ?? stat.type}
+                  </TableCell>
+                  <TableCell className="text-center text-sm font-semibold">
+                    {stat.total}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="inline-flex size-7 items-center justify-center rounded-full bg-green-100 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      {stat.correct}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="inline-flex size-7 items-center justify-center rounded-full bg-red-100 text-xs font-semibold text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                      {stat.wrong}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                      {stat.skipped}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Answer key */}
+      <div className="rounded-lg border bg-card p-4">
+        <h3 className="mb-3 text-sm font-bold">Answer key</h3>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          {questions.map((q) => {
+            const userAnswer = (answers[q.id] ?? "").trim();
+            const isSkipped = userAnswer === "";
+            const isCorrect =
+              !isSkipped &&
+              userAnswer.toLowerCase() ===
+                q.correctAnswer.trim().toLowerCase();
+
+            return (
+              <div key={q.id} className="flex items-center gap-2 text-sm">
+                <span
+                  className={cn(
+                    "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
+                    isCorrect
+                      ? "bg-green-500"
+                      : isSkipped
+                        ? "bg-muted-foreground/50"
+                        : "bg-red-500",
+                  )}
+                >
+                  {q.questionNumber}
+                </span>
+                <span
+                  className={cn(
+                    "shrink-0 text-xs",
+                    isCorrect
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {isCorrect ? "Correct" : isSkipped ? "Skipped" : "Missed"}
+                </span>
+                <span className="text-xs font-semibold text-foreground">
+                  {q.correctAnswer}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -783,72 +903,58 @@ function QuestionFeedback({
   isWrong: boolean;
 }) {
   return (
-    <div className="space-y-2 border-t pt-2">
+    <div className="space-y-3 border-t pt-3">
       {isWrong && (
-        <p className="text-xs">
+        <p className="text-sm">
           <span className="font-medium text-red-600 dark:text-red-400">
             Your answer:
           </span>{" "}
           {userAnswer || "(no answer)"}
         </p>
       )}
-      <p className="text-xs">
+      <p className="text-sm">
         <span className="font-medium text-green-600 dark:text-green-400">
           Correct answer:
         </span>{" "}
         {question.correctAnswer}
       </p>
 
-      {question.linearthinking ? (
-        <div className="mt-2 space-y-2">
-          <p className="text-xs whitespace-pre-wrap text-muted-foreground">
-            {question.linearthinking}
-          </p>
-          <div className="rounded-md bg-muted/50 p-2">
-            <p className="mb-1 text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-              Summary
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {question.explanation}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <p className="text-xs text-muted-foreground">{question.explanation}</p>
-      )}
+      <p className="text-sm/relaxed whitespace-pre-wrap text-muted-foreground">
+        {question.explanation}
+      </p>
 
       {question.passageQuote && (
-        <div className="rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-2 dark:bg-blue-950/20">
-          <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+        <div className="rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-3 dark:bg-blue-950/20">
+          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
             Passage quote:
           </p>
-          <p className="text-xs text-blue-600 italic dark:text-blue-400">
+          <p className="text-sm text-blue-600 italic dark:text-blue-400">
             &ldquo;{question.passageQuote}&rdquo;
           </p>
         </div>
       )}
 
       {question.paraphrase && (
-        <div className="rounded-md border-l-2 border-purple-400 bg-purple-50/50 p-2 dark:bg-purple-950/20">
-          <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
+        <div className="rounded-md border-l-2 border-purple-400 bg-purple-50/50 p-3 dark:bg-purple-950/20">
+          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">
             Paraphrase mapping:
           </p>
-          <p className="text-xs text-purple-600 dark:text-purple-400">
+          <p className="text-sm text-purple-600 dark:text-purple-400">
             Question: &ldquo;{question.paraphrase.questionPhrase}&rdquo;
           </p>
-          <p className="text-xs text-purple-600 dark:text-purple-400">
+          <p className="text-sm text-purple-600 dark:text-purple-400">
             Passage: &ldquo;{question.paraphrase.passagePhrase}&rdquo;
           </p>
         </div>
       )}
 
       {isWrong && question.distractors.length > 0 && (
-        <div className="rounded-md border-l-2 border-amber-400 bg-amber-50/50 p-2 dark:bg-amber-950/20">
-          <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+        <div className="rounded-md border-l-2 border-amber-400 bg-amber-50/50 p-3 dark:bg-amber-950/20">
+          <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
             Distractors:
           </p>
           {question.distractors.map((d, idx) => (
-            <p key={idx} className="text-xs text-amber-600 dark:text-amber-400">
+            <p key={idx} className="text-sm text-amber-600 dark:text-amber-400">
               &bull; &ldquo;{d.text}&rdquo; &mdash; {d.explanation}
             </p>
           ))}
@@ -903,7 +1009,7 @@ function TableCompletionGroup({
     <div className="space-y-4">
       {/* Instruction banner */}
       <div className="rounded-lg bg-primary p-3 text-primary-foreground">
-        <p className="text-xs font-medium">
+        <p className="text-sm font-semibold">
           Questions {startNum}
           {startNum === endNum ? "" : `\u2013${endNum}`}: Table Completion
         </p>
@@ -915,7 +1021,7 @@ function TableCompletionGroup({
                 "<strong>$1</strong>",
               ),
             }}
-            className="mt-1 text-xs opacity-90"
+            className="mt-1 text-sm opacity-90"
           />
         )}
       </div>
@@ -946,22 +1052,24 @@ function TableCompletionGroup({
                         const q = questionByNumber.get(qNum);
                         if (q) {
                           const userAnswer = answers[q.id] ?? "";
+                          const trimmed = userAnswer.trim();
+                          const isSkipped = submitted && trimmed === "";
                           const isCorrect =
                             submitted &&
-                            userAnswer.trim().toLowerCase() ===
+                            trimmed !== "" &&
+                            trimmed.toLowerCase() ===
                               q.correctAnswer.trim().toLowerCase();
-                          const isWrong = submitted && !isCorrect;
+                          const isWrong = submitted && !isCorrect && !isSkipped;
                           return (
                             <td
                               key={cellIdx}
                               className={cn(
                                 "p-2",
-                                submitted &&
-                                  isCorrect &&
+                                isCorrect &&
                                   "bg-green-50/50 dark:bg-green-950/20",
-                                submitted &&
-                                  isWrong &&
+                                isWrong &&
                                   "bg-red-50/50 dark:bg-red-950/20",
+                                isSkipped && "bg-muted/30",
                               )}
                             >
                               <div className="flex items-center gap-1">
@@ -979,7 +1087,7 @@ function TableCompletionGroup({
                                 />
                               </div>
                               {submitted && isWrong && (
-                                <p className="mt-1 text-xs text-green-600 dark:text-green-400">
+                                <p className="mt-1 text-sm text-green-600 dark:text-green-400">
                                   {q.correctAnswer}
                                 </p>
                               )}
@@ -1003,22 +1111,24 @@ function TableCompletionGroup({
         // Fallback: render as regular questions if no tableData
         questions.map((question) => {
           const userAnswer = answers[question.id] ?? "";
+          const trimmedFb = userAnswer.trim();
+          const isSkippedFb = submitted && trimmedFb === "";
           const isCorrect =
             submitted &&
-            userAnswer.trim().toLowerCase() ===
+            trimmedFb !== "" &&
+            trimmedFb.toLowerCase() ===
               question.correctAnswer.trim().toLowerCase();
-          const isWrong = submitted && !isCorrect;
+          const isWrong = submitted && !isCorrect && !isSkippedFb;
           return (
             <div
               key={question.id}
               className={cn(
                 "space-y-3 rounded-lg border p-3",
-                submitted &&
-                  isCorrect &&
+                isCorrect &&
                   "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
-                submitted &&
-                  isWrong &&
+                isWrong &&
                   "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
+                isSkippedFb && "border-muted bg-muted/30",
               )}
             >
               <p className="text-sm font-medium">
@@ -1063,31 +1173,15 @@ function TableCompletionGroup({
             return null;
           return (
             <div key={`feedback-${question.id}`} className="pl-2">
-              <p className="text-xs font-medium text-muted-foreground">
+              <p className="text-sm font-medium text-muted-foreground">
                 Q{question.questionNumber}:
               </p>
-              {question.linearthinking ? (
-                <div className="mt-1 space-y-2">
-                  <p className="text-xs whitespace-pre-wrap text-muted-foreground">
-                    {question.linearthinking}
-                  </p>
-                  <div className="rounded-md bg-muted/50 p-2">
-                    <p className="mb-1 text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-                      Summary
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {question.explanation}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {question.explanation}
-                </p>
-              )}
+              <p className="mt-1 text-sm/relaxed whitespace-pre-wrap text-muted-foreground">
+                {question.explanation}
+              </p>
               {question.passageQuote && (
-                <div className="mt-1 rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-2 dark:bg-blue-950/20">
-                  <p className="text-xs text-blue-600 italic dark:text-blue-400">
+                <div className="mt-1 rounded-md border-l-2 border-blue-400 bg-blue-50/50 p-3 dark:bg-blue-950/20">
+                  <p className="text-sm text-blue-600 italic dark:text-blue-400">
                     &ldquo;{question.passageQuote}&rdquo;
                   </p>
                 </div>

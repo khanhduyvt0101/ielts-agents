@@ -5,7 +5,6 @@ import type { PromptInputMessage } from "~/components/ai-elements/prompt-input";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getErrorMessage } from "ielts-agents-internal-util";
-import { useState } from "react";
 
 import {
   PromptInput,
@@ -23,6 +22,7 @@ import {
 } from "~/components/ai-elements/prompt-input";
 import { Button } from "~/components/ui/button";
 
+import { QuestionTypeSelector } from "#./lib/question-type-selector.tsx";
 import { trpcOptions } from "#./lib/trpc-options.ts";
 
 const bandScores: BandScore[] = [
@@ -36,6 +36,23 @@ const bandScores: BandScore[] = [
   "8.5",
   "9.0",
 ];
+
+const readingQuestionTypes = [
+  { id: "true-false-not-given", label: "True/False/Not Given" },
+  { id: "yes-no-not-given", label: "Yes/No/Not Given" },
+  { id: "multiple-choice", label: "Multiple Choice" },
+  { id: "matching-headings", label: "Matching Headings" },
+  { id: "fill-in-the-blank", label: "Fill in the Blank" },
+  { id: "sentence-completion", label: "Sentence Completion" },
+  { id: "summary-completion", label: "Summary Completion" },
+  { id: "table-completion", label: "Table Completion" },
+];
+
+const allReadingTypeIds = readingQuestionTypes.map((t) => t.id);
+
+function noop() {
+  // intentional noop for disabled state
+}
 
 interface ReadingPromptInputContentProps {
   chatId?: number;
@@ -68,6 +85,10 @@ function ReadingPromptInputContent({
       <PromptInputFooter className="flex-wrap justify-end gap-2 sm:justify-between">
         <PromptInputTools className="flex-wrap justify-end gap-2">
           <BandScoreSelector chatId={chatId} disabled={disabled ?? isLoading} />
+          <QuestionTypesSelector
+            chatId={chatId}
+            disabled={disabled ?? isLoading}
+          />
         </PromptInputTools>
         <div className="flex items-center gap-1">
           <PromptInputSubmit
@@ -104,18 +125,26 @@ function BandScoreSelector({
   chatId?: number;
   disabled?: boolean;
 }) {
-  const [localBandScore, setLocalBandScore] = useState<BandScore>("6.5");
+  if (chatId)
+    return <BandScoreSelectorWithChatId chatId={chatId} disabled={disabled} />;
+  return <BandScoreSelectorWithoutChatId disabled={disabled} />;
+}
+
+function BandScoreSelectorWithChatId({
+  chatId,
+  disabled,
+}: {
+  chatId: number;
+  disabled?: boolean;
+}) {
   const { data, isPending, isError, error, isRefetching, refetch } = useQuery(
-    trpcOptions.reading.getReadingConfig.queryOptions(
-      { chatId: chatId ?? "" },
-      { enabled: !!chatId },
-    ),
+    trpcOptions.reading.getReadingConfig.queryOptions({ chatId }),
   );
   const updateConfig = useMutation(
     trpcOptions.reading.updateConfig.mutationOptions(),
   );
 
-  if (chatId && isPending) {
+  if (isPending) {
     return (
       <PromptInputSelect disabled value="6.5">
         <PromptInputSelectTrigger className="w-auto gap-1">
@@ -132,7 +161,7 @@ function BandScoreSelector({
     );
   }
 
-  if (chatId && isError) {
+  if (isError) {
     return (
       <div className="flex items-center gap-2">
         <span className="text-xs text-destructive">
@@ -150,18 +179,12 @@ function BandScoreSelector({
     );
   }
 
-  const value = chatId ? (data?.bandScore ?? "6.5") : localBandScore;
   return (
     <PromptInputSelect
       disabled={disabled ?? updateConfig.isPending}
-      value={value}
+      value={data.bandScore}
       onValueChange={(bandScore: string) => {
-        if (chatId) {
-          updateConfig.mutate({ chatId, bandScore: bandScore as BandScore });
-        } else {
-          setLocalBandScore(bandScore as BandScore);
-          updateConfig.mutate({ bandScore: bandScore as BandScore });
-        }
+        updateConfig.mutate({ chatId, bandScore: bandScore as BandScore });
       }}
     >
       <PromptInputSelectTrigger className="w-auto gap-1">
@@ -175,5 +198,173 @@ function BandScoreSelector({
         ))}
       </PromptInputSelectContent>
     </PromptInputSelect>
+  );
+}
+
+function BandScoreSelectorWithoutChatId({
+  disabled,
+}: {
+  disabled?: boolean;
+}) {
+  const { data, isPending } = useQuery(
+    trpcOptions.reading.getDefaultConfig.queryOptions(),
+  );
+  const updateConfig = useMutation(
+    trpcOptions.reading.updateConfig.mutationOptions(),
+  );
+
+  if (isPending || !data) {
+    return (
+      <PromptInputSelect disabled value="6.5">
+        <PromptInputSelectTrigger className="w-auto gap-1">
+          <PromptInputSelectValue />
+        </PromptInputSelectTrigger>
+        <PromptInputSelectContent>
+          {bandScores.map((score) => (
+            <PromptInputSelectItem key={score} value={score}>
+              Band {score}
+            </PromptInputSelectItem>
+          ))}
+        </PromptInputSelectContent>
+      </PromptInputSelect>
+    );
+  }
+
+  return (
+    <PromptInputSelect
+      disabled={disabled ?? updateConfig.isPending}
+      value={data.bandScore}
+      onValueChange={(bandScore: string) => {
+        updateConfig.mutate({ bandScore: bandScore as BandScore });
+      }}
+    >
+      <PromptInputSelectTrigger className="w-auto gap-1">
+        <PromptInputSelectValue />
+      </PromptInputSelectTrigger>
+      <PromptInputSelectContent>
+        {bandScores.map((score) => (
+          <PromptInputSelectItem key={score} value={score}>
+            Band {score}
+          </PromptInputSelectItem>
+        ))}
+      </PromptInputSelectContent>
+    </PromptInputSelect>
+  );
+}
+
+function QuestionTypesSelector({
+  chatId,
+  disabled,
+}: {
+  chatId?: number;
+  disabled?: boolean;
+}) {
+  if (chatId) {
+    return (
+      <QuestionTypesSelectorWithChatId chatId={chatId} disabled={disabled} />
+    );
+  }
+  return <QuestionTypesSelectorWithoutChatId disabled={disabled} />;
+}
+
+function QuestionTypesSelectorWithChatId({
+  chatId,
+  disabled,
+}: {
+  chatId: number;
+  disabled?: boolean;
+}) {
+  const { data, isPending, isError, error, isRefetching, refetch } = useQuery(
+    trpcOptions.reading.getReadingConfig.queryOptions({ chatId }),
+  );
+  const updateConfig = useMutation(
+    trpcOptions.reading.updateConfig.mutationOptions(),
+  );
+
+  if (isPending) {
+    return (
+      <QuestionTypeSelector
+        disabled
+        selected={allReadingTypeIds}
+        types={readingQuestionTypes}
+        onChange={noop}
+      />
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-destructive">
+          {getErrorMessage(error)}
+        </span>
+        <Button
+          disabled={isRefetching}
+          size="sm"
+          variant="outline"
+          onClick={() => void refetch()}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const selected =
+    data.questionTypes.length === 0 ? allReadingTypeIds : data.questionTypes;
+
+  return (
+    <QuestionTypeSelector
+      disabled={disabled ?? updateConfig.isPending}
+      selected={selected}
+      types={readingQuestionTypes}
+      onChange={(newTypes: string[]) => {
+        const toSave =
+          newTypes.length === allReadingTypeIds.length ? [] : newTypes;
+        updateConfig.mutate({ chatId, questionTypes: toSave });
+      }}
+    />
+  );
+}
+
+function QuestionTypesSelectorWithoutChatId({
+  disabled,
+}: {
+  disabled?: boolean;
+}) {
+  const { data, isPending } = useQuery(
+    trpcOptions.reading.getDefaultConfig.queryOptions(),
+  );
+  const updateConfig = useMutation(
+    trpcOptions.reading.updateConfig.mutationOptions(),
+  );
+
+  if (isPending || !data) {
+    return (
+      <QuestionTypeSelector
+        disabled
+        selected={allReadingTypeIds}
+        types={readingQuestionTypes}
+        onChange={noop}
+      />
+    );
+  }
+
+  const selected =
+    data.questionTypes.length === 0
+      ? allReadingTypeIds
+      : data.questionTypes;
+
+  return (
+    <QuestionTypeSelector
+      disabled={disabled ?? updateConfig.isPending}
+      selected={selected}
+      types={readingQuestionTypes}
+      onChange={(newTypes: string[]) => {
+        const toSave =
+          newTypes.length === allReadingTypeIds.length ? [] : newTypes;
+        updateConfig.mutate({ questionTypes: toSave });
+      }}
+    />
   );
 }

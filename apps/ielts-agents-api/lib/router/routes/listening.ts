@@ -40,6 +40,8 @@ export const createListening = workspaceProcedure
     });
     const bandScore =
       agentDefault?.bandScore ?? defaultAgentConfigValue.bandScore;
+    const questionTypes =
+      agentDefault?.questionTypes ?? defaultAgentConfigValue.questionTypes;
     const message: AgentMessage["listening"] = {
       id: generateId(),
       role: "user",
@@ -47,7 +49,7 @@ export const createListening = workspaceProcedure
     };
     const chatId = await database.transaction(async (tx) => {
       const id = await insertChat({ workspaceId: workspace.id, message, tx });
-      await tx.insert(chatListening).values({ id, bandScore });
+      await tx.insert(chatListening).values({ id, bandScore, questionTypes });
       return id;
     });
     await createAgentStream("listening", chatId, [message], workspace.id);
@@ -111,54 +113,76 @@ export const getListeningConfig = workspaceProcedure
     }
     return {
       bandScore: chatData.listening.bandScore,
+      questionTypes: chatData.listening.questionTypes,
     };
   });
+
+export const getDefaultConfig = workspaceProcedure.query(async ({ ctx }) => {
+  const defaultConfig = await database.query.listeningDefault.findFirst({
+    where: eq(listeningDefault.workspaceId, ctx.workspace.id),
+  });
+  return {
+    bandScore: defaultConfig?.bandScore ?? defaultAgentConfigValue.bandScore,
+    questionTypes:
+      defaultConfig?.questionTypes ?? defaultAgentConfigValue.questionTypes,
+  };
+});
 
 export const updateConfig = workspaceProcedure
   .input(
     z.object({
       chatId: chatIdSchema.optional(),
       bandScore: bandScoreSchema.optional(),
+      questionTypes: z.array(z.string()).optional(),
     }),
   )
-  .mutation(async ({ ctx: { workspace }, input: { chatId, bandScore } }) => {
-    if (chatId) {
-      const chatData = await database.query.chat.findFirst({
-        where: (table, { and, eq }) =>
-          and(eq(table.workspaceId, workspace.id), eq(table.id, chatId)),
-        columns: { id: true },
-      });
-      if (!chatData)
-        throw new TRPCError({ code: "NOT_FOUND", message: "Chat not found" });
-      const updateValues: Record<string, unknown> = {};
-      if (bandScore) updateValues.bandScore = bandScore;
-      if (Object.keys(updateValues).length > 0) {
-        await database
-          .update(chatListening)
-          .set(updateValues)
-          .where(eq(chatListening.id, chatId));
-      }
-    } else {
-      const existing = await database.query.listeningDefault.findFirst({
-        where: (table, { eq }) => eq(table.workspaceId, workspace.id),
-      });
-      const updateValues: Record<string, unknown> = {};
-      if (bandScore) updateValues.bandScore = bandScore;
-      if (existing) {
+  .mutation(
+    async ({
+      ctx: { workspace },
+      input: { chatId, bandScore, questionTypes },
+    }) => {
+      if (chatId) {
+        const chatData = await database.query.chat.findFirst({
+          where: (table, { and, eq }) =>
+            and(eq(table.workspaceId, workspace.id), eq(table.id, chatId)),
+          columns: { id: true },
+        });
+        if (!chatData) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Chat not found",
+          });
+        }
+        const updateValues: Record<string, unknown> = {};
+        if (bandScore) updateValues.bandScore = bandScore;
+        if (questionTypes !== undefined)
+          updateValues.questionTypes = questionTypes;
         if (Object.keys(updateValues).length > 0) {
           await database
-            .update(listeningDefault)
+            .update(chatListening)
             .set(updateValues)
-            .where(eq(listeningDefault.workspaceId, workspace.id));
+            .where(eq(chatListening.id, chatId));
         }
       } else {
-        await database.insert(listeningDefault).values({
-          workspaceId: workspace.id,
-          bandScore: bandScore ?? "6.5",
-        });
+        const updateValues: Record<string, unknown> = {};
+        if (bandScore) updateValues.bandScore = bandScore;
+        if (questionTypes !== undefined)
+          updateValues.questionTypes = questionTypes;
+        await database
+          .insert(listeningDefault)
+          .values({
+            workspaceId: workspace.id,
+            bandScore: bandScore ?? defaultAgentConfigValue.bandScore,
+            questionTypes:
+              questionTypes ?? defaultAgentConfigValue.questionTypes,
+          })
+          .onConflictDoUpdate({
+            target: listeningDefault.workspaceId,
+            set: updateValues,
+          });
       }
-    }
-  });
+    },
+  );
 
 export const saveAnswer = workspaceProcedure
   .input(
@@ -243,16 +267,18 @@ export const submitSession = workspaceProcedure
         message: "Listening chat not found",
       });
     }
-    const latestSession = await database.query.listeningSession.findFirst({
+    let latestSession = await database.query.listeningSession.findFirst({
       where: (table, { eq }) => eq(table.chatListeningId, chatId),
       with: { answers: true },
       orderBy: (table, { desc }) => [desc(table.createdAt)],
     });
+    // Create a session if none exists (user submitted without answering any questions)
     if (!latestSession) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No session found",
-      });
+      const [newSession] = await database
+        .insert(listeningSession)
+        .values({ chatListeningId: chatId })
+        .returning();
+      latestSession = { ...newSession, answers: [] };
     }
     if (latestSession.submitted) {
       const questions = chatData.listening.questions;

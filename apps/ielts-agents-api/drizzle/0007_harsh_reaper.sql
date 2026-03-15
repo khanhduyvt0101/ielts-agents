@@ -1,0 +1,1 @@
+ALTER TABLE "reading_question" DROP COLUMN "linearthinking";

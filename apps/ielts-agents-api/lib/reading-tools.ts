@@ -79,11 +79,8 @@ const generateQuestions = tool({
           correctAnswer: z.string().describe("The correct answer"),
           explanation: z
             .string()
-            .describe("Explanation of why this is the correct answer"),
-          linearthinking: z
-            .string()
             .describe(
-              "A step-by-step explanation using the Linearthinking method: 1. Simplify (S-V-O) 2. Read Connections.",
+              "A detailed step-by-step explanation. Step 1: Read the passage — quote key sentences, bold important words. Step 2: Compare meaning — map the question to the passage, explain why the answer is correct. End with the final answer.",
             ),
           passageQuote: z
             .string()
@@ -164,7 +161,6 @@ const generateQuestions = tool({
         options: q.options ?? [],
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
-        linearthinking: q.linearthinking,
         passageQuote: q.passageQuote ?? null,
         distractors: q.distractors ?? [],
         paraphrase: q.paraphrase ?? null,
@@ -242,7 +238,6 @@ const getReadingResults = tool({
         questionText: true,
         correctAnswer: true,
         explanation: true,
-        linearthinking: true,
         passageQuote: true,
         distractors: true,
         paraphrase: true,
@@ -284,7 +279,6 @@ const getReadingResults = tool({
         userAnswer: userAnswer || "(no answer)",
         isCorrect,
         explanation: q.explanation,
-        linearthinking: q.linearthinking,
         passageQuote: q.passageQuote,
         distractors: q.distractors,
         paraphrase: q.paraphrase,
