@@ -79,7 +79,9 @@ const generateQuestions = tool({
           correctAnswer: z.string().describe("The correct answer"),
           explanation: z
             .string()
-            .describe("Explanation of why this is the correct answer"),
+            .describe(
+              "A detailed step-by-step explanation. Step 1: Read the passage — quote key sentences, bold important words. Step 2: Compare meaning — map the question to the passage, explain why the answer is correct. End with the final answer.",
+            ),
           passageQuote: z
             .string()
             .optional()

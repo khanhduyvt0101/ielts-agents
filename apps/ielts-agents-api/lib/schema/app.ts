@@ -82,6 +82,10 @@ export const chatReading = pgTable("chat_reading", {
     .primaryKey()
     .references(() => chat.id, { onUpdate: "cascade", onDelete: "cascade" }),
   bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+  questionTypes: jsonb("question_types")
+    .$type<string[]>()
+    .default([])
+    .notNull(),
 });
 
 export const readingPassage = pgTable("reading_passage", {
@@ -153,6 +157,10 @@ export const readingDefault = pgTable("reading_default", {
       onDelete: "cascade",
     }),
   bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+  questionTypes: jsonb("question_types")
+    .$type<string[]>()
+    .default([])
+    .notNull(),
 });
 
 export const readingSession = pgTable("reading_session", {
@@ -211,6 +219,10 @@ export const chatListening = pgTable("chat_listening", {
     .primaryKey()
     .references(() => chat.id, { onUpdate: "cascade", onDelete: "cascade" }),
   bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+  questionTypes: jsonb("question_types")
+    .$type<string[]>()
+    .default([])
+    .notNull(),
 });
 
 export const listeningScript = pgTable("listening_script", {
@@ -282,6 +294,10 @@ export const listeningDefault = pgTable("listening_default", {
       onDelete: "cascade",
     }),
   bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+  questionTypes: jsonb("question_types")
+    .$type<string[]>()
+    .default([])
+    .notNull(),
 });
 
 export const listeningSession = pgTable("listening_session", {

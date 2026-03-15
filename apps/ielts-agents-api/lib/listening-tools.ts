@@ -358,7 +358,9 @@ const generateQuestions = tool({
           correctAnswer: z.string().describe("The correct answer"),
           explanation: z
             .string()
-            .describe("Explanation of why this is the correct answer"),
+            .describe(
+              "A detailed step-by-step explanation. Step 1: Listen for keywords — quote the script, bold key phrases. Step 2: Compare meaning — map question to script, explain why the answer is correct. End with the final answer.",
+            ),
           scriptQuote: z
             .string()
             .optional()

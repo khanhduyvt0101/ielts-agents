@@ -31,7 +31,14 @@ export function ProjectLayout({
   const isMobile = useIsMobile();
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [projectWidth, setProjectWidth] = useState(45);
+  const [projectWidth, setProjectWidth] = useState(() => {
+    try {
+      const saved = localStorage.getItem("project-panel-width");
+      return saved ? Number(saved) : 70;
+    } catch {
+      return 70;
+    }
+  });
   const [isDragging, setIsDragging] = useState(false);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -43,11 +50,15 @@ export function ProjectLayout({
       const containerRect = containerRef.current.getBoundingClientRect();
       const newProjectWidth =
         ((containerRect.right - moveEvent.clientX) / containerRect.width) * 100;
-      setProjectWidth(Math.max(25, Math.min(70, newProjectWidth)));
+      setProjectWidth(Math.max(25, Math.min(80, newProjectWidth)));
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      setProjectWidth((w) => {
+        localStorage.setItem("project-panel-width", String(w));
+        return w;
+      });
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };

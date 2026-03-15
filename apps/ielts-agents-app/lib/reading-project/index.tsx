@@ -128,6 +128,15 @@ function ReadingProjectContent({
   const hasVocabulary = vocabulary.length > 0;
   const isWaiting = !hasPassage && !hasQuestions;
   const hasPassageOnly = hasPassage && !hasQuestions;
+  const isSubmitted = sessions.at(0)?.submitted ?? false;
+
+  // Auto-switch to questions tab after submission so user sees explanations
+  const [trackedSubmitted, setTrackedSubmitted] = useState(isSubmitted);
+  if (isSubmitted && !trackedSubmitted) {
+    setTrackedSubmitted(true);
+    if (hasQuestions) setActiveTab("questions");
+  }
+  if (!isSubmitted && trackedSubmitted) setTrackedSubmitted(false);
 
   // Reset to passage tab if current tab is no longer available
   if (activeTab === "vocabulary" && !hasVocabulary) setActiveTab("passage");

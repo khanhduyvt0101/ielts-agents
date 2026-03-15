@@ -535,7 +535,7 @@ pnpm exec nx run-many -t typecheck,lint
 1. **Kill all running servers/ports** related to `ielts-agents` before running tests (ports 42310, 42312, 42313):
 
 ```bash
-lsof -ti:42310,42312,42313 | xargs kill -9 2>/dev/null || true
+pkill -f "node.*ielts" 2>/dev/null || true
 ```
 
 2. Run the Playwright E2E suite:

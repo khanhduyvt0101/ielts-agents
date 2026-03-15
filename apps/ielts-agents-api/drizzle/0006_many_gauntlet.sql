@@ -1,0 +1,1 @@
+ALTER TABLE "reading_question" ADD COLUMN "linearthinking" text DEFAULT '' NOT NULL;

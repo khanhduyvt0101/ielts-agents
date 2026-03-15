@@ -43,6 +43,27 @@
       "when": 1773467201917,
       "tag": "0005_illegal_rhino",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773475030948,
+      "tag": "0006_many_gauntlet",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773557531917,
+      "tag": "0007_harsh_reaper",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773562752383,
+      "tag": "0008_magenta_impossible_man",
+      "breakpoints": true
     }
   ]
 }
