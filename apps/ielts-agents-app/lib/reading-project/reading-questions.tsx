@@ -587,8 +587,7 @@ export function ReadingQuestions({
                         "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
                       isWrong &&
                         "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
-                      isSkipped &&
-                        "border-muted bg-muted/30",
+                      isSkipped && "border-muted bg-muted/30",
                     )}
                   >
                     {(() => {
@@ -678,7 +677,9 @@ function ResultsSummary({
 }) {
   const wrongCount = questions.filter((q) => {
     const ua = (answers[q.id] ?? "").trim();
-    return ua !== "" && ua.toLowerCase() !== q.correctAnswer.trim().toLowerCase();
+    return (
+      ua !== "" && ua.toLowerCase() !== q.correctAnswer.trim().toLowerCase()
+    );
   }).length;
   const skippedCount = questions.filter(
     (q) => (answers[q.id] ?? "").trim() === "",
@@ -854,8 +855,7 @@ function ResultsSummary({
             const isSkipped = userAnswer === "";
             const isCorrect =
               !isSkipped &&
-              userAnswer.toLowerCase() ===
-                q.correctAnswer.trim().toLowerCase();
+              userAnswer.toLowerCase() === q.correctAnswer.trim().toLowerCase();
 
             return (
               <div key={q.id} className="flex items-center gap-2 text-sm">
@@ -1067,8 +1067,7 @@ function TableCompletionGroup({
                                 "p-2",
                                 isCorrect &&
                                   "bg-green-50/50 dark:bg-green-950/20",
-                                isWrong &&
-                                  "bg-red-50/50 dark:bg-red-950/20",
+                                isWrong && "bg-red-50/50 dark:bg-red-950/20",
                                 isSkipped && "bg-muted/30",
                               )}
                             >
@@ -1126,8 +1125,7 @@ function TableCompletionGroup({
                 "space-y-3 rounded-lg border p-3",
                 isCorrect &&
                   "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
-                isWrong &&
-                  "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
+                isWrong && "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
                 isSkippedFb && "border-muted bg-muted/30",
               )}
             >

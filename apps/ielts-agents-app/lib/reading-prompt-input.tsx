@@ -201,11 +201,7 @@ function BandScoreSelectorWithChatId({
   );
 }
 
-function BandScoreSelectorWithoutChatId({
-  disabled,
-}: {
-  disabled?: boolean;
-}) {
+function BandScoreSelectorWithoutChatId({ disabled }: { disabled?: boolean }) {
   const { data, isPending } = useQuery(
     trpcOptions.reading.getDefaultConfig.queryOptions(),
   );
@@ -351,9 +347,7 @@ function QuestionTypesSelectorWithoutChatId({
   }
 
   const selected =
-    data.questionTypes.length === 0
-      ? allReadingTypeIds
-      : data.questionTypes;
+    data.questionTypes.length === 0 ? allReadingTypeIds : data.questionTypes;
 
   return (
     <QuestionTypeSelector

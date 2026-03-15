@@ -608,8 +608,7 @@ export function ListeningQuestions({
                             "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
                           isWrong &&
                             "border-red-500/50 bg-red-50/50 dark:bg-red-950/20",
-                          isSkipped &&
-                            "border-muted bg-muted/30",
+                          isSkipped && "border-muted bg-muted/30",
                         )}
                       >
                         <p className="text-sm font-medium">
@@ -915,8 +914,7 @@ function ListeningResultsSummary({
             const isSkipped = userAnswer === "";
             const isCorrect =
               !isSkipped &&
-              userAnswer.toLowerCase() ===
-                q.correctAnswer.trim().toLowerCase();
+              userAnswer.toLowerCase() === q.correctAnswer.trim().toLowerCase();
 
             return (
               <div key={q.id} className="flex items-center gap-2 text-sm">
@@ -1015,10 +1013,7 @@ function QuestionFeedback({
             Distractors:
           </p>
           {question.distractors.map((d, idx) => (
-            <p
-              key={idx}
-              className="text-sm text-amber-600 dark:text-amber-400"
-            >
+            <p key={idx} className="text-sm text-amber-600 dark:text-amber-400">
               &bull; &ldquo;{d.text}&rdquo; &mdash; {d.explanation}
             </p>
           ))}

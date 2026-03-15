@@ -213,11 +213,7 @@ function BandScoreSelectorWithChatId({
   );
 }
 
-function BandScoreSelectorWithoutChatId({
-  disabled,
-}: {
-  disabled?: boolean;
-}) {
+function BandScoreSelectorWithoutChatId({ disabled }: { disabled?: boolean }) {
   const { data, isPending } = useQuery(
     trpcOptions.listening.getDefaultConfig.queryOptions(),
   );
@@ -323,9 +319,7 @@ function QuestionTypesSelectorWithChatId({
   }
 
   const selected =
-    data.questionTypes.length === 0
-      ? allListeningTypeIds
-      : data.questionTypes;
+    data.questionTypes.length === 0 ? allListeningTypeIds : data.questionTypes;
 
   return (
     <QuestionTypeSelector
@@ -365,9 +359,7 @@ function QuestionTypesSelectorWithoutChatId({
   }
 
   const selected =
-    data.questionTypes.length === 0
-      ? allListeningTypeIds
-      : data.questionTypes;
+    data.questionTypes.length === 0 ? allListeningTypeIds : data.questionTypes;
 
   return (
     <QuestionTypeSelector
