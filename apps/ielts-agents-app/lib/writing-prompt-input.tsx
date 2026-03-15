@@ -251,11 +251,7 @@ function TaskTypeSelectorWithChatId({
   );
 }
 
-function TaskTypeSelectorWithoutChatId({
-  disabled,
-}: {
-  disabled?: boolean;
-}) {
+function TaskTypeSelectorWithoutChatId({ disabled }: { disabled?: boolean }) {
   const { data, isPending } = useQuery(
     trpcOptions.writing.getDefaultConfig.queryOptions(),
   );

@@ -440,10 +440,7 @@ export const writingEvaluation = pgTable("writing_evaluation", {
     >()
     .default([])
     .notNull(),
-  modelPhrases: jsonb("model_phrases")
-    .$type<string[]>()
-    .default([])
-    .notNull(),
+  modelPhrases: jsonb("model_phrases").$type<string[]>().default([]).notNull(),
   improvedParagraphs: jsonb("improved_paragraphs")
     .$type<{ original: string; improved: string; explanation: string }[]>()
     .default([])

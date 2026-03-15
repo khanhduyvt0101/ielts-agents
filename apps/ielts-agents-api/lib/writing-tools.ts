@@ -51,7 +51,9 @@ const generateTask = tool({
               key: z.string().describe("The data field name (e.g. 'usa')"),
               label: z
                 .string()
-                .describe("Display label for the legend (e.g. 'United States')"),
+                .describe(
+                  "Display label for the legend (e.g. 'United States')",
+                ),
             }),
           )
           .describe("The data series to plot — each maps a key to a label"),
@@ -75,7 +77,14 @@ const generateTask = tool({
       ),
   }),
   execute: async (
-    { taskType, prompt, visualDescription, chartData, requirements, difficulty },
+    {
+      taskType,
+      prompt,
+      visualDescription,
+      chartData,
+      requirements,
+      difficulty,
+    },
     { experimental_context },
   ) => {
     const ctx = experimental_context as WritingToolContext;
@@ -83,9 +92,7 @@ const generateTask = tool({
       await tx
         .delete(writingEssay)
         .where(eq(writingEssay.chatWritingId, ctx.id));
-      await tx
-        .delete(writingTask)
-        .where(eq(writingTask.chatWritingId, ctx.id));
+      await tx.delete(writingTask).where(eq(writingTask.chatWritingId, ctx.id));
       await tx.insert(writingTask).values({
         chatWritingId: ctx.id,
         taskType,
@@ -117,21 +124,15 @@ const evaluateEssay = tool({
       .describe("Band score for Lexical Resource (e.g. '7.0')"),
     grammaticalRange: z
       .string()
-      .describe(
-        "Band score for Grammatical Range & Accuracy (e.g. '6.5')",
-      ),
-    overallBand: z
-      .string()
-      .describe("Overall band score (e.g. '7.0')"),
+      .describe("Band score for Grammatical Range & Accuracy (e.g. '6.5')"),
+    overallBand: z.string().describe("Overall band score (e.g. '7.0')"),
     feedback: z
       .array(
         z.object({
           criterion: z.string().describe("The IELTS criterion name"),
           score: z.string().describe("The band score for this criterion"),
           comments: z.string().describe("Detailed comments on this criterion"),
-          strengths: z
-            .array(z.string())
-            .describe("What the student did well"),
+          strengths: z.array(z.string()).describe("What the student did well"),
           improvements: z
             .array(z.string())
             .describe("What the student should improve"),
@@ -154,9 +155,7 @@ const evaluateEssay = tool({
       .describe("Specific corrections for errors in the essay"),
     modelPhrases: z
       .array(z.string())
-      .describe(
-        "Model phrases the student could use to improve their writing",
-      ),
+      .describe("Model phrases the student could use to improve their writing"),
     improvedParagraphs: z
       .array(
         z.object({
@@ -187,10 +186,7 @@ const evaluateEssay = tool({
 
     const latestEssay = await database.query.writingEssay.findFirst({
       where: (table, { eq, and }) =>
-        and(
-          eq(table.chatWritingId, ctx.id),
-          eq(table.submitted, true),
-        ),
+        and(eq(table.chatWritingId, ctx.id), eq(table.submitted, true)),
       orderBy: (table, { desc }) => desc(table.createdAt),
     });
 

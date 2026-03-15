@@ -41,9 +41,12 @@ interface WritingEvaluationProps {
 
 function getBandColorClasses(score: string): string {
   const num = Number.parseFloat(score);
-  if (num >= 8) return "bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400";
-  if (num >= 7) return "bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400";
-  if (num >= 5.5) return "bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400";
+  if (num >= 8)
+    return "bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400";
+  if (num >= 7)
+    return "bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400";
+  if (num >= 5.5)
+    return "bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400";
   return "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400";
 }
 

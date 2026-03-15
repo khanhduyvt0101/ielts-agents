@@ -1,4 +1,4 @@
-import type {ChartConfig} from "~/components/ui/chart";
+import type { ChartConfig } from "~/components/ui/chart";
 
 import {
   Bar,
@@ -19,7 +19,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent
+  ChartTooltipContent,
 } from "~/components/ui/chart";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
@@ -59,7 +59,9 @@ const CHART_COLORS = [
   "var(--chart-5)",
 ];
 
-function buildChartConfig(dataKeys: { key: string; label: string }[]): ChartConfig {
+function buildChartConfig(
+  dataKeys: { key: string; label: string }[],
+): ChartConfig {
   const config: ChartConfig = {};
   for (const [i, dk] of dataKeys.entries()) {
     config[dk.key] = {
@@ -104,7 +106,10 @@ function TaskChart({ chartData }: { chartData: ChartData }) {
 
   if (chartData.type === "pie") {
     return (
-      <ChartContainer className="mx-auto aspect-square max-h-[300px]" config={config}>
+      <ChartContainer
+        className="mx-auto aspect-square max-h-[300px]"
+        config={config}
+      >
         <PieChart>
           <ChartTooltip content={<ChartTooltipContent />} />
           <Pie
@@ -117,10 +122,7 @@ function TaskChart({ chartData }: { chartData: ChartData }) {
             nameKey="name"
           >
             {chartData.data.map((_d, i) => (
-              <Cell
-                key={i}
-                fill={CHART_COLORS[i % CHART_COLORS.length]}
-              />
+              <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
             ))}
           </Pie>
           <Legend />

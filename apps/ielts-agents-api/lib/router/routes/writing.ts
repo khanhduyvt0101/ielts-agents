@@ -41,10 +41,8 @@ export const createWriting = workspaceProcedure
     const agentDefault = await database.query.writingDefault.findFirst({
       where: (table, { eq }) => eq(table.workspaceId, workspace.id),
     });
-    const bandScore =
-      agentDefault?.bandScore ?? defaultWritingConfig.bandScore;
-    const taskType =
-      agentDefault?.taskType ?? defaultWritingConfig.taskType;
+    const bandScore = agentDefault?.bandScore ?? defaultWritingConfig.bandScore;
+    const taskType = agentDefault?.taskType ?? defaultWritingConfig.taskType;
     const message: AgentMessage["writing"] = {
       id: generateId(),
       role: "user",
@@ -130,10 +128,7 @@ export const updateConfig = workspaceProcedure
     }),
   )
   .mutation(
-    async ({
-      ctx: { workspace },
-      input: { chatId, bandScore, taskType },
-    }) => {
+    async ({ ctx: { workspace }, input: { chatId, bandScore, taskType } }) => {
       if (chatId) {
         const chatData = await database.query.chat.findFirst({
           where: (table, { and, eq }) =>
@@ -202,10 +197,7 @@ export const submitEssay = workspaceProcedure
       // Check for already-submitted essay with same content (prevent double submit)
       const existingEssay = await database.query.writingEssay.findFirst({
         where: (table, { eq, and }) =>
-          and(
-            eq(table.chatWritingId, chatId),
-            eq(table.submitted, true),
-          ),
+          and(eq(table.chatWritingId, chatId), eq(table.submitted, true)),
         orderBy: (table, { desc }) => [desc(table.createdAt)],
         columns: { id: true, content: true },
       });

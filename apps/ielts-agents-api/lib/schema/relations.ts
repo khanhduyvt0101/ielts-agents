@@ -202,17 +202,14 @@ export const listeningVocabularyRelations = relations(
 
 // ── Writing Relations ────────────────────────────────────────────────
 
-export const chatWritingRelations = relations(
-  chatWriting,
-  ({ one, many }) => ({
-    chat: one(chat, {
-      fields: [chatWriting.id],
-      references: [chat.id],
-    }),
-    task: one(writingTask),
-    essays: many(writingEssay),
+export const chatWritingRelations = relations(chatWriting, ({ one, many }) => ({
+  chat: one(chat, {
+    fields: [chatWriting.id],
+    references: [chat.id],
   }),
-);
+  task: one(writingTask),
+  essays: many(writingEssay),
+}));
 
 export const writingTaskRelations = relations(writingTask, ({ one }) => ({
   chatWriting: one(chatWriting, {
@@ -239,12 +236,9 @@ export const writingEvaluationRelations = relations(
   }),
 );
 
-export const writingDefaultRelations = relations(
-  writingDefault,
-  ({ one }) => ({
-    workspace: one(workspace, {
-      fields: [writingDefault.workspaceId],
-      references: [workspace.id],
-    }),
+export const writingDefaultRelations = relations(writingDefault, ({ one }) => ({
+  workspace: one(workspace, {
+    fields: [writingDefault.workspaceId],
+    references: [workspace.id],
   }),
-);
+}));
