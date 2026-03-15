@@ -15,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
+import { Spinner } from "~/components/ui/spinner";
 import { cn } from "~/lib/utils";
 
 interface QuestionType {
@@ -27,6 +28,7 @@ interface QuestionTypeSelectorProps {
   selected: string[];
   onChange: (selected: string[]) => void;
   disabled?: boolean;
+  loading?: boolean;
 }
 
 export function QuestionTypeSelector({
@@ -34,6 +36,7 @@ export function QuestionTypeSelector({
   selected,
   onChange,
   disabled,
+  loading,
 }: QuestionTypeSelectorProps) {
   const allSelected = selected.length === types.length;
 
@@ -67,14 +70,23 @@ export function QuestionTypeSelector({
           type="button"
           variant="ghost"
         >
-          <ListFilterIcon className="size-3.5" />
-          <span className="text-xs">
-            {allSelected ? "All Types" : "Question Types"}
-          </span>
-          {!allSelected && (
-            <Badge className="h-4 px-1 text-[10px]" variant="secondary">
-              {selected.length}/{types.length}
-            </Badge>
+          {loading ? (
+            <>
+              <Spinner />
+              <span className="text-xs">Types</span>
+            </>
+          ) : (
+            <>
+              <ListFilterIcon className="size-3.5" />
+              <span className="text-xs">
+                {allSelected ? "All Types" : "Question Types"}
+              </span>
+              {!allSelected && selected.length > 0 && (
+                <Badge className="h-4 px-1 text-[10px]" variant="secondary">
+                  {selected.length}/{types.length}
+                </Badge>
+              )}
+            </>
           )}
         </Button>
       </PopoverTrigger>

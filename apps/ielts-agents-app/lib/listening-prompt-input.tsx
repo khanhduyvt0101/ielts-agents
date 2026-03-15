@@ -4,7 +4,6 @@ import type { BandScore } from "ielts-agents-api/types";
 import type { PromptInputMessage } from "~/components/ai-elements/prompt-input";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getErrorMessage } from "ielts-agents-internal-util";
 import { InfoIcon } from "lucide-react";
 
 import {
@@ -22,7 +21,7 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from "~/components/ai-elements/prompt-input";
-import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
 
 import { QuestionTypeSelector } from "#./lib/question-type-selector.tsx";
 import { trpcOptions } from "#./lib/trpc-options.ts";
@@ -53,10 +52,6 @@ const listeningQuestionTypes = [
 ];
 
 const allListeningTypeIds = listeningQuestionTypes.map((t) => t.id);
-
-function noop() {
-  // intentional noop for disabled state
-}
 
 interface ListeningPromptInputContentProps {
   chatId?: number;
@@ -149,58 +144,30 @@ function BandScoreSelectorWithChatId({
   chatId: number;
   disabled?: boolean;
 }) {
-  const { data, isPending, isError, error, isRefetching, refetch } = useQuery(
+  const { data, isPending } = useQuery(
     trpcOptions.listening.getListeningConfig.queryOptions({ chatId }),
   );
   const updateConfig = useMutation(
     trpcOptions.listening.updateConfig.mutationOptions(),
   );
 
-  if (isPending) {
-    return (
-      <PromptInputSelect disabled value="6.5">
-        <PromptInputSelectTrigger className="w-auto gap-1">
-          <PromptInputSelectValue />
-        </PromptInputSelectTrigger>
-        <PromptInputSelectContent>
-          {bandScores.map((score) => (
-            <PromptInputSelectItem key={score} value={score}>
-              Band {score}
-            </PromptInputSelectItem>
-          ))}
-        </PromptInputSelectContent>
-      </PromptInputSelect>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-destructive">
-          {getErrorMessage(error)}
-        </span>
-        <Button
-          disabled={isRefetching}
-          size="sm"
-          variant="outline"
-          onClick={() => void refetch()}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <PromptInputSelect
-      disabled={disabled ?? updateConfig.isPending}
-      value={data.bandScore}
+      disabled={disabled ?? isPending}
+      value={data?.bandScore ?? "6.5"}
       onValueChange={(bandScore: string) => {
         updateConfig.mutate({ chatId, bandScore: bandScore as BandScore });
       }}
     >
       <PromptInputSelectTrigger className="w-auto gap-1">
-        <PromptInputSelectValue />
+        {isPending ? (
+          <>
+            <Spinner />
+            <span>Band</span>
+          </>
+        ) : (
+          <PromptInputSelectValue />
+        )}
       </PromptInputSelectTrigger>
       <PromptInputSelectContent>
         {bandScores.map((score) => (
@@ -221,33 +188,23 @@ function BandScoreSelectorWithoutChatId({ disabled }: { disabled?: boolean }) {
     trpcOptions.listening.updateConfig.mutationOptions(),
   );
 
-  if (isPending || !data) {
-    return (
-      <PromptInputSelect disabled value="6.5">
-        <PromptInputSelectTrigger className="w-auto gap-1">
-          <PromptInputSelectValue />
-        </PromptInputSelectTrigger>
-        <PromptInputSelectContent>
-          {bandScores.map((score) => (
-            <PromptInputSelectItem key={score} value={score}>
-              Band {score}
-            </PromptInputSelectItem>
-          ))}
-        </PromptInputSelectContent>
-      </PromptInputSelect>
-    );
-  }
-
   return (
     <PromptInputSelect
-      disabled={disabled ?? updateConfig.isPending}
-      value={data.bandScore}
+      disabled={disabled ?? isPending}
+      value={data?.bandScore ?? "6.5"}
       onValueChange={(bandScore: string) => {
         updateConfig.mutate({ bandScore: bandScore as BandScore });
       }}
     >
       <PromptInputSelectTrigger className="w-auto gap-1">
-        <PromptInputSelectValue />
+        {isPending ? (
+          <>
+            <Spinner />
+            <span>Band</span>
+          </>
+        ) : (
+          <PromptInputSelectValue />
+        )}
       </PromptInputSelectTrigger>
       <PromptInputSelectContent>
         {bandScores.map((score) => (
@@ -282,48 +239,24 @@ function QuestionTypesSelectorWithChatId({
   chatId: number;
   disabled?: boolean;
 }) {
-  const { data, isPending, isError, error, isRefetching, refetch } = useQuery(
+  const { data, isPending } = useQuery(
     trpcOptions.listening.getListeningConfig.queryOptions({ chatId }),
   );
   const updateConfig = useMutation(
     trpcOptions.listening.updateConfig.mutationOptions(),
   );
 
-  if (isPending) {
-    return (
-      <QuestionTypeSelector
-        disabled
-        selected={allListeningTypeIds}
-        types={listeningQuestionTypes}
-        onChange={noop}
-      />
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-destructive">
-          {getErrorMessage(error)}
-        </span>
-        <Button
-          disabled={isRefetching}
-          size="sm"
-          variant="outline"
-          onClick={() => void refetch()}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
-  const selected =
-    data.questionTypes.length === 0 ? allListeningTypeIds : data.questionTypes;
+  const serverTypes = data?.questionTypes ?? [];
+  const selected = isPending
+    ? []
+    : serverTypes.length === 0
+      ? allListeningTypeIds
+      : serverTypes;
 
   return (
     <QuestionTypeSelector
-      disabled={disabled ?? updateConfig.isPending}
+      disabled={disabled ?? isPending}
+      loading={isPending}
       selected={selected}
       types={listeningQuestionTypes}
       onChange={(newTypes: string[]) => {
@@ -347,23 +280,17 @@ function QuestionTypesSelectorWithoutChatId({
     trpcOptions.listening.updateConfig.mutationOptions(),
   );
 
-  if (isPending || !data) {
-    return (
-      <QuestionTypeSelector
-        disabled
-        selected={allListeningTypeIds}
-        types={listeningQuestionTypes}
-        onChange={noop}
-      />
-    );
-  }
-
-  const selected =
-    data.questionTypes.length === 0 ? allListeningTypeIds : data.questionTypes;
+  const serverTypes = data?.questionTypes ?? [];
+  const selected = isPending
+    ? []
+    : serverTypes.length === 0
+      ? allListeningTypeIds
+      : serverTypes;
 
   return (
     <QuestionTypeSelector
-      disabled={disabled ?? updateConfig.isPending}
+      disabled={disabled ?? isPending}
+      loading={isPending}
       selected={selected}
       types={listeningQuestionTypes}
       onChange={(newTypes: string[]) => {

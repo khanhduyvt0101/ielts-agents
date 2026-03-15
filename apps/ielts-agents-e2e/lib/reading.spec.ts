@@ -117,12 +117,16 @@ test("reading: submit a chat message redirects to /chat/{id} and generates test"
 
   // The passage should be visible in the initial active tab
   // (We use a very long timeout here since AI generation takes time)
-  const passageTitle = page.locator("h1.text-3xl.font-bold");
+  const passageTitle = page.locator("h2.font-bold").first();
   await expect(passageTitle).toBeVisible({ timeout: 120_000 });
 
-  // Verify tabs
-  await expect(page.getByRole("tab", { name: /Questions/ })).toBeVisible();
-  await expect(page.getByRole("tab", { name: /Vocab/ })).toBeVisible();
+  // Verify tabs (questions and vocab are generated after the passage, so we need to wait)
+  await expect(page.getByRole("tab", { name: /Questions/ })).toBeVisible({
+    timeout: 60_000,
+  });
+  await expect(page.getByRole("tab", { name: /Vocab/ })).toBeVisible({
+    timeout: 60_000,
+  });
 
   // And the conversation log should show our initial prompt
   const conversation = page.getByRole("log");
