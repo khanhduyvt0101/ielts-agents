@@ -105,7 +105,7 @@ export function useSpeakingRealtime({
           const pcm16 = new Int16Array(inputData.length);
           for (const [i, sample] of inputData.entries()) {
             const s = Math.max(-1, Math.min(1, sample));
-            pcm16[i] = s < 0 ? s * 0x80_00 : s * 0x7F_FF;
+            pcm16[i] = s < 0 ? s * 0x80_00 : s * 0x7f_ff;
           }
           // Send as base64-encoded audio append event
           const base64 = btoa(

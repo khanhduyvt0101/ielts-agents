@@ -33,7 +33,8 @@ export function SpeakingTranscript({
           <span className="text-sm font-medium">{partLabel}</span>
           {duration != null && (
             <span className="text-xs text-muted-foreground">
-              {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}
+              {Math.floor(duration / 60)}:
+              {String(duration % 60).padStart(2, "0")}
             </span>
           )}
         </div>

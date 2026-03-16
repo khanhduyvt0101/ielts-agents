@@ -128,16 +128,11 @@ export const updateConfig = workspaceProcedure
     z.object({
       chatId: chatIdSchema.optional(),
       bandScore: bandScoreSchema.optional(),
-      testPart: z
-        .enum(["part-1", "part-2", "part-3", "full-test"])
-        .optional(),
+      testPart: z.enum(["part-1", "part-2", "part-3", "full-test"]).optional(),
     }),
   )
   .mutation(
-    async ({
-      ctx: { workspace },
-      input: { chatId, bandScore, testPart },
-    }) => {
+    async ({ ctx: { workspace }, input: { chatId, bandScore, testPart } }) => {
       if (chatId) {
         const chatData = await database.query.chat.findFirst({
           where: (table, { and, eq }) =>

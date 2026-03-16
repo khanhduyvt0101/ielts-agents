@@ -7,10 +7,7 @@ import { tool } from "ai";
 import { z } from "zod";
 
 import { database } from "#./lib/database.ts";
-import {
-  speakingEvaluation,
-  speakingTranscript,
-} from "#./lib/schema/index.ts";
+import { speakingEvaluation, speakingTranscript } from "#./lib/schema/index.ts";
 
 function extractTranscriptFromMessages(
   messages: UIMessage[],
@@ -64,9 +61,7 @@ const evaluateSpeaking = tool({
     corrections: z
       .array(
         z.object({
-          original: z
-            .string()
-            .describe("The original phrase from the student"),
+          original: z.string().describe("The original phrase from the student"),
           corrected: z.string().describe("The corrected version"),
           explanation: z.string().describe("Why this correction is needed"),
           type: z

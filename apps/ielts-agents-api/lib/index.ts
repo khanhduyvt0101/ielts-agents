@@ -261,10 +261,7 @@ hono.get(
       throw new HTTPException(402, { message: "Insufficient credits" });
     const chatData = await database.query.chat.findFirst({
       where: (table, { and, eq }) =>
-        and(
-          eq(table.workspaceId, workspaceData.id),
-          eq(table.id, chatId),
-        ),
+        and(eq(table.workspaceId, workspaceData.id), eq(table.id, chatId)),
       with: { speaking: true },
     });
     if (!chatData?.speaking)

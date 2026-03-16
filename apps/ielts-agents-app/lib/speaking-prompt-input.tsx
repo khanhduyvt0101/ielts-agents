@@ -228,11 +228,7 @@ function TestPartSelectorWithChatId({
       onValueChange={(testPart: string) => {
         updateConfig.mutate({
           chatId,
-          testPart: testPart as
-            | "part-1"
-            | "part-2"
-            | "part-3"
-            | "full-test",
+          testPart: testPart as "part-1" | "part-2" | "part-3" | "full-test",
         });
       }}
     >
@@ -271,11 +267,7 @@ function TestPartSelectorWithoutChatId({ disabled }: { disabled?: boolean }) {
       value={data?.testPart ?? "full-test"}
       onValueChange={(testPart: string) => {
         updateConfig.mutate({
-          testPart: testPart as
-            | "part-1"
-            | "part-2"
-            | "part-3"
-            | "full-test",
+          testPart: testPart as "part-1" | "part-2" | "part-3" | "full-test",
         });
       }}
     >

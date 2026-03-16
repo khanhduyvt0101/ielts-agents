@@ -117,11 +117,6 @@ export function SpeakingAudioVisualizer({
   }, [isActive]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={className}
-      height={60}
-      width={300}
-    />
+    <canvas ref={canvasRef} className={className} height={60} width={300} />
   );
 }

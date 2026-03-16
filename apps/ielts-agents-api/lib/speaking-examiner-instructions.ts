@@ -97,10 +97,7 @@ export function buildExaminerInstructions(
   if (testPart === "full-test" || testPart === "part-3")
     parts.push(part3Instructions);
 
-  parts.push(
-    getBandDifficultyGuidance(bandScore),
-    getPartsToConduct(testPart),
-  );
+  parts.push(getBandDifficultyGuidance(bandScore), getPartsToConduct(testPart));
 
   return parts.join("\n\n");
 }

@@ -470,9 +470,7 @@ export const speakingTranscript = pgTable("speaking_transcript", {
       onUpdate: "cascade",
       onDelete: "cascade",
     }),
-  testPart: text("test_part")
-    .$type<"part-1" | "part-2" | "part-3">()
-    .notNull(),
+  testPart: text("test_part").$type<"part-1" | "part-2" | "part-3">().notNull(),
   transcript: jsonb("transcript")
     .$type<{ role: string; text: string; timestamp: number }[]>()
     .default([])
