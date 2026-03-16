@@ -4,6 +4,7 @@ import {
   chat,
   chatListening,
   chatReading,
+  chatSpeaking,
   chatWriting,
   listeningAnswer,
   listeningDefault,
@@ -17,6 +18,10 @@ import {
   readingQuestion,
   readingSession,
   savedVocabulary,
+  speakingAudioChunk,
+  speakingDefault,
+  speakingEvaluation,
+  speakingTranscript,
   workspace,
   writingDefault,
   writingEssay,
@@ -50,6 +55,7 @@ export const chatRelations = relations(chat, ({ one }) => ({
   reading: one(chatReading),
   listening: one(chatListening),
   writing: one(chatWriting),
+  speaking: one(chatSpeaking),
 }));
 
 export const chatReadingRelations = relations(chatReading, ({ one, many }) => ({
@@ -242,3 +248,58 @@ export const writingDefaultRelations = relations(writingDefault, ({ one }) => ({
     references: [workspace.id],
   }),
 }));
+
+// ── Speaking Relations ────────────────────────────────────────────────
+
+export const chatSpeakingRelations = relations(
+  chatSpeaking,
+  ({ one, many }) => ({
+    chat: one(chat, {
+      fields: [chatSpeaking.id],
+      references: [chat.id],
+    }),
+    transcripts: many(speakingTranscript),
+  }),
+);
+
+export const speakingTranscriptRelations = relations(
+  speakingTranscript,
+  ({ one, many }) => ({
+    chatSpeaking: one(chatSpeaking, {
+      fields: [speakingTranscript.chatSpeakingId],
+      references: [chatSpeaking.id],
+    }),
+    audioChunks: many(speakingAudioChunk),
+    evaluation: one(speakingEvaluation),
+  }),
+);
+
+export const speakingAudioChunkRelations = relations(
+  speakingAudioChunk,
+  ({ one }) => ({
+    transcript: one(speakingTranscript, {
+      fields: [speakingAudioChunk.transcriptId],
+      references: [speakingTranscript.id],
+    }),
+  }),
+);
+
+export const speakingEvaluationRelations = relations(
+  speakingEvaluation,
+  ({ one }) => ({
+    transcript: one(speakingTranscript, {
+      fields: [speakingEvaluation.transcriptId],
+      references: [speakingTranscript.id],
+    }),
+  }),
+);
+
+export const speakingDefaultRelations = relations(
+  speakingDefault,
+  ({ one }) => ({
+    workspace: one(workspace, {
+      fields: [speakingDefault.workspaceId],
+      references: [workspace.id],
+    }),
+  }),
+);

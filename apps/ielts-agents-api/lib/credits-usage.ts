@@ -5,6 +5,8 @@ export interface CreditsUsage {
   audioGeneratedCount: number;
   taskGeneratedCount: number;
   essayEvaluatedCount: number;
+  speakingSessionCount: number;
+  speakingEvaluatedCount: number;
 }
 
 export function createCreditsUsage(): CreditsUsage {
@@ -15,6 +17,8 @@ export function createCreditsUsage(): CreditsUsage {
     audioGeneratedCount: 0,
     taskGeneratedCount: 0,
     essayEvaluatedCount: 0,
+    speakingSessionCount: 0,
+    speakingEvaluatedCount: 0,
   };
 }
 
@@ -24,6 +28,8 @@ const creditsPerScriptGenerated = 5;
 const creditsPerAudioGenerated = 3;
 const creditsPerTaskGenerated = 5;
 const creditsPerEssayEvaluated = 8;
+const creditsPerSpeakingSession = 10;
+const creditsPerSpeakingEvaluated = 8;
 
 export function calculateTotalCredits(usage: CreditsUsage): number {
   return (
@@ -32,6 +38,8 @@ export function calculateTotalCredits(usage: CreditsUsage): number {
     usage.scriptGeneratedCount * creditsPerScriptGenerated +
     usage.audioGeneratedCount * creditsPerAudioGenerated +
     usage.taskGeneratedCount * creditsPerTaskGenerated +
-    usage.essayEvaluatedCount * creditsPerEssayEvaluated
+    usage.essayEvaluatedCount * creditsPerEssayEvaluated +
+    usage.speakingSessionCount * creditsPerSpeakingSession +
+    usage.speakingEvaluatedCount * creditsPerSpeakingEvaluated
   );
 }

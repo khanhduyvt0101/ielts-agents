@@ -8,6 +8,7 @@ export default [
     route("reading", "routes/reading.tsx"),
     route("listening", "routes/listening.tsx"),
     route("writing", "routes/writing.tsx"),
+    route("speaking", "routes/speaking.tsx"),
     route("chat/:id", "routes/chat.tsx"),
     route("account/settings", "routes/account/settings.tsx"),
     route("account/security", "routes/account/security.tsx"),

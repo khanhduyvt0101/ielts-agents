@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 import { createListeningChatMutationOptions } from "#./lib/create-listening-chat-mutation-options.ts";
 import { createReadingChatMutationOptions } from "#./lib/create-reading-chat-mutation-options.ts";
+import { createSpeakingChatMutationOptions } from "#./lib/create-speaking-chat-mutation-options.ts";
 import { createWritingChatMutationOptions } from "#./lib/create-writing-chat-mutation-options.ts";
 import { locationAtom } from "#./lib/location-atom.ts";
 import { navigateAtom } from "#./lib/navigate-atom.ts";
@@ -111,6 +112,44 @@ mutationDefaults(createReadingChatMutationOptions);
 mutationDefaults(createListeningChatMutationOptions);
 
 mutationDefaults(createWritingChatMutationOptions);
+
+mutationDefaults(createSpeakingChatMutationOptions);
+
+mutationDefaults(
+  trpcOptions.speaking.updateConfig.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        variables.chatId
+          ? trpcOptions.speaking.getSpeakingConfig.queryOptions({
+              chatId: variables.chatId,
+            })
+          : trpcOptions.speaking.getDefaultConfig.queryOptions(),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to update config", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
+
+mutationDefaults(
+  trpcOptions.speaking.submitTranscript.mutationOptions({
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries(
+        trpcOptions.speaking.getSpeakingData.queryOptions({
+          chatId: variables.chatId,
+        }),
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to submit transcript", {
+        description: getErrorMessage(error),
+      });
+    },
+  }),
+);
 
 mutationDefaults(
   trpcOptions.listening.updateConfig.mutationOptions({
@@ -346,3 +385,11 @@ queryDefaults(trpcOptions.writing.getWritingData.queryOptions(queryInput()));
 queryDefaults(trpcOptions.writing.getWritingConfig.queryOptions(queryInput()));
 
 queryDefaults(trpcOptions.writing.getDefaultConfig.queryOptions());
+
+queryDefaults(trpcOptions.speaking.getSpeakingData.queryOptions(queryInput()));
+
+queryDefaults(
+  trpcOptions.speaking.getSpeakingConfig.queryOptions(queryInput()),
+);
+
+queryDefaults(trpcOptions.speaking.getDefaultConfig.queryOptions());

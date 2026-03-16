@@ -25,6 +25,9 @@ import { renderReadingToolPart } from "#./lib/reading-tools/index.tsx";
 import { RetryErrorAlert } from "#./lib/retry-error-alert.tsx";
 import { ScrollToBottomConversationEvent } from "#./lib/scroll-to-bottom-conversation-event.ts";
 import { sidebarOpenAtom } from "#./lib/sidebar-open-atom.ts";
+import { SpeakingProject } from "#./lib/speaking-project/index.tsx";
+import { SpeakingPromptInput } from "#./lib/speaking-prompt-input.tsx";
+import { renderSpeakingToolPart } from "#./lib/speaking-tools/index.tsx";
 import { trpcOptions } from "#./lib/trpc-options.ts";
 import { useChat } from "#./lib/use-chat.ts";
 import { WritingProject } from "#./lib/writing-project/index.tsx";
@@ -88,6 +91,19 @@ const agentConfigs: { [T in AgentId]: AgentConfig<T> } = {
     Project: WritingProject,
     renderToolPart: renderWritingToolPart,
     PromptInput: WritingPromptInput,
+  },
+  speaking: {
+    onData: ({ id }) => {
+      void queryClient.invalidateQueries(
+        trpcOptions.speaking.getSpeakingData.queryOptions({ chatId: id }),
+      );
+      void queryClient.invalidateQueries(
+        trpcOptions.chat.getAgentConfig.queryOptions({ chatId: id }),
+      );
+    },
+    Project: SpeakingProject,
+    renderToolPart: renderSpeakingToolPart,
+    PromptInput: SpeakingPromptInput,
   },
 };
 

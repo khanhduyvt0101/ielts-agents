@@ -21,4 +21,8 @@ export const toolSettings: Record<AgentId, AgentToolSettings> = {
     "tool-suggestions": { hidden: true },
     "tool-get-writing-results": { hidden: true },
   },
+  speaking: {
+    "tool-suggestions": { hidden: true },
+    "tool-get-speaking-results": { hidden: true },
+  },
 };

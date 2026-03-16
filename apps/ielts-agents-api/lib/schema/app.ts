@@ -447,6 +447,116 @@ export const writingEvaluation = pgTable("writing_evaluation", {
     .notNull(),
 });
 
+// ── Speaking ──────────────────────────────────────────────────────────
+
+export const chatSpeaking = pgTable("chat_speaking", {
+  ...timestamps(),
+  id: integer("id")
+    .primaryKey()
+    .references(() => chat.id, { onUpdate: "cascade", onDelete: "cascade" }),
+  bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+  testPart: text("test_part")
+    .$type<"part-1" | "part-2" | "part-3" | "full-test">()
+    .default("full-test")
+    .notNull(),
+});
+
+export const speakingTranscript = pgTable("speaking_transcript", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  chatSpeakingId: integer("chat_speaking_id")
+    .notNull()
+    .references(() => chatSpeaking.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  testPart: text("test_part")
+    .$type<"part-1" | "part-2" | "part-3">()
+    .notNull(),
+  transcript: jsonb("transcript")
+    .$type<{ role: string; text: string; timestamp: number }[]>()
+    .default([])
+    .notNull(),
+  duration: integer("duration"),
+  cueCardTopic: text("cue_card_topic"),
+});
+
+export const speakingAudioChunk = pgTable("speaking_audio_chunk", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  transcriptId: integer("transcript_id")
+    .notNull()
+    .references(() => speakingTranscript.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  role: text("role").$type<"examiner" | "candidate">().notNull(),
+  audioUrl: text("audio_url").notNull(),
+  startTime: integer("start_time"),
+  endTime: integer("end_time"),
+  order: integer("order").default(0).notNull(),
+});
+
+export const speakingEvaluation = pgTable("speaking_evaluation", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  transcriptId: integer("transcript_id")
+    .notNull()
+    .references(() => speakingTranscript.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  fluencyCoherence: text("fluency_coherence").notNull(),
+  lexicalResource: text("lexical_resource").notNull(),
+  grammaticalRange: text("grammatical_range").notNull(),
+  pronunciation: text("pronunciation").notNull(),
+  overallBand: text("overall_band").notNull(),
+  feedback: jsonb("feedback")
+    .$type<
+      {
+        criterion: string;
+        score: string;
+        comments: string;
+        strengths: string[];
+        improvements: string[];
+      }[]
+    >()
+    .notNull(),
+  corrections: jsonb("corrections")
+    .$type<
+      {
+        original: string;
+        corrected: string;
+        explanation: string;
+        type: string;
+      }[]
+    >()
+    .default([])
+    .notNull(),
+  modelPhrases: jsonb("model_phrases").$type<string[]>().default([]).notNull(),
+  improvedResponses: jsonb("improved_responses")
+    .$type<{ original: string; improved: string; explanation: string }[]>()
+    .default([])
+    .notNull(),
+});
+
+export const speakingDefault = pgTable("speaking_default", {
+  ...timestamps(),
+  id: serial("id").primaryKey(),
+  workspaceId: integer("workspace_id")
+    .unique()
+    .notNull()
+    .references(() => workspace.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
+  bandScore: text("band_score").$type<BandScore>().default("6.5").notNull(),
+  testPart: text("test_part")
+    .$type<"part-1" | "part-2" | "part-3" | "full-test">()
+    .default("full-test")
+    .notNull(),
+});
+
 export const writingDefault = pgTable("writing_default", {
   ...timestamps(),
   id: serial("id").primaryKey(),
