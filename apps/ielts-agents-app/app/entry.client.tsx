@@ -1,15 +1,15 @@
 import "#./lib/styles.css";
 import "#./lib/defaults.ts";
 
-import { startTransition, StrictMode } from "react";
+import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
 
 startTransition(() => {
-  hydrateRoot(
-    document,
-    <StrictMode>
-      <HydratedRouter />
-    </StrictMode>,
-  );
+	hydrateRoot(
+		document,
+		<StrictMode>
+			<HydratedRouter />
+		</StrictMode>,
+	);
 });

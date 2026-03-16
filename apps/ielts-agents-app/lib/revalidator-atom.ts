@@ -1,6 +1,5 @@
-import type { useRevalidator } from "react-router";
-
 import { atomWithPending } from "jotai-suspense";
+import type { useRevalidator } from "react-router";
 
 export type Revalidator = ReturnType<typeof useRevalidator>;
 

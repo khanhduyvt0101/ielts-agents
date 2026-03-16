@@ -1,21 +1,20 @@
 {
-  "name": "ielts-agents-internal-util",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "imports": {
-    "#./*": "./*"
-  },
-  "exports": {
-    ".": "./lib/index.ts"
-  },
-  "dependencies": {
-    "@better-fetch/fetch": "^1.1.21",
-    "dayjs": "^1.11.20",
-    "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "eslint-config-base": "workspace:^",
-    "type-fest": "^5.4.4"
-  }
+	"name": "ielts-agents-internal-util",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"imports": {
+		"#./*": "./*"
+	},
+	"exports": {
+		".": "./lib/index.ts"
+	},
+	"dependencies": {
+		"@better-fetch/fetch": "^1.1.21",
+		"dayjs": "^1.11.20",
+		"zod": "^4.3.6"
+	},
+	"devDependencies": {
+		"type-fest": "^5.4.4"
+	}
 }

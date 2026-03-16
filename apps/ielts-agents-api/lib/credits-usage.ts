@@ -1,25 +1,25 @@
 export interface CreditsUsage {
-  passageGeneratedCount: number;
-  questionsGeneratedCount: number;
-  scriptGeneratedCount: number;
-  audioGeneratedCount: number;
-  taskGeneratedCount: number;
-  essayEvaluatedCount: number;
-  speakingSessionCount: number;
-  speakingEvaluatedCount: number;
+	passageGeneratedCount: number;
+	questionsGeneratedCount: number;
+	scriptGeneratedCount: number;
+	audioGeneratedCount: number;
+	taskGeneratedCount: number;
+	essayEvaluatedCount: number;
+	speakingSessionCount: number;
+	speakingEvaluatedCount: number;
 }
 
 export function createCreditsUsage(): CreditsUsage {
-  return {
-    passageGeneratedCount: 0,
-    questionsGeneratedCount: 0,
-    scriptGeneratedCount: 0,
-    audioGeneratedCount: 0,
-    taskGeneratedCount: 0,
-    essayEvaluatedCount: 0,
-    speakingSessionCount: 0,
-    speakingEvaluatedCount: 0,
-  };
+	return {
+		passageGeneratedCount: 0,
+		questionsGeneratedCount: 0,
+		scriptGeneratedCount: 0,
+		audioGeneratedCount: 0,
+		taskGeneratedCount: 0,
+		essayEvaluatedCount: 0,
+		speakingSessionCount: 0,
+		speakingEvaluatedCount: 0,
+	};
 }
 
 const creditsPerPassageGenerated = 5;
@@ -32,14 +32,14 @@ const creditsPerSpeakingSession = 10;
 const creditsPerSpeakingEvaluated = 8;
 
 export function calculateTotalCredits(usage: CreditsUsage): number {
-  return (
-    usage.passageGeneratedCount * creditsPerPassageGenerated +
-    usage.questionsGeneratedCount * creditsPerQuestionsGenerated +
-    usage.scriptGeneratedCount * creditsPerScriptGenerated +
-    usage.audioGeneratedCount * creditsPerAudioGenerated +
-    usage.taskGeneratedCount * creditsPerTaskGenerated +
-    usage.essayEvaluatedCount * creditsPerEssayEvaluated +
-    usage.speakingSessionCount * creditsPerSpeakingSession +
-    usage.speakingEvaluatedCount * creditsPerSpeakingEvaluated
-  );
+	return (
+		usage.passageGeneratedCount * creditsPerPassageGenerated +
+		usage.questionsGeneratedCount * creditsPerQuestionsGenerated +
+		usage.scriptGeneratedCount * creditsPerScriptGenerated +
+		usage.audioGeneratedCount * creditsPerAudioGenerated +
+		usage.taskGeneratedCount * creditsPerTaskGenerated +
+		usage.essayEvaluatedCount * creditsPerEssayEvaluated +
+		usage.speakingSessionCount * creditsPerSpeakingSession +
+		usage.speakingEvaluatedCount * creditsPerSpeakingEvaluated
+	);
 }

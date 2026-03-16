@@ -1,13 +1,11 @@
-import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
-import type { WritingToolContext } from "#./lib/writing-tool-context.ts";
-
 import { z } from "zod";
-
+import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
 import { chatToolIdSchema } from "#./lib/chat-tool-id-schema.ts";
 import { chatTools } from "#./lib/chat-tools.ts";
 import { CustomAgent } from "#./lib/custom-agent.ts";
 import { database } from "#./lib/database.ts";
 import { defaultAgentOptions } from "#./lib/default-agent-options.ts";
+import type { WritingToolContext } from "#./lib/writing-tool-context.ts";
 import { writingToolIdSchema } from "#./lib/writing-tool-id-schema.ts";
 import { writingTools } from "#./lib/writing-tools.ts";
 
@@ -146,49 +144,49 @@ After calling evaluate-essay, walk through the results like a teacher:
 Be the IELTS Writing teacher every student wishes they had — knowledgeable, encouraging, and practical.`;
 
 export const writingAgent = new CustomAgent({
-  ...defaultAgentOptions,
-  tools: {
-    ...writingTools,
-    ...chatTools,
-  },
-  metadataSchema: z.object({}).nullish(),
-  dataSchemas: {
-    "writing-update-notification": z.object({
-      updated: z.boolean(),
-    }),
-  },
-  prepareCall: async ({
-    experimental_context: { id, creditsUsage, writer },
-    options,
-    ...settings
-  }) => {
-    const writingChat = await database.query.chatWriting.findFirst({
-      where: (table, { eq }) => eq(table.id, id),
-    });
-    if (!writingChat) throw new Error("Chat not found");
-    const context: WritingToolContext & ChatToolContext = {
-      id,
-      creditsUsage,
-      onWritingUpdate: () => {
-        writer.write({
-          type: "data-writing-update-notification",
-          data: { updated: true },
-          transient: true,
-        });
-      },
-    };
-    const bandInstructions = `\n\nThe target band score for this student is: ${writingChat.bandScore}. Generate tasks and evaluate writing appropriate for this difficulty level.`;
-    const taskTypeInstructions = `\n\nCRITICAL — The student's configured task type is: ${writingChat.taskType === "task-1" ? "Task 1 (Visual Data Description)" : "Task 2 (Discursive Essay)"}. You MUST set taskType to "${writingChat.taskType}" in the generate-task tool. Do NOT change this based on the prompt — adapt the prompt topic to fit this task type instead.`;
-    return {
-      ...settings,
-      instructions: `${baseInstructions}${bandInstructions}${taskTypeInstructions}`,
-      activeTools: [
-        ...writingToolIdSchema.options,
-        ...chatToolIdSchema.options,
-      ],
-      experimental_context: context,
-    };
-  },
+	...defaultAgentOptions,
+	tools: {
+		...writingTools,
+		...chatTools,
+	},
+	metadataSchema: z.object({}).nullish(),
+	dataSchemas: {
+		"writing-update-notification": z.object({
+			updated: z.boolean(),
+		}),
+	},
+	prepareCall: async ({
+		experimental_context: { id, creditsUsage, writer },
+		options,
+		...settings
+	}) => {
+		const writingChat = await database.query.chatWriting.findFirst({
+			where: (table, { eq }) => eq(table.id, id),
+		});
+		if (!writingChat) throw new Error("Chat not found");
+		const context: WritingToolContext & ChatToolContext = {
+			id,
+			creditsUsage,
+			onWritingUpdate: () => {
+				writer.write({
+					type: "data-writing-update-notification",
+					data: { updated: true },
+					transient: true,
+				});
+			},
+		};
+		const bandInstructions = `\n\nThe target band score for this student is: ${writingChat.bandScore}. Generate tasks and evaluate writing appropriate for this difficulty level.`;
+		const taskTypeInstructions = `\n\nCRITICAL — The student's configured task type is: ${writingChat.taskType === "task-1" ? "Task 1 (Visual Data Description)" : "Task 2 (Discursive Essay)"}. You MUST set taskType to "${writingChat.taskType}" in the generate-task tool. Do NOT change this based on the prompt — adapt the prompt topic to fit this task type instead.`;
+		return {
+			...settings,
+			instructions: `${baseInstructions}${bandInstructions}${taskTypeInstructions}`,
+			activeTools: [
+				...writingToolIdSchema.options,
+				...chatToolIdSchema.options,
+			],
+			experimental_context: context,
+		};
+	},
 });
 
 export type WritingAgent = typeof writingAgent;

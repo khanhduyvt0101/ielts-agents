@@ -1,23 +1,23 @@
 {
-  "type": "object",
-  "properties": {
-    "exports": {
-      "type": "object",
-      "default": {},
-      "additionalProperties": {
-        "type": "object",
-        "properties": {
-          "entryPoint": { "type": "string" },
-          "dtsRollup": { "type": "boolean" }
-        },
-        "required": ["entryPoint", "dtsRollup"]
-      }
-    },
-    "platform": {
-      "type": "string",
-      "default": "neutral",
-      "enum": ["neutral", "node", "browser"]
-    }
-  },
-  "required": ["exports", "platform"]
+	"type": "object",
+	"properties": {
+		"exports": {
+			"type": "object",
+			"default": {},
+			"additionalProperties": {
+				"type": "object",
+				"properties": {
+					"entryPoint": { "type": "string" },
+					"dtsRollup": { "type": "boolean" }
+				},
+				"required": ["entryPoint", "dtsRollup"]
+			}
+		},
+		"platform": {
+			"type": "string",
+			"default": "neutral",
+			"enum": ["neutral", "node", "browser"]
+		}
+	},
+	"required": ["exports", "platform"]
 }

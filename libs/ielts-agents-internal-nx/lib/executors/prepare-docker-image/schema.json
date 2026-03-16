@@ -1,18 +1,18 @@
 {
-  "type": "object",
-  "properties": {
-    "dtsRollups": {
-      "type": "object",
-      "default": {},
-      "additionalProperties": { "type": "boolean" }
-    },
-    "base": {
-      "type": "string",
-      "default": "alpine",
-      "enum": ["alpine", "slim"]
-    },
-    "script": { "type": "string" },
-    "port": { "type": "number" }
-  },
-  "required": ["dtsRollups", "base", "script"]
+	"type": "object",
+	"properties": {
+		"dtsRollups": {
+			"type": "object",
+			"default": {},
+			"additionalProperties": { "type": "boolean" }
+		},
+		"base": {
+			"type": "string",
+			"default": "alpine",
+			"enum": ["alpine", "slim"]
+		},
+		"script": { "type": "string" },
+		"port": { "type": "number" }
+	},
+	"required": ["dtsRollups", "base", "script"]
 }

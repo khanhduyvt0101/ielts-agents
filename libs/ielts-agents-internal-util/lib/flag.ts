@@ -1,3 +1,3 @@
 export function isFlagEnabled(value: unknown) {
-  return value === "1" || value === "true";
+	return value === "1" || value === "true";
 }

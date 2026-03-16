@@ -91,7 +91,7 @@ Reinstall all shadcn/ui and AI Elements components to get the latest styles.
 ### Verification:
 
 ```bash
-pnpm exec nx run-many -t typecheck,lint
+pnpm exec nx run-many -t typecheck,biome-check
 ```
 
 ## Notes

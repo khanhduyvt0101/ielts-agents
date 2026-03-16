@@ -8,23 +8,23 @@ import { GeneratePassageTool } from "./generate-passage-tool.tsx";
 import { GenerateQuestionsTool } from "./generate-questions-tool.tsx";
 
 export const renderReadingToolPart: AgentRenderToolPart["reading"] = (
-  toolPart,
+	toolPart,
 ) => {
-  const setting = toolSettings.reading[toolPart.type];
-  if (setting?.hidden) return;
+	const setting = toolSettings.reading[toolPart.type];
+	if (setting?.hidden) return;
 
-  switch (toolPart.type) {
-    case "tool-generate-passage": {
-      return <GeneratePassageTool toolPart={toolPart} />;
-    }
-    case "tool-generate-questions": {
-      return <GenerateQuestionsTool toolPart={toolPart} />;
-    }
-    case "tool-extract-vocabulary": {
-      return <ExtractVocabularyTool toolPart={toolPart} />;
-    }
-    default: {
-      return <DynamicTool toolPart={toolPart} />;
-    }
-  }
+	switch (toolPart.type) {
+		case "tool-generate-passage": {
+			return <GeneratePassageTool toolPart={toolPart} />;
+		}
+		case "tool-generate-questions": {
+			return <GenerateQuestionsTool toolPart={toolPart} />;
+		}
+		case "tool-extract-vocabulary": {
+			return <ExtractVocabularyTool toolPart={toolPart} />;
+		}
+		default: {
+			return <DynamicTool toolPart={toolPart} />;
+		}
+	}
 };

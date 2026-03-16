@@ -1,0 +1,46 @@
+{
+	"files": {
+		"includes": [
+			"**",
+			"!**/.nx",
+			"!**/.claude/settings.local.json",
+			"!**/*.tsbuildinfo",
+			"!**/dist",
+			"!**/.react-router",
+			"!**/build",
+			"!**/drizzle",
+			"!**/.vercel",
+			"!**/components",
+			"!**/hooks"
+		]
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+	"linter": {
+		"rules": {
+			"suspicious": {
+				"noArrayIndexKey": "off",
+				"noAssignInExpressions": "off",
+				"noExplicitAny": "off"
+			},
+			"correctness": {
+				"noInvalidPositionAtImportRule": "off",
+				"useExhaustiveDependencies": "off"
+			},
+			"complexity": {
+				"noBannedTypes": "off"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "off"
+			},
+			"a11y": {
+				"noStaticElementInteractions": "off",
+				"useMediaCaption": "off",
+				"noSvgWithoutTitle": "off"
+			}
+		}
+	}
+}

@@ -1,13 +1,11 @@
-import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
-import type { SpeakingToolContext } from "#./lib/speaking-tool-context.ts";
-
 import { z } from "zod";
-
+import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
 import { chatToolIdSchema } from "#./lib/chat-tool-id-schema.ts";
 import { chatTools } from "#./lib/chat-tools.ts";
 import { CustomAgent } from "#./lib/custom-agent.ts";
 import { database } from "#./lib/database.ts";
 import { defaultAgentOptions } from "#./lib/default-agent-options.ts";
+import type { SpeakingToolContext } from "#./lib/speaking-tool-context.ts";
 import { speakingToolIdSchema } from "#./lib/speaking-tool-id-schema.ts";
 import { speakingTools } from "#./lib/speaking-tools.ts";
 
@@ -124,57 +122,57 @@ Calibrate question difficulty and evaluation to the target band score:
 Be the IELTS Speaking coach every student wishes they had — knowledgeable, encouraging, and practical.`;
 
 export const speakingAgent = new CustomAgent({
-  ...defaultAgentOptions,
-  tools: {
-    ...speakingTools,
-    ...chatTools,
-  },
-  metadataSchema: z.object({}).nullish(),
-  dataSchemas: {
-    "speaking-update-notification": z.object({
-      updated: z.boolean(),
-    }),
-  },
-  prepareCall: async ({
-    experimental_context: { id, creditsUsage, writer },
-    options,
-    ...settings
-  }) => {
-    const speakingChat = await database.query.chatSpeaking.findFirst({
-      where: (table, { eq }) => eq(table.id, id),
-    });
-    if (!speakingChat) throw new Error("Chat not found");
-    const context: SpeakingToolContext & ChatToolContext = {
-      id,
-      creditsUsage,
-      onSpeakingUpdate: () => {
-        writer.write({
-          type: "data-speaking-update-notification",
-          data: { updated: true },
-          transient: true,
-        });
-      },
-    };
-    const bandInstructions = `\n\nThe target band score for this student is: ${speakingChat.bandScore}. Conduct the speaking test and evaluate responses appropriate for this difficulty level.`;
-    const partName =
-      speakingChat.testPart === "full-test"
-        ? "Full Test (Parts 1, 2, and 3)"
-        : `Part ${speakingChat.testPart.replace("part-", "")}`;
-    const partGuidance =
-      speakingChat.testPart === "full-test"
-        ? "Conduct all three parts in sequence."
-        : "Focus only on this part of the speaking test.";
-    const testPartInstructions = `\n\nThe student has selected test part: ${partName}. ${partGuidance}`;
-    return {
-      ...settings,
-      instructions: `${baseInstructions}${bandInstructions}${testPartInstructions}`,
-      activeTools: [
-        ...speakingToolIdSchema.options,
-        ...chatToolIdSchema.options,
-      ],
-      experimental_context: context,
-    };
-  },
+	...defaultAgentOptions,
+	tools: {
+		...speakingTools,
+		...chatTools,
+	},
+	metadataSchema: z.object({}).nullish(),
+	dataSchemas: {
+		"speaking-update-notification": z.object({
+			updated: z.boolean(),
+		}),
+	},
+	prepareCall: async ({
+		experimental_context: { id, creditsUsage, writer },
+		options,
+		...settings
+	}) => {
+		const speakingChat = await database.query.chatSpeaking.findFirst({
+			where: (table, { eq }) => eq(table.id, id),
+		});
+		if (!speakingChat) throw new Error("Chat not found");
+		const context: SpeakingToolContext & ChatToolContext = {
+			id,
+			creditsUsage,
+			onSpeakingUpdate: () => {
+				writer.write({
+					type: "data-speaking-update-notification",
+					data: { updated: true },
+					transient: true,
+				});
+			},
+		};
+		const bandInstructions = `\n\nThe target band score for this student is: ${speakingChat.bandScore}. Conduct the speaking test and evaluate responses appropriate for this difficulty level.`;
+		const partName =
+			speakingChat.testPart === "full-test"
+				? "Full Test (Parts 1, 2, and 3)"
+				: `Part ${speakingChat.testPart.replace("part-", "")}`;
+		const partGuidance =
+			speakingChat.testPart === "full-test"
+				? "Conduct all three parts in sequence."
+				: "Focus only on this part of the speaking test.";
+		const testPartInstructions = `\n\nThe student has selected test part: ${partName}. ${partGuidance}`;
+		return {
+			...settings,
+			instructions: `${baseInstructions}${bandInstructions}${testPartInstructions}`,
+			activeTools: [
+				...speakingToolIdSchema.options,
+				...chatToolIdSchema.options,
+			],
+			experimental_context: context,
+		};
+	},
 });
 
 export type SpeakingAgent = typeof speakingAgent;

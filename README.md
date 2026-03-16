@@ -16,9 +16,6 @@ apps/
 libs/
   ielts-agents-internal-nx/    # Custom Nx plugin (targets, Docker, CI)
   ielts-agents-internal-util/  # Shared utilities (plan definitions, env, errors, dates)
-  eslint-config-base/
-  eslint-config-react/
-  eslint-config-tailwindcss/
 ```
 
 **Package manager**: pnpm 10.26 — **Monorepo tool**: Nx 22.5
@@ -410,12 +407,12 @@ pnpm exec nx run ielts-agents-app:start    # serve -s build/client
 # Typecheck all projects
 pnpm exec nx run-many -t typecheck
 
-# Lint all projects
-pnpm exec nx run-many -t lint
+# Biome check all projects
+pnpm exec nx run-many -t biome-check
 
-# Typecheck or lint a specific project
+# Typecheck or biome-check a specific project
 pnpm exec nx run ielts-agents-api:typecheck
-pnpm exec nx run ielts-agents-app:lint
+pnpm exec nx run ielts-agents-app:biome-check
 ```
 
 ### Database (Drizzle)
@@ -462,7 +459,7 @@ pnpm exec nx run ielts-agents-api:build-docker-image
 ### Formatting
 
 ```bash
-pnpm format    # Run Prettier via Husky pre-commit hook
+pnpm format    # Run Biome via Husky pre-commit hook
 ```
 
 ### Other
@@ -490,7 +487,7 @@ Local secrets are auto-generated in `.local/.secrets` by `pnpm local:up`.
 
 - Nx version plans for releases with GitHub changelog
 - Custom Nx plugin handles `prepare-docker-image`, `build-docker-image`, `prepare-github-actions`, and `configure-sentry-release` targets
-- Husky pre-commit runs formatting (Prettier with `prettier-plugin-packagejson`)
+- Husky pre-commit runs formatting (Biome check with `--write`)
 - Custom `.script.ts` / `.script.tsx` files in project roots are auto-registered as Nx targets
 
 ## Documentation Lookup
@@ -520,15 +517,15 @@ After implementing any new feature or code change, follow these steps in order.
 
 ### Step 1: Fix All Lint & Type Errors
 
-1. Run typecheck and lint on affected projects:
+1. Run typecheck and biome-check on affected projects:
 
 ```bash
-pnpm exec nx run-many -t typecheck,lint
+pnpm exec nx run-many -t typecheck,biome-check
 ```
 
-2. **Fix every error properly** — do NOT disable ESLint rules or suppress TypeScript errors unless the line genuinely does not need type safety (e.g., third-party type mismatch).
-3. When suppression is truly necessary, only disable a **single line** with an inline comment (`// eslint-disable-next-line <rule>` or `// @ts-expect-error <reason>`). Never disable an entire file or block.
-4. Re-run typecheck and lint until zero errors remain.
+2. **Fix every error properly** — do NOT suppress Biome rules or TypeScript errors unless the line genuinely does not need type safety (e.g., third-party type mismatch).
+3. When suppression is truly necessary, only disable a **single line** with an inline comment (`// biome-ignore <rule>: <reason>` or `// @ts-expect-error <reason>`). Never disable an entire file or block.
+4. Re-run typecheck and biome-check until zero errors remain.
 
 ### Step 2: Run E2E Tests
 
@@ -563,7 +560,7 @@ pnpm exec nx run-many --projects=ielts-agents-api,ielts-agents-app --targets=dev
 ## General Guidelines for working with Nx
 
 - For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
-- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
+- When running tasks (for example build, biome-check, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
 - Prefix nx commands with the workspace's package manager (e.g., `pnpm nx build`, `npm exec nx test`) - avoids using globally installed CLI
 - You have access to the Nx MCP server and its tools, use them to help the user
 - For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.

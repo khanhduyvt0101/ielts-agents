@@ -1,6 +1,6 @@
 {
-  "include": ["lib", "*.script.ts", "*.script.tsx"],
-  "references": [],
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "jsx": "react-jsx" }
+	"include": ["lib", "*.script.ts", "*.script.tsx"],
+	"references": [],
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": { "jsx": "react-jsx" }
 }

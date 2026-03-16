@@ -1,5 +1,5 @@
 export class WorkspaceNotFoundError extends Error {
-  constructor() {
-    super("Failed to find workspace");
-  }
+	constructor() {
+		super("Failed to find workspace");
+	}
 }

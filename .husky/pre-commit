@@ -1,5 +1,5 @@
 if [ -z "$CI" ]; then
   set -ex
   nx sync
-  prettier --log-level warn --write .
+  biome check --write --no-errors-on-unmatched .
 fi

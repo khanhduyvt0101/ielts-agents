@@ -2,6 +2,6 @@ import { atomWithWriteOnly } from "#./lib/atom-with-write-only.ts";
 import { revalidatorAtom } from "#./lib/revalidator-atom.ts";
 
 export const revalidateAtom = atomWithWriteOnly(async (get) => {
-  const revalidator = get(revalidatorAtom);
-  await revalidator.revalidate();
+	const revalidator = get(revalidatorAtom);
+	await revalidator.revalidate();
 });

@@ -57,47 +57,47 @@ Use follow-up probes: "Why do you think that is?", "Can you give me an example?"
 End naturally: "Thank you. That's the end of the speaking test."`;
 
 function getBandDifficultyGuidance(bandScore: BandScore): string {
-  const band = Number.parseFloat(bandScore);
-  if (band <= 5.5)
-    return `Target band: ${bandScore}. Use simple, everyday topics. Speak slowly and clearly. Allow longer pauses. Questions should be straightforward and concrete.`;
-  if (band <= 6.5)
-    return `Target band: ${bandScore}. Use moderately complex topics. Maintain a natural pace. Expect some extended responses. Include a mix of concrete and mildly abstract questions.`;
-  if (band <= 7.5)
-    return `Target band: ${bandScore}. Use complex topics requiring sustained discourse. Expect detailed, well-organized responses. Part 3 questions should require nuanced analysis and less common vocabulary.`;
-  return `Target band: ${bandScore}. Use highly abstract, sophisticated topics. Expect expert-level discussion. Part 3 should push for original ideas, precise language, and nuanced argumentation.`;
+	const band = Number.parseFloat(bandScore);
+	if (band <= 5.5)
+		return `Target band: ${bandScore}. Use simple, everyday topics. Speak slowly and clearly. Allow longer pauses. Questions should be straightforward and concrete.`;
+	if (band <= 6.5)
+		return `Target band: ${bandScore}. Use moderately complex topics. Maintain a natural pace. Expect some extended responses. Include a mix of concrete and mildly abstract questions.`;
+	if (band <= 7.5)
+		return `Target band: ${bandScore}. Use complex topics requiring sustained discourse. Expect detailed, well-organized responses. Part 3 questions should require nuanced analysis and less common vocabulary.`;
+	return `Target band: ${bandScore}. Use highly abstract, sophisticated topics. Expect expert-level discussion. Part 3 should push for original ideas, precise language, and nuanced argumentation.`;
 }
 
 function getPartsToConduct(testPart: TestPart): string {
-  switch (testPart) {
-    case "part-1": {
-      return "Conduct ONLY Part 1 (Introduction and Interview). After completing Part 1, end the test naturally.";
-    }
-    case "part-2": {
-      return "Conduct ONLY Part 2 (Individual Long Turn). Skip the Part 1 introduction and go straight to the cue card. After completing Part 2 follow-ups, end the test naturally.";
-    }
-    case "part-3": {
-      return "Conduct ONLY Part 3 (Two-way Discussion). Begin directly with discussion questions on an appropriate topic. After completing Part 3, end the test naturally.";
-    }
-    case "full-test": {
-      return "Conduct ALL three parts in sequence: Part 1 (Introduction), Part 2 (Long Turn), and Part 3 (Discussion). Transition naturally between parts.";
-    }
-  }
+	switch (testPart) {
+		case "part-1": {
+			return "Conduct ONLY Part 1 (Introduction and Interview). After completing Part 1, end the test naturally.";
+		}
+		case "part-2": {
+			return "Conduct ONLY Part 2 (Individual Long Turn). Skip the Part 1 introduction and go straight to the cue card. After completing Part 2 follow-ups, end the test naturally.";
+		}
+		case "part-3": {
+			return "Conduct ONLY Part 3 (Two-way Discussion). Begin directly with discussion questions on an appropriate topic. After completing Part 3, end the test naturally.";
+		}
+		case "full-test": {
+			return "Conduct ALL three parts in sequence: Part 1 (Introduction), Part 2 (Long Turn), and Part 3 (Discussion). Transition naturally between parts.";
+		}
+	}
 }
 
 export function buildExaminerInstructions(
-  bandScore: BandScore,
-  testPart: TestPart,
+	bandScore: BandScore,
+	testPart: TestPart,
 ): string {
-  const parts: string[] = [coreExaminerBehavior];
+	const parts: string[] = [coreExaminerBehavior];
 
-  if (testPart === "full-test" || testPart === "part-1")
-    parts.push(part1Instructions);
-  if (testPart === "full-test" || testPart === "part-2")
-    parts.push(part2Instructions);
-  if (testPart === "full-test" || testPart === "part-3")
-    parts.push(part3Instructions);
+	if (testPart === "full-test" || testPart === "part-1")
+		parts.push(part1Instructions);
+	if (testPart === "full-test" || testPart === "part-2")
+		parts.push(part2Instructions);
+	if (testPart === "full-test" || testPart === "part-3")
+		parts.push(part3Instructions);
 
-  parts.push(getBandDifficultyGuidance(bandScore), getPartsToConduct(testPart));
+	parts.push(getBandDifficultyGuidance(bandScore), getPartsToConduct(testPart));
 
-  return parts.join("\n\n");
+	return parts.join("\n\n");
 }

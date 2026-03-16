@@ -1,13 +1,11 @@
-import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
-import type { ListeningToolContext } from "#./lib/listening-tool-context.ts";
-
 import { z } from "zod";
-
+import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
 import { chatToolIdSchema } from "#./lib/chat-tool-id-schema.ts";
 import { chatTools } from "#./lib/chat-tools.ts";
 import { CustomAgent } from "#./lib/custom-agent.ts";
 import { database } from "#./lib/database.ts";
 import { defaultAgentOptions } from "#./lib/default-agent-options.ts";
+import type { ListeningToolContext } from "#./lib/listening-tool-context.ts";
 import { listeningToolIdSchema } from "#./lib/listening-tool-id-schema.ts";
 import { listeningTools } from "#./lib/listening-tools.ts";
 
@@ -244,52 +242,52 @@ When appropriate, teach underlying listening skills:
 Be the teacher every IELTS student wishes they had — knowledgeable, patient, encouraging, and practical.`;
 
 export const listeningAgent = new CustomAgent({
-  ...defaultAgentOptions,
-  tools: {
-    ...listeningTools,
-    ...chatTools,
-  },
-  metadataSchema: z.object({}).nullish(),
-  dataSchemas: {
-    "listening-update-notification": z.object({
-      updated: z.boolean(),
-    }),
-  },
-  prepareCall: async ({
-    experimental_context: { id, creditsUsage, writer },
-    options,
-    ...settings
-  }) => {
-    const listeningChat = await database.query.chatListening.findFirst({
-      where: (table, { eq }) => eq(table.id, id),
-    });
-    if (!listeningChat) throw new Error("Chat not found");
-    const context: ListeningToolContext & ChatToolContext = {
-      id,
-      creditsUsage,
-      onListeningUpdate: () => {
-        writer.write({
-          type: "data-listening-update-notification",
-          data: { updated: true },
-          transient: true,
-        });
-      },
-    };
-    const bandInstructions = `\n\nThe target band score for this test is: ${listeningChat.bandScore}. Generate content appropriate for this difficulty level.`;
-    const questionTypesInstructions =
-      listeningChat.questionTypes.length > 0
-        ? `\n\nThe user has selected specific question types: ${listeningChat.questionTypes.join(", ")}. Generate ONLY these question types — do not include types not listed.`
-        : "";
-    return {
-      ...settings,
-      instructions: `${baseInstructions}${bandInstructions}${questionTypesInstructions}`,
-      activeTools: [
-        ...listeningToolIdSchema.options,
-        ...chatToolIdSchema.options,
-      ],
-      experimental_context: context,
-    };
-  },
+	...defaultAgentOptions,
+	tools: {
+		...listeningTools,
+		...chatTools,
+	},
+	metadataSchema: z.object({}).nullish(),
+	dataSchemas: {
+		"listening-update-notification": z.object({
+			updated: z.boolean(),
+		}),
+	},
+	prepareCall: async ({
+		experimental_context: { id, creditsUsage, writer },
+		options,
+		...settings
+	}) => {
+		const listeningChat = await database.query.chatListening.findFirst({
+			where: (table, { eq }) => eq(table.id, id),
+		});
+		if (!listeningChat) throw new Error("Chat not found");
+		const context: ListeningToolContext & ChatToolContext = {
+			id,
+			creditsUsage,
+			onListeningUpdate: () => {
+				writer.write({
+					type: "data-listening-update-notification",
+					data: { updated: true },
+					transient: true,
+				});
+			},
+		};
+		const bandInstructions = `\n\nThe target band score for this test is: ${listeningChat.bandScore}. Generate content appropriate for this difficulty level.`;
+		const questionTypesInstructions =
+			listeningChat.questionTypes.length > 0
+				? `\n\nThe user has selected specific question types: ${listeningChat.questionTypes.join(", ")}. Generate ONLY these question types — do not include types not listed.`
+				: "";
+		return {
+			...settings,
+			instructions: `${baseInstructions}${bandInstructions}${questionTypesInstructions}`,
+			activeTools: [
+				...listeningToolIdSchema.options,
+				...chatToolIdSchema.options,
+			],
+			experimental_context: context,
+		};
+	},
 });
 
 export type ListeningAgent = typeof listeningAgent;

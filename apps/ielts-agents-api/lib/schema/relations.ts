@@ -1,305 +1,305 @@
 import { relations } from "drizzle-orm";
 
 import {
-  chat,
-  chatListening,
-  chatReading,
-  chatSpeaking,
-  chatWriting,
-  listeningAnswer,
-  listeningDefault,
-  listeningQuestion,
-  listeningScript,
-  listeningSession,
-  listeningVocabulary,
-  readingAnswer,
-  readingDefault,
-  readingPassage,
-  readingQuestion,
-  readingSession,
-  savedVocabulary,
-  speakingAudioChunk,
-  speakingDefault,
-  speakingEvaluation,
-  speakingTranscript,
-  workspace,
-  writingDefault,
-  writingEssay,
-  writingEvaluation,
-  writingTask,
+	chat,
+	chatListening,
+	chatReading,
+	chatSpeaking,
+	chatWriting,
+	listeningAnswer,
+	listeningDefault,
+	listeningQuestion,
+	listeningScript,
+	listeningSession,
+	listeningVocabulary,
+	readingAnswer,
+	readingDefault,
+	readingPassage,
+	readingQuestion,
+	readingSession,
+	savedVocabulary,
+	speakingAudioChunk,
+	speakingDefault,
+	speakingEvaluation,
+	speakingTranscript,
+	workspace,
+	writingDefault,
+	writingEssay,
+	writingEvaluation,
+	writingTask,
 } from "./app.ts";
 import { account, user } from "./auth.ts";
 
 export const userRelations = relations(user, ({ many, one }) => ({
-  accounts: many(account),
-  workspace: one(workspace),
+	accounts: many(account),
+	workspace: one(workspace),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
-    fields: [account.userId],
-    references: [user.id],
-  }),
+	user: one(user, {
+		fields: [account.userId],
+		references: [user.id],
+	}),
 }));
 
 export const workspaceRelations = relations(workspace, ({ many }) => ({
-  user: many(user),
-  chats: many(chat),
+	user: many(user),
+	chats: many(chat),
 }));
 
 export const chatRelations = relations(chat, ({ one }) => ({
-  workspace: one(workspace, {
-    fields: [chat.workspaceId],
-    references: [workspace.id],
-  }),
-  reading: one(chatReading),
-  listening: one(chatListening),
-  writing: one(chatWriting),
-  speaking: one(chatSpeaking),
+	workspace: one(workspace, {
+		fields: [chat.workspaceId],
+		references: [workspace.id],
+	}),
+	reading: one(chatReading),
+	listening: one(chatListening),
+	writing: one(chatWriting),
+	speaking: one(chatSpeaking),
 }));
 
 export const chatReadingRelations = relations(chatReading, ({ one, many }) => ({
-  chat: one(chat, {
-    fields: [chatReading.id],
-    references: [chat.id],
-  }),
-  passage: one(readingPassage),
-  questions: many(readingQuestion),
-  sessions: many(readingSession),
-  vocabulary: many(savedVocabulary),
+	chat: one(chat, {
+		fields: [chatReading.id],
+		references: [chat.id],
+	}),
+	passage: one(readingPassage),
+	questions: many(readingQuestion),
+	sessions: many(readingSession),
+	vocabulary: many(savedVocabulary),
 }));
 
 export const readingPassageRelations = relations(readingPassage, ({ one }) => ({
-  chatReading: one(chatReading, {
-    fields: [readingPassage.chatReadingId],
-    references: [chatReading.id],
-  }),
+	chatReading: one(chatReading, {
+		fields: [readingPassage.chatReadingId],
+		references: [chatReading.id],
+	}),
 }));
 
 export const readingQuestionRelations = relations(
-  readingQuestion,
-  ({ one }) => ({
-    chatReading: one(chatReading, {
-      fields: [readingQuestion.chatReadingId],
-      references: [chatReading.id],
-    }),
-  }),
+	readingQuestion,
+	({ one }) => ({
+		chatReading: one(chatReading, {
+			fields: [readingQuestion.chatReadingId],
+			references: [chatReading.id],
+		}),
+	}),
 );
 
 export const readingDefaultRelations = relations(readingDefault, ({ one }) => ({
-  workspace: one(workspace, {
-    fields: [readingDefault.workspaceId],
-    references: [workspace.id],
-  }),
+	workspace: one(workspace, {
+		fields: [readingDefault.workspaceId],
+		references: [workspace.id],
+	}),
 }));
 
 export const readingSessionRelations = relations(
-  readingSession,
-  ({ one, many }) => ({
-    chatReading: one(chatReading, {
-      fields: [readingSession.chatReadingId],
-      references: [chatReading.id],
-    }),
-    answers: many(readingAnswer),
-  }),
+	readingSession,
+	({ one, many }) => ({
+		chatReading: one(chatReading, {
+			fields: [readingSession.chatReadingId],
+			references: [chatReading.id],
+		}),
+		answers: many(readingAnswer),
+	}),
 );
 
 export const readingAnswerRelations = relations(readingAnswer, ({ one }) => ({
-  session: one(readingSession, {
-    fields: [readingAnswer.sessionId],
-    references: [readingSession.id],
-  }),
-  question: one(readingQuestion, {
-    fields: [readingAnswer.questionId],
-    references: [readingQuestion.id],
-  }),
+	session: one(readingSession, {
+		fields: [readingAnswer.sessionId],
+		references: [readingSession.id],
+	}),
+	question: one(readingQuestion, {
+		fields: [readingAnswer.questionId],
+		references: [readingQuestion.id],
+	}),
 }));
 
 export const savedVocabularyRelations = relations(
-  savedVocabulary,
-  ({ one }) => ({
-    chatReading: one(chatReading, {
-      fields: [savedVocabulary.chatReadingId],
-      references: [chatReading.id],
-    }),
-  }),
+	savedVocabulary,
+	({ one }) => ({
+		chatReading: one(chatReading, {
+			fields: [savedVocabulary.chatReadingId],
+			references: [chatReading.id],
+		}),
+	}),
 );
 
 // ── Listening Relations ────────────────────────────────────────────────
 
 export const chatListeningRelations = relations(
-  chatListening,
-  ({ one, many }) => ({
-    chat: one(chat, {
-      fields: [chatListening.id],
-      references: [chat.id],
-    }),
-    scripts: many(listeningScript),
-    questions: many(listeningQuestion),
-    sessions: many(listeningSession),
-    vocabulary: many(listeningVocabulary),
-  }),
+	chatListening,
+	({ one, many }) => ({
+		chat: one(chat, {
+			fields: [chatListening.id],
+			references: [chat.id],
+		}),
+		scripts: many(listeningScript),
+		questions: many(listeningQuestion),
+		sessions: many(listeningSession),
+		vocabulary: many(listeningVocabulary),
+	}),
 );
 
 export const listeningScriptRelations = relations(
-  listeningScript,
-  ({ one }) => ({
-    chatListening: one(chatListening, {
-      fields: [listeningScript.chatListeningId],
-      references: [chatListening.id],
-    }),
-  }),
+	listeningScript,
+	({ one }) => ({
+		chatListening: one(chatListening, {
+			fields: [listeningScript.chatListeningId],
+			references: [chatListening.id],
+		}),
+	}),
 );
 
 export const listeningQuestionRelations = relations(
-  listeningQuestion,
-  ({ one }) => ({
-    chatListening: one(chatListening, {
-      fields: [listeningQuestion.chatListeningId],
-      references: [chatListening.id],
-    }),
-  }),
+	listeningQuestion,
+	({ one }) => ({
+		chatListening: one(chatListening, {
+			fields: [listeningQuestion.chatListeningId],
+			references: [chatListening.id],
+		}),
+	}),
 );
 
 export const listeningDefaultRelations = relations(
-  listeningDefault,
-  ({ one }) => ({
-    workspace: one(workspace, {
-      fields: [listeningDefault.workspaceId],
-      references: [workspace.id],
-    }),
-  }),
+	listeningDefault,
+	({ one }) => ({
+		workspace: one(workspace, {
+			fields: [listeningDefault.workspaceId],
+			references: [workspace.id],
+		}),
+	}),
 );
 
 export const listeningSessionRelations = relations(
-  listeningSession,
-  ({ one, many }) => ({
-    chatListening: one(chatListening, {
-      fields: [listeningSession.chatListeningId],
-      references: [chatListening.id],
-    }),
-    answers: many(listeningAnswer),
-  }),
+	listeningSession,
+	({ one, many }) => ({
+		chatListening: one(chatListening, {
+			fields: [listeningSession.chatListeningId],
+			references: [chatListening.id],
+		}),
+		answers: many(listeningAnswer),
+	}),
 );
 
 export const listeningAnswerRelations = relations(
-  listeningAnswer,
-  ({ one }) => ({
-    session: one(listeningSession, {
-      fields: [listeningAnswer.sessionId],
-      references: [listeningSession.id],
-    }),
-    question: one(listeningQuestion, {
-      fields: [listeningAnswer.questionId],
-      references: [listeningQuestion.id],
-    }),
-  }),
+	listeningAnswer,
+	({ one }) => ({
+		session: one(listeningSession, {
+			fields: [listeningAnswer.sessionId],
+			references: [listeningSession.id],
+		}),
+		question: one(listeningQuestion, {
+			fields: [listeningAnswer.questionId],
+			references: [listeningQuestion.id],
+		}),
+	}),
 );
 
 export const listeningVocabularyRelations = relations(
-  listeningVocabulary,
-  ({ one }) => ({
-    chatListening: one(chatListening, {
-      fields: [listeningVocabulary.chatListeningId],
-      references: [chatListening.id],
-    }),
-  }),
+	listeningVocabulary,
+	({ one }) => ({
+		chatListening: one(chatListening, {
+			fields: [listeningVocabulary.chatListeningId],
+			references: [chatListening.id],
+		}),
+	}),
 );
 
 // ── Writing Relations ────────────────────────────────────────────────
 
 export const chatWritingRelations = relations(chatWriting, ({ one, many }) => ({
-  chat: one(chat, {
-    fields: [chatWriting.id],
-    references: [chat.id],
-  }),
-  task: one(writingTask),
-  essays: many(writingEssay),
+	chat: one(chat, {
+		fields: [chatWriting.id],
+		references: [chat.id],
+	}),
+	task: one(writingTask),
+	essays: many(writingEssay),
 }));
 
 export const writingTaskRelations = relations(writingTask, ({ one }) => ({
-  chatWriting: one(chatWriting, {
-    fields: [writingTask.chatWritingId],
-    references: [chatWriting.id],
-  }),
+	chatWriting: one(chatWriting, {
+		fields: [writingTask.chatWritingId],
+		references: [chatWriting.id],
+	}),
 }));
 
 export const writingEssayRelations = relations(writingEssay, ({ one }) => ({
-  chatWriting: one(chatWriting, {
-    fields: [writingEssay.chatWritingId],
-    references: [chatWriting.id],
-  }),
-  evaluation: one(writingEvaluation),
+	chatWriting: one(chatWriting, {
+		fields: [writingEssay.chatWritingId],
+		references: [chatWriting.id],
+	}),
+	evaluation: one(writingEvaluation),
 }));
 
 export const writingEvaluationRelations = relations(
-  writingEvaluation,
-  ({ one }) => ({
-    essay: one(writingEssay, {
-      fields: [writingEvaluation.essayId],
-      references: [writingEssay.id],
-    }),
-  }),
+	writingEvaluation,
+	({ one }) => ({
+		essay: one(writingEssay, {
+			fields: [writingEvaluation.essayId],
+			references: [writingEssay.id],
+		}),
+	}),
 );
 
 export const writingDefaultRelations = relations(writingDefault, ({ one }) => ({
-  workspace: one(workspace, {
-    fields: [writingDefault.workspaceId],
-    references: [workspace.id],
-  }),
+	workspace: one(workspace, {
+		fields: [writingDefault.workspaceId],
+		references: [workspace.id],
+	}),
 }));
 
 // ── Speaking Relations ────────────────────────────────────────────────
 
 export const chatSpeakingRelations = relations(
-  chatSpeaking,
-  ({ one, many }) => ({
-    chat: one(chat, {
-      fields: [chatSpeaking.id],
-      references: [chat.id],
-    }),
-    transcripts: many(speakingTranscript),
-  }),
+	chatSpeaking,
+	({ one, many }) => ({
+		chat: one(chat, {
+			fields: [chatSpeaking.id],
+			references: [chat.id],
+		}),
+		transcripts: many(speakingTranscript),
+	}),
 );
 
 export const speakingTranscriptRelations = relations(
-  speakingTranscript,
-  ({ one, many }) => ({
-    chatSpeaking: one(chatSpeaking, {
-      fields: [speakingTranscript.chatSpeakingId],
-      references: [chatSpeaking.id],
-    }),
-    audioChunks: many(speakingAudioChunk),
-    evaluation: one(speakingEvaluation),
-  }),
+	speakingTranscript,
+	({ one, many }) => ({
+		chatSpeaking: one(chatSpeaking, {
+			fields: [speakingTranscript.chatSpeakingId],
+			references: [chatSpeaking.id],
+		}),
+		audioChunks: many(speakingAudioChunk),
+		evaluation: one(speakingEvaluation),
+	}),
 );
 
 export const speakingAudioChunkRelations = relations(
-  speakingAudioChunk,
-  ({ one }) => ({
-    transcript: one(speakingTranscript, {
-      fields: [speakingAudioChunk.transcriptId],
-      references: [speakingTranscript.id],
-    }),
-  }),
+	speakingAudioChunk,
+	({ one }) => ({
+		transcript: one(speakingTranscript, {
+			fields: [speakingAudioChunk.transcriptId],
+			references: [speakingTranscript.id],
+		}),
+	}),
 );
 
 export const speakingEvaluationRelations = relations(
-  speakingEvaluation,
-  ({ one }) => ({
-    transcript: one(speakingTranscript, {
-      fields: [speakingEvaluation.transcriptId],
-      references: [speakingTranscript.id],
-    }),
-  }),
+	speakingEvaluation,
+	({ one }) => ({
+		transcript: one(speakingTranscript, {
+			fields: [speakingEvaluation.transcriptId],
+			references: [speakingTranscript.id],
+		}),
+	}),
 );
 
 export const speakingDefaultRelations = relations(
-  speakingDefault,
-  ({ one }) => ({
-    workspace: one(workspace, {
-      fields: [speakingDefault.workspaceId],
-      references: [workspace.id],
-    }),
-  }),
+	speakingDefault,
+	({ one }) => ({
+		workspace: one(workspace, {
+			fields: [speakingDefault.workspaceId],
+			references: [workspace.id],
+		}),
+	}),
 );

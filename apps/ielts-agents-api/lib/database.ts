@@ -7,29 +7,29 @@ import { isBetterAuthCLI } from "#./lib/is-better-auth-cli.ts";
 import * as schema from "#./lib/schema/index.ts";
 
 const pgConfig = {
-  connectionString:
-    (process.env.PG_URL ?? "") ||
-    "postgresql://postgres:postgres@localhost:5432/postgres",
+	connectionString:
+		(process.env.PG_URL ?? "") ||
+		"postgresql://postgres:postgres@localhost:5432/postgres",
 } as const;
 
 const drizzleConfig = { schema } as const;
 
 async function runMigrations() {
-  const pgClient = new pg.Client(pgConfig);
-  await pgClient.connect();
-  let exception: unknown;
-  try {
-    const database = drizzle(pgClient, drizzleConfig);
-    await migrate(database, { migrationsFolder: "drizzle" });
-  } catch (error) {
-    exception = error;
-  }
-  await pgClient.end();
-  if (exception) {
-    captureException(exception);
-    await flushException();
-    throw exception;
-  }
+	const pgClient = new pg.Client(pgConfig);
+	await pgClient.connect();
+	let exception: unknown;
+	try {
+		const database = drizzle(pgClient, drizzleConfig);
+		await migrate(database, { migrationsFolder: "drizzle" });
+	} catch (error) {
+		exception = error;
+	}
+	await pgClient.end();
+	if (exception) {
+		captureException(exception);
+		await flushException();
+		throw exception;
+	}
 }
 
 if (!isBetterAuthCLI) await runMigrations();

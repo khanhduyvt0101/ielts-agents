@@ -1,13 +1,11 @@
-import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
-import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
-
 import { z } from "zod";
-
+import type { ChatToolContext } from "#./lib/chat-tool-context.ts";
 import { chatToolIdSchema } from "#./lib/chat-tool-id-schema.ts";
 import { chatTools } from "#./lib/chat-tools.ts";
 import { CustomAgent } from "#./lib/custom-agent.ts";
 import { database } from "#./lib/database.ts";
 import { defaultAgentOptions } from "#./lib/default-agent-options.ts";
+import type { ReadingToolContext } from "#./lib/reading-tool-context.ts";
 import { readingToolIdSchema } from "#./lib/reading-tool-id-schema.ts";
 import { readingTools } from "#./lib/reading-tools.ts";
 
@@ -200,52 +198,52 @@ When appropriate, teach underlying reading skills:
 Be the teacher every IELTS student wishes they had — knowledgeable, patient, encouraging, and practical.`;
 
 export const readingAgent = new CustomAgent({
-  ...defaultAgentOptions,
-  tools: {
-    ...readingTools,
-    ...chatTools,
-  },
-  metadataSchema: z.object({}).nullish(),
-  dataSchemas: {
-    "reading-update-notification": z.object({
-      updated: z.boolean(),
-    }),
-  },
-  prepareCall: async ({
-    experimental_context: { id, creditsUsage, writer },
-    options,
-    ...settings
-  }) => {
-    const readingChat = await database.query.chatReading.findFirst({
-      where: (table, { eq }) => eq(table.id, id),
-    });
-    if (!readingChat) throw new Error("Chat not found");
-    const context: ReadingToolContext & ChatToolContext = {
-      id,
-      creditsUsage,
-      onReadingUpdate: () => {
-        writer.write({
-          type: "data-reading-update-notification",
-          data: { updated: true },
-          transient: true,
-        });
-      },
-    };
-    const bandInstructions = `\n\nThe target band score for this test is: ${readingChat.bandScore}. Generate content appropriate for this difficulty level.`;
-    const questionTypesInstructions =
-      readingChat.questionTypes.length > 0
-        ? `\n\nThe user has selected specific question types: ${readingChat.questionTypes.join(", ")}. Generate ONLY these question types — do not include types not listed.`
-        : "";
-    return {
-      ...settings,
-      instructions: `${baseInstructions}${bandInstructions}${questionTypesInstructions}`,
-      activeTools: [
-        ...readingToolIdSchema.options,
-        ...chatToolIdSchema.options,
-      ],
-      experimental_context: context,
-    };
-  },
+	...defaultAgentOptions,
+	tools: {
+		...readingTools,
+		...chatTools,
+	},
+	metadataSchema: z.object({}).nullish(),
+	dataSchemas: {
+		"reading-update-notification": z.object({
+			updated: z.boolean(),
+		}),
+	},
+	prepareCall: async ({
+		experimental_context: { id, creditsUsage, writer },
+		options,
+		...settings
+	}) => {
+		const readingChat = await database.query.chatReading.findFirst({
+			where: (table, { eq }) => eq(table.id, id),
+		});
+		if (!readingChat) throw new Error("Chat not found");
+		const context: ReadingToolContext & ChatToolContext = {
+			id,
+			creditsUsage,
+			onReadingUpdate: () => {
+				writer.write({
+					type: "data-reading-update-notification",
+					data: { updated: true },
+					transient: true,
+				});
+			},
+		};
+		const bandInstructions = `\n\nThe target band score for this test is: ${readingChat.bandScore}. Generate content appropriate for this difficulty level.`;
+		const questionTypesInstructions =
+			readingChat.questionTypes.length > 0
+				? `\n\nThe user has selected specific question types: ${readingChat.questionTypes.join(", ")}. Generate ONLY these question types — do not include types not listed.`
+				: "";
+		return {
+			...settings,
+			instructions: `${baseInstructions}${bandInstructions}${questionTypesInstructions}`,
+			activeTools: [
+				...readingToolIdSchema.options,
+				...chatToolIdSchema.options,
+			],
+			experimental_context: context,
+		};
+	},
 });
 
 export type ReadingAgent = typeof readingAgent;
