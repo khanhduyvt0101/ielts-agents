@@ -68,11 +68,9 @@ export const createNodesV2: CreateNodesV2<Options> = [
 						options: { cwd: "{projectRoot}" },
 						inputs: [
 							"default",
-							"^default",
 							{ externalDependencies: ["typescript", "tslib"] },
 						],
 						outputs: ["{projectRoot}/*.tsbuildinfo"],
-						dependsOn: ["build", "^typecheck"],
 					},
 				};
 				targets["biome-check"] = {
