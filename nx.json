@@ -1,67 +1,63 @@
 {
-  "namedInputs": {
-    "default": [
-      "{workspaceRoot}/tsconfig.base.json",
-      "{projectRoot}/**/*",
-      "!{projectRoot}/vercel.json",
-      "!{projectRoot}/.docker",
-      "!{projectRoot}/.github",
-      "!{projectRoot}/.claude",
-      "!{projectRoot}/.gemini",
-      "!{projectRoot}/.cursor",
-      "!{projectRoot}/README.md",
-      "!{projectRoot}/CLAUDE.md",
-      "!{projectRoot}/AGENTS.md"
-    ],
-    "production": [
-      "default",
-      "!{projectRoot}/drizzle.config.cjs",
-      "!{projectRoot}/playwright.config.js",
-      "!{projectRoot}/**/*.stories.*"
-    ]
-  },
-  "plugins": [
-    {
-      "plugin": "ielts-agents-internal-nx",
-      "options": {
-        "ielts-agents-api": {
-          "betterAuth": {
-            "configFile": "./lib/auth.tsx",
-            "outputFile": "./lib/schema/auth.ts"
-          },
-          "emailPort": 42313,
-          "servicePort": 42310
-        },
-        "ielts-agents-app": {
-          "servicePort": 42312,
-          "serviceDependencies": [
-            "ielts-agents-api"
-          ]
-        }
-      }
-    }
-  ],
-  "release": {
-    "versionPlans": true,
-    "projects": [
-      "*"
-    ],
-    "version": {
-      "git": {
-        "stageChanges": false,
-        "commit": false,
-        "tag": false
-      }
-    },
-    "changelog": {
-      "git": {
-        "commitMessage": "Publish v{version}"
-      },
-      "workspaceChangelog": {
-        "createRelease": "github"
-      }
-    }
-  },
-  "neverConnectToCloud": true,
-  "analytics": true
+	"namedInputs": {
+		"default": [
+			"{workspaceRoot}/tsconfig.base.json",
+			"{projectRoot}/**/*",
+			"!{projectRoot}/vercel.json",
+			"!{projectRoot}/.docker",
+			"!{projectRoot}/.github",
+			"!{projectRoot}/.claude",
+			"!{projectRoot}/.gemini",
+			"!{projectRoot}/.cursor",
+			"!{projectRoot}/README.md",
+			"!{projectRoot}/CLAUDE.md",
+			"!{projectRoot}/AGENTS.md"
+		],
+		"production": [
+			"default",
+			"!{projectRoot}/drizzle.config.cjs",
+			"!{projectRoot}/playwright.config.js",
+			"!{projectRoot}/**/*.stories.*"
+		]
+	},
+	"plugins": [
+		{
+			"plugin": "ielts-agents-internal-nx",
+			"options": {
+				"ielts-agents-api": {
+					"betterAuth": {
+						"configFile": "./lib/auth.tsx",
+						"outputFile": "./lib/schema/auth.ts"
+					},
+					"emailPort": 42313,
+					"servicePort": 42310
+				},
+				"ielts-agents-app": {
+					"servicePort": 42312,
+					"serviceDependencies": ["ielts-agents-api"]
+				}
+			}
+		}
+	],
+	"release": {
+		"versionPlans": true,
+		"projects": ["*"],
+		"version": {
+			"git": {
+				"stageChanges": false,
+				"commit": false,
+				"tag": false
+			}
+		},
+		"changelog": {
+			"git": {
+				"commitMessage": "Publish v{version}"
+			},
+			"workspaceChangelog": {
+				"createRelease": "github"
+			}
+		}
+	},
+	"neverConnectToCloud": true,
+	"analytics": true
 }
