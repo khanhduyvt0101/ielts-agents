@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRealtimeAudioPlayer } from "#./lib/use-realtime-audio-player.ts";
 
 interface TranscriptEntry {
 	role: string;
@@ -31,6 +32,8 @@ export function useSpeakingRealtime({
 	const [duration, setDuration] = useState(0);
 	const [isAgentSpeaking, setIsAgentSpeaking] = useState(false);
 
+	const { init, playChunk, stop: stopPlayer } = useRealtimeAudioPlayer();
+
 	const wsRef = useRef<WebSocket | null>(null);
 	const mediaStreamRef = useRef<MediaStream | null>(null);
 	const audioContextRef = useRef<AudioContext | null>(null);
@@ -56,10 +59,14 @@ export function useSpeakingRealtime({
 			wsRef.current.close();
 			wsRef.current = null;
 		}
-	}, []);
+		stopPlayer();
+	}, [stopPlayer]);
 
 	const connect = useCallback(async () => {
 		if (status !== "idle" && status !== "ended") return;
+
+		// Initialize audio playback context during user gesture to avoid Chrome autoplay policy
+		init();
 
 		setStatus("connecting");
 		setTranscript([]);
@@ -127,6 +134,7 @@ export function useSpeakingRealtime({
 					const data = JSON.parse(event.data as string) as {
 						type: string;
 						transcript?: string;
+						delta?: string;
 					};
 
 					switch (data.type) {
@@ -159,6 +167,9 @@ export function useSpeakingRealtime({
 						}
 						case "response.audio.delta": {
 							setIsAgentSpeaking(true);
+							if (data.delta) {
+								playChunk(data.delta);
+							}
 							break;
 						}
 						case "response.done": {
@@ -196,7 +207,7 @@ export function useSpeakingRealtime({
 			setStatus("idle");
 			cleanup();
 		}
-	}, [chatId, status, cleanup, onSessionEnd]);
+	}, [chatId, status, cleanup, onSessionEnd, playChunk, init]);
 
 	const disconnect = useCallback(() => {
 		if (status !== "active") return;

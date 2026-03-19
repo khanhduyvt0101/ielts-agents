@@ -18,10 +18,10 @@ import {
 } from "~/components/ui/breadcrumb";
 
 const SPEAKING_SUGGESTIONS = [
-	"Practice Part 1: Questions about my hometown and family",
-	"Give me a full speaking test on the topic of technology",
-	"Part 2: Describe a memorable journey you have taken",
-	"Part 3: Let's discuss the impact of social media on society",
+	"I want to practice a full IELTS speaking test",
+	"Help me prepare for Part 2 — describing a person",
+	"What tips do you have for Part 3 discussions?",
+	"How can I improve my fluency score?",
 ];
 
 export function clientLoader() {
@@ -42,13 +42,14 @@ function SpeakingContent({
 		<>
 			<h1 className="mb-2 text-3xl font-bold">IELTS Speaking Practice</h1>
 			<p className="mb-8 max-w-md text-center text-sm text-muted-foreground">
-				Practice IELTS speaking tests and get AI-powered band score feedback
+				Practice IELTS speaking with a live AI examiner and get coaching
+				feedback
 			</p>
 			<div className="w-full max-w-xl">
 				<SpeakingPromptInput
 					externalProvider
 					disabled={isSubmitting}
-					placeholder="Describe the topic for your speaking practice..."
+					placeholder="Ask your speaking coach anything..."
 					onSubmit={onSubmit}
 				/>
 			</div>

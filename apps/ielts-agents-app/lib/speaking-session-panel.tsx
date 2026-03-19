@@ -1,5 +1,6 @@
-import { MicIcon, MicOffIcon, PhoneOffIcon } from "lucide-react";
+import { LoaderIcon, MicIcon, MicOffIcon, PhoneOffIcon } from "lucide-react";
 import { SpeakingAudioVisualizer } from "#./lib/speaking-audio-visualizer.tsx";
+import { useChatLoading } from "#./lib/use-chat-loading.ts";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
@@ -42,10 +43,12 @@ export function SpeakingSessionPanel({
 	onConnect,
 	onDisconnect,
 }: SpeakingSessionPanelProps) {
+	const isChatLoading = useChatLoading();
 	const isActive = status === "active";
 	const isIdle = status === "idle";
 	const isEnded = status === "ended";
 	const isConnecting = status === "connecting";
+	const isEvaluating = isEnded && isChatLoading;
 
 	return (
 		<div className="flex h-full flex-col">
@@ -104,6 +107,16 @@ export function SpeakingSessionPanel({
 					)}
 				</div>
 			</ScrollArea>
+
+			{/* Evaluating indicator */}
+			{isEvaluating && (
+				<div className="flex shrink-0 items-center justify-center gap-2 border-t px-4 py-3">
+					<LoaderIcon className="size-4 animate-spin text-amber-600 dark:text-amber-400" />
+					<span className="text-sm text-amber-600 dark:text-amber-400">
+						Evaluating your performance...
+					</span>
+				</div>
+			)}
 
 			{/* Controls */}
 			<div className="flex shrink-0 items-center justify-center gap-3 border-t px-4 py-3">

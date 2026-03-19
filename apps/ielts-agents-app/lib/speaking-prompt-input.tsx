@@ -1,6 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ChatStatus } from "ai";
 import type { BandScore } from "ielts-agents-api/types";
+import { useAtomValue } from "jotai";
+import { speakingRealtimeStatusAtom } from "#./lib/speaking-realtime-status-atom.ts";
 import { trpcOptions } from "#./lib/trpc-options.ts";
 import type { PromptInputMessage } from "~/components/ai-elements/prompt-input";
 import {
@@ -55,25 +57,32 @@ function SpeakingPromptInputContent({
 	onSubmit,
 	className,
 }: SpeakingPromptInputContentProps) {
+	const realtimeStatus = useAtomValue(speakingRealtimeStatusAtom);
+	const isRealtimeActive =
+		realtimeStatus === "connecting" || realtimeStatus === "active";
 	const isLoading = status === "streaming" || status === "submitted";
+
+	const isDisabled = (disabled ?? isLoading) || isRealtimeActive;
 
 	return (
 		<PromptInput className={className} onSubmit={onSubmit}>
 			<PromptInputBody>
 				<PromptInputTextarea
 					className="disabled:cursor-text"
-					disabled={disabled ?? isLoading}
-					placeholder={placeholder}
+					disabled={isDisabled}
+					placeholder={
+						isRealtimeActive ? "Speaking session in progress..." : placeholder
+					}
 				/>
 			</PromptInputBody>
 			<PromptInputFooter className="flex-wrap justify-end gap-2 sm:justify-between">
 				<PromptInputTools className="flex-wrap justify-end gap-2">
-					<BandScoreSelector chatId={chatId} disabled={disabled ?? isLoading} />
-					<TestPartSelector chatId={chatId} disabled={disabled ?? isLoading} />
+					<BandScoreSelector chatId={chatId} disabled={isDisabled} />
+					<TestPartSelector chatId={chatId} disabled={isDisabled} />
 				</PromptInputTools>
 				<div className="flex items-center gap-1">
 					<PromptInputSubmit
-						disabled={disabled ?? isLoading}
+						disabled={isDisabled}
 						status={isLoading ? "submitted" : "ready"}
 					/>
 				</div>

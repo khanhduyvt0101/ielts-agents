@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LoaderIcon, MicIcon } from "lucide-react";
 import { useState } from "react";
 import { RetryErrorAlert } from "#./lib/retry-error-alert.tsx";
-import { SpeakingRecorder } from "#./lib/speaking-speech-button.tsx";
+import { SpeakingRealtimeRecorder } from "#./lib/speaking-realtime-recorder.tsx";
 import { trpcOptions } from "#./lib/trpc-options.ts";
 import { useChatLoading } from "#./lib/use-chat-loading.ts";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -38,6 +38,7 @@ export function SpeakingProject({ chatId }: SpeakingProjectProps) {
 	return (
 		<SpeakingProjectContent
 			bandScore={data.bandScore}
+			chatId={chatId}
 			transcripts={data.transcripts}
 		/>
 	);
@@ -96,11 +97,13 @@ interface TranscriptData {
 
 interface SpeakingProjectContentProps {
 	bandScore: string;
+	chatId: number;
 	transcripts: TranscriptData[];
 }
 
 function SpeakingProjectContent({
 	bandScore,
+	chatId,
 	transcripts,
 }: SpeakingProjectContentProps) {
 	const isLoading = useChatLoading();
@@ -159,7 +162,7 @@ function SpeakingProjectContent({
 					className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
 					value="record"
 				>
-					<SpeakingRecorder />
+					<SpeakingRealtimeRecorder chatId={chatId} />
 				</TabsContent>
 				{hasTranscripts && (
 					<TabsContent

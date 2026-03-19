@@ -24,3 +24,5 @@ mockServiceWorker.js
 apps/ielts-agents-api/data
 
 .nx/polygraph
+.claude/worktrees
+.claude/settings.local.json
