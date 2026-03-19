@@ -29,22 +29,34 @@ import {
 
 function getAgentRoute(agent: AgentId): string {
 	switch (agent) {
+		case "reading": {
+			return "/reading";
+		}
 		case "listening": {
 			return "/listening";
 		}
-		default: {
-			return "/reading";
+		case "writing": {
+			return "/writing";
+		}
+		case "speaking": {
+			return "/speaking";
 		}
 	}
 }
 
 function getAgentLabel(agent: AgentId): string {
 	switch (agent) {
+		case "reading": {
+			return "Reading";
+		}
 		case "listening": {
 			return "Listening";
 		}
-		default: {
-			return "Reading";
+		case "writing": {
+			return "Writing";
+		}
+		case "speaking": {
+			return "Speaking";
 		}
 	}
 }
