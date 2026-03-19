@@ -40,9 +40,9 @@ function ReadingContent({
 
 	return (
 		<>
-			<h1 className="mb-2 text-3xl font-bold">IELTS Reading Test Generator</h1>
+			<h1 className="mb-2 text-3xl font-bold">IELTS Reading Test</h1>
 			<p className="mb-8 max-w-md text-center text-sm text-muted-foreground">
-				Generate practice IELTS reading tests on any topic
+				Practice IELTS reading tests on any topic
 			</p>
 			<div className="w-full max-w-xl">
 				<ReadingPromptInput

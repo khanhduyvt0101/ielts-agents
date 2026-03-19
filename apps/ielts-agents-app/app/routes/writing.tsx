@@ -40,9 +40,9 @@ function WritingContent({
 
 	return (
 		<>
-			<h1 className="mb-2 text-3xl font-bold">IELTS Writing Task Generator</h1>
+			<h1 className="mb-2 text-3xl font-bold">IELTS Writing Task</h1>
 			<p className="mb-8 max-w-md text-center text-sm text-muted-foreground">
-				Generate practice IELTS writing tasks and get AI-powered feedback
+				Practice IELTS writing tasks and get AI-powered feedback
 			</p>
 			<div className="w-full max-w-xl">
 				<WritingPromptInput
