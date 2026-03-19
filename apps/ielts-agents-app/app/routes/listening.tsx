@@ -40,9 +40,7 @@ function ListeningContent({
 
 	return (
 		<>
-			<h1 className="mb-2 text-3xl font-bold">
-				IELTS Listening Test
-			</h1>
+			<h1 className="mb-2 text-3xl font-bold">IELTS Listening Test</h1>
 			<p className="mb-8 max-w-md text-center text-sm text-muted-foreground">
 				Practice IELTS listening tests with audio on any topic
 			</p>
