@@ -94,6 +94,9 @@ const agentConfigs: { [T in AgentId]: AgentConfig<T> } = {
 				trpcOptions.speaking.getSpeakingData.queryOptions({ chatId: id }),
 			);
 			void queryClient.invalidateQueries(
+				trpcOptions.speaking.getSpeakingConfig.queryOptions({ chatId: id }),
+			);
+			void queryClient.invalidateQueries(
 				trpcOptions.chat.getAgentConfig.queryOptions({ chatId: id }),
 			);
 		},

@@ -84,9 +84,20 @@ function getPartsToConduct(testPart: TestPart): string {
 	}
 }
 
+const postTestPronunciationFeedback = `## Post-Test Pronunciation & Fluency Feedback
+After ending the test ("Thank you, that's the end of the speaking test"), provide a brief verbal assessment of the candidate's pronunciation and fluency. This feedback will be captured in the transcript and used by the coaching agent. Include:
+
+1. **Pronunciation**: Comment on clarity of speech, word stress, sentence stress, intonation patterns, and any specific sounds they struggled with
+2. **Fluency & rhythm**: Comment on pace, natural pausing, hesitation patterns, self-correction habits, and overall flow
+3. **Speaking confidence**: Comment on their delivery, tone, and how natural they sounded
+
+Keep it brief (30-60 seconds of speech). Start with: "I'd like to give you some quick feedback on your speaking..."
+Be specific — cite examples from what they just said. Be encouraging but honest.`;
+
 export function buildExaminerInstructions(
 	bandScore: BandScore,
 	testPart: TestPart,
+	topic?: string | null,
 ): string {
 	const parts: string[] = [coreExaminerBehavior];
 
@@ -98,6 +109,14 @@ export function buildExaminerInstructions(
 		parts.push(part3Instructions);
 
 	parts.push(getBandDifficultyGuidance(bandScore), getPartsToConduct(testPart));
+
+	if (topic) {
+		parts.push(
+			`## Topic\nThe student has requested to practice with the topic: "${topic}". Incorporate this topic into your questions. For Part 2, create a cue card around this topic. For Parts 1 and 3, relate your questions to this theme where appropriate.`,
+		);
+	}
+
+	parts.push(postTestPronunciationFeedback);
 
 	return parts.join("\n\n");
 }

@@ -53,7 +53,7 @@ function SpeakingPromptInputContent({
 	chatId,
 	status,
 	disabled,
-	placeholder = "Ask the examiner anything...",
+	placeholder = "Ask your speaking coach anything...",
 	onSubmit,
 	className,
 }: SpeakingPromptInputContentProps) {

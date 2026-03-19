@@ -13,6 +13,7 @@ interface TranscriptEntry {
 interface SpeakingRelayOptions {
 	bandScore: BandScore;
 	testPart: "part-1" | "part-2" | "part-3" | "full-test";
+	topic?: string | null;
 	onTranscriptUpdate: (entries: TranscriptEntry[]) => void;
 	onSessionEnd: (data: {
 		transcript: TranscriptEntry[];
@@ -109,6 +110,7 @@ export class SpeakingWebSocketRelay {
 		const instructions = buildExaminerInstructions(
 			this.options.bandScore,
 			this.options.testPart,
+			this.options.topic,
 		);
 
 		const sessionConfig = {

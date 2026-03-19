@@ -267,6 +267,7 @@ hono.get(
 		const relay = new SpeakingWebSocketRelay({
 			bandScore: chatData.speaking.bandScore,
 			testPart: chatData.speaking.testPart,
+			topic: chatData.speaking.topic,
 			onTranscriptUpdate: () => {
 				// Real-time transcript updates handled by relay
 			},

@@ -108,6 +108,7 @@ export const getSpeakingConfig = workspaceProcedure
 		return {
 			bandScore: chatData.speaking.bandScore,
 			testPart: chatData.speaking.testPart,
+			topic: chatData.speaking.topic,
 		};
 	});
 
@@ -127,10 +128,14 @@ export const updateConfig = workspaceProcedure
 			chatId: chatIdSchema.optional(),
 			bandScore: bandScoreSchema.optional(),
 			testPart: z.enum(["part-1", "part-2", "part-3", "full-test"]).optional(),
+			topic: z.string().nullish(),
 		}),
 	)
 	.mutation(
-		async ({ ctx: { workspace }, input: { chatId, bandScore, testPart } }) => {
+		async ({
+			ctx: { workspace },
+			input: { chatId, bandScore, testPart, topic },
+		}) => {
 			if (chatId) {
 				const chatData = await database.query.chat.findFirst({
 					where: (table, { and, eq }) =>
@@ -146,6 +151,7 @@ export const updateConfig = workspaceProcedure
 				const updateValues: Record<string, unknown> = {};
 				if (bandScore) updateValues.bandScore = bandScore;
 				if (testPart) updateValues.testPart = testPart;
+				if (topic !== undefined) updateValues.topic = topic;
 				if (Object.keys(updateValues).length > 0) {
 					await database
 						.update(chatSpeaking)

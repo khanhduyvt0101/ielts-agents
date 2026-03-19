@@ -1,8 +1,13 @@
 import type { ToolSet, UIMessage } from "ai";
 import { tool } from "ai";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { database } from "#./lib/database.ts";
-import { speakingEvaluation, speakingTranscript } from "#./lib/schema/index.ts";
+import {
+	chatSpeaking,
+	speakingEvaluation,
+	speakingTranscript,
+} from "#./lib/schema/index.ts";
 import type { SpeakingToolContext } from "#./lib/speaking-tool-context.ts";
 
 function extractTranscriptFromMessages(
@@ -23,6 +28,48 @@ function extractTranscriptFromMessages(
 	}
 	return entries;
 }
+
+const configureSpeakingTest = tool({
+	description:
+		"Configure the speaking test settings for the realtime AI examiner. Use this when the student specifies which part they want to practice or a topic they want to discuss. This updates the test configuration so the AI examiner in the Record tab will conduct the test accordingly.",
+	inputSchema: z.object({
+		testPart: z
+			.enum(["part-1", "part-2", "part-3", "full-test"])
+			.describe(
+				"Which part of the speaking test to conduct. Use 'full-test' for all three parts.",
+			),
+		topic: z
+			.string()
+			.optional()
+			.describe(
+				"Optional topic or theme for the test (e.g. 'technology', 'describe a memorable journey'). The examiner will incorporate this into their questions.",
+			),
+	}),
+	execute: async ({ testPart, topic }, { experimental_context }) => {
+		const ctx = experimental_context as SpeakingToolContext;
+
+		const updateValues: Record<string, unknown> = { testPart };
+		if (topic !== undefined) updateValues.topic = topic;
+
+		await database
+			.update(chatSpeaking)
+			.set(updateValues)
+			.where(eq(chatSpeaking.id, ctx.id));
+
+		ctx.onSpeakingUpdate();
+
+		const partLabel =
+			testPart === "full-test"
+				? "Full Test (Parts 1, 2, and 3)"
+				: `Part ${testPart.replace("part-", "")}`;
+
+		return {
+			configured: true,
+			testPart: partLabel,
+			topic: topic ?? null,
+		};
+	},
+});
 
 const evaluateSpeaking = tool({
 	description:
@@ -223,6 +270,7 @@ const getSpeakingResults = tool({
 });
 
 export const speakingTools = {
+	"configure-speaking-test": configureSpeakingTest,
 	"evaluate-speaking": evaluateSpeaking,
 	"get-speaking-results": getSpeakingResults,
 } satisfies ToolSet;

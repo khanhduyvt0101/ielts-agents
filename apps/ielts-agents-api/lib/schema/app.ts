@@ -457,6 +457,7 @@ export const chatSpeaking = pgTable("chat_speaking", {
 		.$type<"part-1" | "part-2" | "part-3" | "full-test">()
 		.default("full-test")
 		.notNull(),
+	topic: text("topic"),
 });
 
 export const speakingTranscript = pgTable("speaking_transcript", {
